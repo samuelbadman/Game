@@ -59,8 +59,8 @@ private:
 	bool inFullscreen = false;
 
 public:
-	callback onClosed;
-	callback onDestroyed;
+	callback<> onClosed;
+	callback<> onDestroyed;
 
 public:
 	bool init(const win32WindowInitSettings& settings);
