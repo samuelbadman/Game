@@ -14,7 +14,7 @@ enum class windowStyle : uint8_t
 	unset      = 0,
 	windowed   = 1,
 	borderless = 2,
-	fixedSize  = 3,
+	noResize  = 3,
 	noDragSize = 4
 };
 
@@ -39,7 +39,7 @@ private:
 	// Borderless window
 	static constexpr DWORD borderlessStyleDword = WS_POPUPWINDOW;
 	// Non resizable windowed window
-	static constexpr DWORD fixedSizeStyleDword = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX /*| WS_MAXIMIZEBOX*/;
+	static constexpr DWORD noResizeStyleDword = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX /*| WS_MAXIMIZEBOX*/;
 	// Removes the sizing box restricting drag resizing but retaining the maximize button
 	static constexpr DWORD NoDragSizeStyleDword = WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME;
 
