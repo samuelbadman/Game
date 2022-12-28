@@ -1,4 +1,5 @@
 #include "win32Window.h"
+#include "display.h"
 
 #include <memory>
 

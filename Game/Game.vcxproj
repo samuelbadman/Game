@@ -84,10 +84,12 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\display.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\win32Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\display.h" />
     <ClInclude Include="source\win32Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
