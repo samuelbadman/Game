@@ -13,7 +13,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 
 	window->init(settings);
 
-	MessageBoxA(nullptr, "hello world", "solis", MB_OK | MB_ICONINFORMATION);
+	MessageBoxA(nullptr, "hello world", "game", MB_OK | MB_ICONINFORMATION);
 
 	window->shutdown();
 	delete window;

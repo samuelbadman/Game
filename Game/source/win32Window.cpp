@@ -298,10 +298,11 @@ DWORD win32Window::styleToDword(const windowStyle style) const
 {
 	switch (style)
 	{
-		case windowStyle::unset: return 0;
 		case windowStyle::windowed: return windowedStyleDword;
 		case windowStyle::borderless: return borderlessStyleDword;
 		case windowStyle::fixedSize: return fixedSizeStyleDword;
 		case windowStyle::noDragSize: return NoDragSizeStyleDword;
+		case windowStyle::unset: 
+		default: return 0;
 	}
 }
