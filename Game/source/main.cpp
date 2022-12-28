@@ -1,22 +1,33 @@
 #include "win32Window.h"
 
+#include <memory>
+
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
+	PWSTR pCmdLine, int nCmdShow)
 {
-	win32Window* window = new win32Window;
+	std::unique_ptr<win32Window> window = std::make_unique<win32Window>();
 
 	win32WindowInitSettings settings = {};
-	settings.windowClassName = L"window";
+	settings.windowClassName = L"gameWindow";
 	settings.windowTitle = L"hello world";
 
 	window->init(settings);
 
-	MessageBoxA(nullptr, "hello world", "game", MB_OK | MB_ICONINFORMATION);
+	bool quit = false;
+	while (!quit)
+	{
+		MSG msg = {};
+		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		{
+			TranslateMessage(&msg);
+			DispatchMessage(&msg);
+		}
+	}
 
 	window->shutdown();
-	delete window;
 
 	return 0;
 }

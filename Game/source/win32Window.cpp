@@ -1,5 +1,59 @@
 #include "win32Window.h"
 
+static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+{
+	// Get the window pointer instance
+	win32Window* const window = reinterpret_cast<win32Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+
+	// Dispatch correct event for the message
+	switch (msg)
+	{
+	case WM_MOUSEHWHEEL: return window->onWM_MouseWheel(window, hwnd, msg, wparam, lparam);
+	case WM_INPUT: return window->onWM_Input(window, hwnd, msg, wparam, lparam);
+	case WM_LBUTTONDOWN: return window->onWM_LButtonDown(window, hwnd, msg, wparam, lparam);
+	case WM_RBUTTONDOWN: return window->onWM_RButtonDown(window, hwnd, msg, wparam, lparam);
+	case WM_MBUTTONDOWN: return window->onWM_MButtonDown(window, hwnd, msg, wparam, lparam);
+	case WM_LBUTTONUP: return window->onWM_LButtonUp(window, hwnd, msg, wparam, lparam);
+	case WM_RBUTTONUP: return window->onWM_RButtonUp(window, hwnd, msg, wparam, lparam);
+	case WM_MBUTTONUP: return window->onWM_MButtonUp(window, hwnd, msg, wparam, lparam);
+	case WM_KEYDOWN: return window->onWM_KeyDown(window, hwnd, msg, wparam, lparam);
+	case WM_KEYUP: return window->onWM_KeyUp(window, hwnd, msg, wparam, lparam);
+	case WM_SIZE: return window->onWM_Size(window, hwnd, msg, wparam, lparam);
+	case WM_ENTERSIZEMOVE: return window->onWM_EnterSizeMove(window, hwnd, msg, wparam, lparam);
+	case WM_EXITSIZEMOVE: return window->onWM_ExitSizeMove(window, hwnd, msg, wparam, lparam);
+	case WM_ACTIVATEAPP: return window->onWM_ActivateApp(window, hwnd, msg, wparam, lparam);
+	case WM_CLOSE: return window->onWM_Close(window, hwnd, msg, wparam, lparam);
+	case WM_DESTROY: return window->onWM_Destroy(window, hwnd, msg, wparam, lparam);
+	default: return DefWindowProc(hwnd, msg, wparam, lparam);
+	}
+}
+
+static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+{
+	switch (uMsg)
+	{
+		case WM_NCCREATE:
+		{
+			// Get the create parameters
+			const CREATESTRUCTW* const create{ reinterpret_cast<CREATESTRUCTW*>(lParam) };
+
+			// Get the window instance pointer from the create parameters
+			win32Window* const window = reinterpret_cast<win32Window*>(create->lpCreateParams);
+
+			// Set the window instance pointer
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
+
+			// Set the window procedure pointer
+			SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WindowProc));
+
+			// Call the window procedure
+			return WindowProc(hwnd, uMsg, wParam, lParam);
+		}
+	}
+
+	return 0;
+}
+
 bool win32Window::init(const win32WindowInitSettings& settings)
 {
 	// Store window settings
@@ -15,15 +69,15 @@ bool win32Window::init(const win32WindowInitSettings& settings)
 	WNDCLASSEX windowClass = {};
 	windowClass.cbSize = sizeof(WNDCLASSEX);
 	windowClass.style = CS_HREDRAW | CS_VREDRAW;
-	windowClass.lpfnWndProc = DefWindowProc;//&InitWindowProc;
+	windowClass.lpfnWndProc = &InitWindowProc;
+	windowClass.hInstance = GetModuleHandle(nullptr);
+	windowClass.lpszClassName = windowClassNameCStr;
 	windowClass.cbClsExtra = 0;
 	windowClass.cbWndExtra = 0;
-	windowClass.hInstance = GetModuleHandle(nullptr);
 	windowClass.hIcon = ::LoadIcon(hInstance, IDI_APPLICATION);
 	windowClass.hCursor = ::LoadCursor(NULL, IDC_ARROW);
 	windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
 	windowClass.lpszMenuName = NULL;
-	windowClass.lpszClassName = windowClassNameCStr;
 	windowClass.hIconSm = ::LoadIcon(hInstance, IDI_APPLICATION);
 
 	if (!(RegisterClassExW(&windowClass) > 0))
@@ -286,12 +340,14 @@ LRESULT win32Window::onWM_Size(win32Window* window, HWND hwnd, UINT msg, WPARAM 
 
 LRESULT win32Window::onWM_Close(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	DestroyWindow(hwnd);
+	return 0;
 }
 
 LRESULT win32Window::onWM_Destroy(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	PostQuitMessage(0);
+	return 0;
 }
 
 DWORD win32Window::styleToDword(const windowStyle style) const
