@@ -6,6 +6,8 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+bool quit = false;
+
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
 {
@@ -13,11 +15,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	win32WindowInitSettings settings = {};
 	settings.windowClassName = L"gameWindow";
-	settings.windowTitle = L"hello world";
+	settings.windowTitle = L"game";
 
 	window->init(settings);
+	window->onClosed.add([]() { quit = true; });
 
-	bool quit = false;
 	while (!quit)
 	{
 		MSG msg = {};

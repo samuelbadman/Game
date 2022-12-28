@@ -340,12 +340,14 @@ LRESULT win32Window::onWM_Size(win32Window* window, HWND hwnd, UINT msg, WPARAM 
 
 LRESULT win32Window::onWM_Close(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+	onClosed.broadcast();
 	DestroyWindow(hwnd);
 	return 0;
 }
 
 LRESULT win32Window::onWM_Destroy(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+	onDestroyed.broadcast();
 	PostQuitMessage(0);
 	return 0;
 }

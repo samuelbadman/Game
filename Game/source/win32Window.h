@@ -1,5 +1,7 @@
 #pragma once
 
+#include "callback.h"
+
 #include <string>
 #include <cstdint>
 
@@ -55,6 +57,10 @@ private:
 
 	// Stores whether the window is in fullscreen
 	bool inFullscreen = false;
+
+public:
+	callback onClosed;
+	callback onDestroyed;
 
 public:
 	bool init(const win32WindowInitSettings& settings);

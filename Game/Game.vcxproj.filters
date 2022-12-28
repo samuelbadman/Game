@@ -24,12 +24,18 @@
     <ClCompile Include="source\display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\callback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\win32Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\display.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\callback.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
