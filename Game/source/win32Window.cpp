@@ -1,53 +1,63 @@
 #include "win32Window.h"
+#include "inputKeyCode.h"
+
+#include <memory>
+#include <assert.h>
 
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	// Get the window pointer instance
-	win32Window* const window = reinterpret_cast<win32Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
+	win32Window* const window =
+		reinterpret_cast<win32Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
 
 	// Dispatch correct event for the message
 	switch (msg)
 	{
-	case WM_MOUSEHWHEEL: return window->onWM_MouseWheel(window, hwnd, msg, wparam, lparam);
-	case WM_INPUT: return window->onWM_Input(window, hwnd, msg, wparam, lparam);
-	case WM_LBUTTONDOWN: return window->onWM_LButtonDown(window, hwnd, msg, wparam, lparam);
-	case WM_RBUTTONDOWN: return window->onWM_RButtonDown(window, hwnd, msg, wparam, lparam);
-	case WM_MBUTTONDOWN: return window->onWM_MButtonDown(window, hwnd, msg, wparam, lparam);
-	case WM_LBUTTONUP: return window->onWM_LButtonUp(window, hwnd, msg, wparam, lparam);
-	case WM_RBUTTONUP: return window->onWM_RButtonUp(window, hwnd, msg, wparam, lparam);
-	case WM_MBUTTONUP: return window->onWM_MButtonUp(window, hwnd, msg, wparam, lparam);
-	case WM_KEYDOWN: return window->onWM_KeyDown(window, hwnd, msg, wparam, lparam);
-	case WM_KEYUP: return window->onWM_KeyUp(window, hwnd, msg, wparam, lparam);
-	case WM_SIZE: return window->onWM_Size(window, hwnd, msg, wparam, lparam);
-	case WM_ENTERSIZEMOVE: return window->onWM_EnterSizeMove(window, hwnd, msg, wparam, lparam);
-	case WM_EXITSIZEMOVE: return window->onWM_ExitSizeMove(window, hwnd, msg, wparam, lparam);
-	case WM_ACTIVATEAPP: return window->onWM_ActivateApp(window, hwnd, msg, wparam, lparam);
-	case WM_CLOSE: return window->onWM_Close(window, hwnd, msg, wparam, lparam);
-	case WM_DESTROY: return window->onWM_Destroy(window, hwnd, msg, wparam, lparam);
-	default: return DefWindowProc(hwnd, msg, wparam, lparam);
+		case WM_MOUSEWHEEL: return window->onWM_MouseWheel(hwnd, msg, wparam, lparam);
+		case WM_INPUT: return window->onWM_Input(hwnd, msg, wparam, lparam);
+		case WM_LBUTTONDOWN: return window->onWM_LButtonDown(hwnd, msg, wparam, lparam);
+		case WM_RBUTTONDOWN: return window->onWM_RButtonDown(hwnd, msg, wparam, lparam);
+		case WM_MBUTTONDOWN: return window->onWM_MButtonDown(hwnd, msg, wparam, lparam);
+		case WM_LBUTTONUP: return window->onWM_LButtonUp(hwnd, msg, wparam, lparam);
+		case WM_RBUTTONUP: return window->onWM_RButtonUp(hwnd, msg, wparam, lparam);
+		case WM_MBUTTONUP: return window->onWM_MButtonUp(hwnd, msg, wparam, lparam);
+		case WM_KEYDOWN: return window->onWM_KeyDown(hwnd, msg, wparam, lparam);
+		case WM_KEYUP: return window->onWM_KeyUp(hwnd, msg, wparam, lparam);
+		case WM_SIZE: return window->onWM_Size(hwnd, msg, wparam, lparam);
+		case WM_ENTERSIZEMOVE: return window->onWM_EnterSizeMove(hwnd, msg, wparam, lparam);
+		case WM_EXITSIZEMOVE: return window->onWM_ExitSizeMove(hwnd, msg, wparam, lparam);
+		case WM_ACTIVATEAPP: return window->onWM_ActivateApp(hwnd, msg, wparam, lparam);
+		case WM_CLOSE: return window->onWM_Close(hwnd, msg, wparam, lparam);
+		case WM_DESTROY: return window->onWM_Destroy(hwnd, msg, wparam, lparam);
+		default: return DefWindowProc(hwnd, msg, wparam, lparam);
 	}
 }
 
-static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT uMsg, WPARAM wParam, LPARAM lParam)
+static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT msg, 
+	WPARAM wparam, LPARAM lparam)
 {
-	switch (uMsg)
+	switch (msg)
 	{
 		case WM_NCCREATE:
 		{
 			// Get the create parameters
-			const CREATESTRUCTW* const create{ reinterpret_cast<CREATESTRUCTW*>(lParam) };
+			const CREATESTRUCTW* const create = 
+				reinterpret_cast<CREATESTRUCTW*>(lparam);
 
 			// Get the window instance pointer from the create parameters
-			win32Window* const window = reinterpret_cast<win32Window*>(create->lpCreateParams);
+			win32Window* const window = reinterpret_cast<win32Window*>(
+				create->lpCreateParams);
 
 			// Set the window instance pointer
-			SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(window));
+			SetWindowLongPtr(hwnd, GWLP_USERDATA, 
+				reinterpret_cast<LONG_PTR>(window));
 
 			// Set the window procedure pointer
-			SetWindowLongPtr(hwnd, GWLP_WNDPROC, reinterpret_cast<LONG_PTR>(WindowProc));
+			SetWindowLongPtr(hwnd, GWLP_WNDPROC, 
+				reinterpret_cast<LONG_PTR>(WindowProc));
 
 			// Call the window procedure
-			return WindowProc(hwnd, uMsg, wParam, lParam);
+			return WindowProc(hwnd, msg, wparam, lparam);
 		}
 	}
 
@@ -87,8 +97,10 @@ bool win32Window::init(const win32WindowInitSettings& settings)
 	}
 
 	// Create the window and store a handle to it
-	hwnd = CreateWindowExW(0, windowClassNameCStr, settings.windowTitle.c_str(), styleToDword(settings.style),
-		settings.x, settings.y, settings.resX, settings.resY, reinterpret_cast<HWND>(settings.parent), nullptr, hInstance, this);
+	hwnd = CreateWindowExW(0, windowClassNameCStr, settings.windowTitle.c_str(),
+		styleToDword(settings.style),
+		settings.x, settings.y, settings.resX, settings.resY,
+		reinterpret_cast<HWND>(settings.parent), nullptr, hInstance, this);
 
 	if (hwnd == nullptr)
 	{
@@ -154,7 +166,9 @@ bool win32Window::enterFullScreen()
 	LONG fHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
 
 	// Update position and size of the window
-	if (SetWindowPos(hwnd, HWND_TOP, monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top, fWidth, fHeight, SWP_FRAMECHANGED | SWP_NOACTIVATE) == 0)
+	if (SetWindowPos(hwnd, HWND_TOP,
+		monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top, fWidth, fHeight,
+		SWP_FRAMECHANGED | SWP_NOACTIVATE) == 0)
 	{
 		return false;
 	}
@@ -172,10 +186,8 @@ bool win32Window::enterFullScreen()
 	inFullscreen = true;
 
 	// Send enter full screen system event 
-	//Events::SWindowEnterFullScreenEvent Event = {};
-	//Event.pWindow = this;
-
-	//Events::System::SendEventImmediate(std::move(Event));
+	enterFullScreenEvent event = {};
+	onEnterFullScreen.broadcast(event);
 
 	return true;
 }
@@ -190,8 +202,11 @@ bool win32Window::exitFullScreen()
 	}
 
 	// Update position and size of the window
-	if (SetWindowPos(hwnd, HWND_TOP, windowRectOnEnterFullScreen.left, windowRectOnEnterFullScreen.top, windowRectOnEnterFullScreen.right - windowRectOnEnterFullScreen.left,
-		windowRectOnEnterFullScreen.bottom - windowRectOnEnterFullScreen.top, SWP_FRAMECHANGED | SWP_NOACTIVATE) == 0)
+	if (SetWindowPos(hwnd, HWND_TOP, 
+		windowRectOnEnterFullScreen.left, windowRectOnEnterFullScreen.top, 
+		windowRectOnEnterFullScreen.right - windowRectOnEnterFullScreen.left,
+		windowRectOnEnterFullScreen.bottom - windowRectOnEnterFullScreen.top, 
+		SWP_FRAMECHANGED | SWP_NOACTIVATE) == 0)
 	{
 		return false;
 	}
@@ -209,10 +224,8 @@ bool win32Window::exitFullScreen()
 	inFullscreen = false;
 
 	// Send exit full screen system event 
-	//Events::SWindowExitFullScreenEvent Event = {};
-	//Event.pWindow = this;
-
-	//Events::System::SendEventImmediate(std::move(Event));
+	exitFullScreenEvent event = {};
+	onExitFullScreen.broadcast(event);
 
 	return true;
 }
@@ -226,7 +239,8 @@ bool win32Window::setStyle(windowStyle inStyle)
 {
 	style = inStyle;
 
-	// Do not update the window style now if the window is in fullscreen. This will be done when the window leaves fullscreen
+	// Do not update the window style now if the window is in fullscreen. 
+	// This will be done when the window leaves fullscreen
 	if (!inFullscreen)
 	{
 		if (SetWindowLong(hwnd, GWL_STYLE, styleToDword(inStyle)) == 0)
@@ -268,93 +282,295 @@ void win32Window::getPosition(int32_t& x, int32_t& y) const
 	y = windowRect.top;
 }
 
-LRESULT win32Window::onWM_MouseWheel(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_MouseWheel(HWND hwnd, UINT msg,
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	const auto delta = GET_WHEEL_DELTA_WPARAM(wparam);
+
+	if (delta > 0)
+	{
+		// Mouse wheel up
+		inputEvent event = {};
+		event.repeatedKey = false;
+		event.input = inputKeyCode::Mouse_Wheel_Up;
+		event.port = 0;
+		event.data = 1.f;
+		onInput.broadcast(event);
+	}
+	else if (delta < 0)
+	{
+		// Mouse wheel down
+		inputEvent event = {};
+		event.repeatedKey = false;
+		event.input = inputKeyCode::Mouse_Wheel_Down;
+		event.port = 0;
+		event.data = 1.f;
+		onInput.broadcast(event);
+	}
+
+	return 0;
 }
 
-LRESULT win32Window::onWM_Input(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_Input(HWND hwnd, UINT msg,
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	// Initialize raw data size
+	UINT dataSize =  0;
+
+	// Retrieve the size of the raw data
+	GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT, NULL,
+		&dataSize, sizeof(RAWINPUTHEADER));
+
+	// Return if there was no raw data
+	if (dataSize == 0)
+	{
+		return 0;
+	}
+
+	// Initialize raw data storage
+	std::unique_ptr<BYTE[]> rawData{ std::make_unique<BYTE[]>(dataSize) };
+
+	// Retreive raw data and store it. Return if the retreived data is the not same size
+	if (::GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT,
+		rawData.get(), &dataSize, sizeof(RAWINPUTHEADER)) != dataSize)
+	{
+		return 0;
+	}
+
+	// Cast byte to raw input
+	RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(rawData.get());
+
+	// Return if the raw input is not from the mouse
+	if (raw->header.dwType != RIM_TYPEMOUSE)
+	{
+		return 0;
+	}
+
+	// Raw mouse delta
+	inputEvent eventX = {};
+	eventX.repeatedKey = false;
+	eventX.input = inputKeyCode::Mouse_X;
+	eventX.port = 0;
+	eventX.data = static_cast<float>(raw->data.mouse.lLastX);
+	onInput.broadcast(eventX);
+
+	inputEvent eventY = {};
+	eventY.repeatedKey = false;
+	eventY.input = inputKeyCode::Mouse_Y;
+	eventY.port = 0;
+	eventY.data = static_cast<float>(raw->data.mouse.lLastY);
+	onInput.broadcast(eventY);
+
+	return 0;
 }
 
-LRESULT win32Window::onWM_LButtonDown(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_LButtonDown(HWND hwnd, UINT msg,
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	inputEvent event = {};
+	event.repeatedKey = false;
+	event.input = inputKeyCode::Left_Mouse_Button;
+	event.port = 0;
+	event.data = 1.f;
+	onInput.broadcast(event);
+	return 0;
 }
 
-LRESULT win32Window::onWM_RButtonDown(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_RButtonDown(HWND hwnd, UINT msg, 
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	inputEvent event = {};
+	event.repeatedKey = false;
+	event.input = inputKeyCode::Right_Mouse_Button;
+	event.port = 0;
+	event.data = 1.f;
+	onInput.broadcast(event);
+	return 0;
 }
 
-LRESULT win32Window::onWM_MButtonDown(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_MButtonDown(HWND hwnd, UINT msg,
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	inputEvent event = {};
+	event.repeatedKey = false;
+	event.input = inputKeyCode::Middle_Mouse_Button;
+	event.port = 0;
+	event.data = 1.f;
+	onInput.broadcast(event);
+	return 0;
 }
 
-LRESULT win32Window::onWM_LButtonUp(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_LButtonUp(HWND hwnd, UINT msg,
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	inputEvent event = {};
+	event.repeatedKey = false;
+	event.input = inputKeyCode::Left_Mouse_Button;
+	event.port = 0;
+	event.data = 0.f;
+	onInput.broadcast(event);
+	return 0;
 }
 
-LRESULT win32Window::onWM_RButtonUp(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_RButtonUp(HWND hwnd, UINT msg, 
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	inputEvent event = {};
+	event.repeatedKey = false;
+	event.input = inputKeyCode::Right_Mouse_Button;
+	event.port = 0;
+	event.data = 0.f;
+	onInput.broadcast(event);
+	return 0;
 }
 
-LRESULT win32Window::onWM_MButtonUp(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_MButtonUp(HWND hwnd, UINT msg,
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	inputEvent event = {};
+	event.repeatedKey = false;
+	event.input = inputKeyCode::Middle_Mouse_Button;
+	event.port = 0;
+	event.data = 0.f;
+	onInput.broadcast(event);
+	return 0;
 }
 
-LRESULT win32Window::onWM_KeyDown(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_KeyDown(HWND hwnd, UINT msg, 
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	inputEvent event = {};
+	event.repeatedKey = static_cast<bool>(lparam & 0x40000000);
+	event.input = static_cast<int16_t>(wparam);
+	event.port = 0;
+	event.data = 1.f;
+	onInput.broadcast(event);
+	return 0;
 }
 
-LRESULT win32Window::onWM_KeyUp(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_KeyUp(HWND hwnd, UINT msg,
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	inputEvent event = {};
+	event.repeatedKey = false;
+	event.input = static_cast<int16_t>(wparam);
+	event.port = 0;
+	event.data = 0.f;
+	onInput.broadcast(event);
+	return 0;
 }
 
-LRESULT win32Window::onWM_EnterSizeMove(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_EnterSizeMove(HWND hwnd, UINT msg, 
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	enterSizeMoveEvent event = {};
+	onEnterSizeMove.broadcast(event);
+	return 0;
 }
 
-LRESULT win32Window::onWM_ExitSizeMove(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_ExitSizeMove(HWND hwnd, UINT msg, 
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	exitSizeMoveEvent event = {};
+	onExitSizeMove.broadcast(event);
+	return 0;
 }
 
-LRESULT win32Window::onWM_ActivateApp(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_ActivateApp(HWND hwnd, UINT msg, 
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	if (wparam == TRUE)
+	{
+		// Received focus
+		gainedFocusEvent event = {};
+		onGainedFocus.broadcast(event);
+		return 0;
+	}
+	else if (wparam == FALSE)
+	{
+		// Lost focus
+		lostFocusEvent event = {};
+		onLostFocus.broadcast(event);
+		return 0;
+	}
+
+	return 0;
 }
 
-LRESULT win32Window::onWM_Size(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_Size(HWND hwnd, UINT msg,
+	WPARAM wparam, LPARAM lparam)
 {
-    return LRESULT();
+	switch (wparam)
+	{
+		case SIZE_MAXIMIZED:
+		{
+			// Window maximized
+			maximizedEvent maximize = {};
+			onMaximized.broadcast(maximize);
+
+			resizedEvent resize = {};
+			resize.newResX = LOWORD(lparam);
+			resize.newResY = HIWORD(lparam);
+			onResized.broadcast(resize);
+
+			return 0;
+		}
+
+		case SIZE_MINIMIZED:
+		{
+			// Window minimized
+			minimizedEvent minimize = {};
+			onMinimized.broadcast(minimize);
+
+			resizedEvent resize = {};
+			resize.newResX = LOWORD(lparam);
+			resize.newResY = HIWORD(lparam);
+			onResized.broadcast(resize);
+
+			return 0;
+		}
+
+		case SIZE_RESTORED:
+		{
+			// Window restored
+			restoredEvent restored = {};
+			onRestored.broadcast(restored);
+
+			//resizedEvent resize = {};
+			//resize.newResX = LOWORD(lparam);
+			//resize.newResY = HIWORD(lparam);
+			//onResized.broadcast(resize);
+
+			return 0;
+		}
+	}
+
+	return 0;
 }
 
-LRESULT win32Window::onWM_Close(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_Close(HWND hwnd, UINT msg,
+	WPARAM wparam, LPARAM lparam)
 {
-	onClosed.broadcast();
+	closedEvent event = {};
+	onClosed.broadcast(event);
 	DestroyWindow(hwnd);
 	return 0;
 }
 
-LRESULT win32Window::onWM_Destroy(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
+LRESULT win32Window::onWM_Destroy(HWND hwnd, UINT msg, 
+	WPARAM wparam, LPARAM lparam)
 {
-	onDestroyed.broadcast();
+	destroyedEvent event = {};
+	onDestroyed.broadcast(event);
 	PostQuitMessage(0);
 	return 0;
 }
 
-DWORD win32Window::styleToDword(const windowStyle style) const
+DWORD win32Window::styleToDword(const windowStyle inStyle) const
 {
-	switch (style)
+	assert(inStyle != windowStyle::unset);
+
+	switch (inStyle)
 	{
 		case windowStyle::windowed: return windowedStyleDword;
 		case windowStyle::borderless: return borderlessStyleDword;

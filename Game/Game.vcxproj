@@ -92,6 +92,20 @@
   <ItemGroup>
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\display.h" />
+    <ClInclude Include="source\Events\Core\closedEvent.h" />
+    <ClInclude Include="source\Events\Core\destroyedEvent.h" />
+    <ClInclude Include="source\Events\Core\enterFullScreenEvent.h" />
+    <ClInclude Include="source\Events\Core\enterSizeMoveEvent.h" />
+    <ClInclude Include="source\Events\Core\exitFullScreenEvent.h" />
+    <ClInclude Include="source\Events\Core\exitSizeMoveEvent.h" />
+    <ClInclude Include="source\Events\Core\gainedFocusEvent.h" />
+    <ClInclude Include="source\Events\Core\inputEvent.h" />
+    <ClInclude Include="source\Events\Core\lostFocusEvent.h" />
+    <ClInclude Include="source\Events\Core\maximizedEvent.h" />
+    <ClInclude Include="source\Events\Core\minimizedEvent.h" />
+    <ClInclude Include="source\Events\Core\resizedEvent.h" />
+    <ClInclude Include="source\Events\Core\restoredEvent.h" />
+    <ClInclude Include="source\inputKeyCode.h" />
     <ClInclude Include="source\win32Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

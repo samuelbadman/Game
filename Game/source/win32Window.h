@@ -1,6 +1,19 @@
 #pragma once
 
 #include "callback.h"
+#include "Events/Core/closedEvent.h"
+#include "Events/Core/destroyedEvent.h"
+#include "Events/Core/inputEvent.h"
+#include "Events/Core/enterSizeMoveEvent.h"
+#include "Events/Core/exitSizeMoveEvent.h"
+#include "Events/Core/gainedFocusEvent.h"
+#include "Events/Core/lostFocusEvent.h"
+#include "Events/Core/maximizedEvent.h"
+#include "Events/Core/minimizedEvent.h"
+#include "Events/Core/restoredEvent.h"
+#include "Events/Core/resizedEvent.h"
+#include "Events/Core/enterFullScreenEvent.h"
+#include "Events/Core/exitFullScreenEvent.h"
 
 #include <string>
 #include <cstdint>
@@ -14,7 +27,7 @@ enum class windowStyle : uint8_t
 	unset      = 0,
 	windowed   = 1,
 	borderless = 2,
-	noResize  = 3,
+	noResize   = 3,
 	noDragSize = 4
 };
 
@@ -36,12 +49,18 @@ class win32Window
 private:
 	// Fully featured windowed window
 	static constexpr DWORD windowedStyleDword = WS_OVERLAPPEDWINDOW;
+
 	// Borderless window
 	static constexpr DWORD borderlessStyleDword = WS_POPUPWINDOW;
+
 	// Non resizable windowed window
-	static constexpr DWORD noResizeStyleDword = WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX /*| WS_MAXIMIZEBOX*/;
-	// Removes the sizing box restricting drag resizing but retaining the maximize button
-	static constexpr DWORD NoDragSizeStyleDword = WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME;
+	static constexpr DWORD noResizeStyleDword = WS_OVERLAPPED | WS_CAPTION |
+		WS_SYSMENU | WS_MINIMIZEBOX /*| WS_MAXIMIZEBOX*/;
+
+	// Removes the sizing box restricting drag resizing but retaining the maximize
+	// button
+	static constexpr DWORD NoDragSizeStyleDword = WS_OVERLAPPEDWINDOW ^ 
+		WS_THICKFRAME;
 
 	// The window class name
 	std::wstring windowClassName = L"";
@@ -59,8 +78,19 @@ private:
 	bool inFullscreen = false;
 
 public:
-	callback<> onClosed;
-	callback<> onDestroyed;
+	callback<const closedEvent&> onClosed;
+	callback<const destroyedEvent&> onDestroyed;
+	callback<const inputEvent&> onInput;
+	callback<const enterSizeMoveEvent&> onEnterSizeMove;
+	callback<const exitSizeMoveEvent&> onExitSizeMove;
+	callback<const gainedFocusEvent&> onGainedFocus;
+	callback<const lostFocusEvent&> onLostFocus;
+	callback<const maximizedEvent&> onMaximized;
+	callback<const minimizedEvent&> onMinimized;
+	callback<const restoredEvent&> onRestored;
+	callback<const resizedEvent&> onResized;
+	callback<const enterFullScreenEvent&> onEnterFullScreen;
+	callback<const exitFullScreenEvent&> onExitFullScreen;
 
 public:
 	bool init(const win32WindowInitSettings& settings);
@@ -72,24 +102,41 @@ public:
 
 	void getRenderingResolution(int32_t& resX, int32_t& resY) const;
 	void getPosition(int32_t& x, int32_t& y) const;
+	bool isFullScreen() const { return inFullscreen; }
 
-	LRESULT onWM_MouseWheel(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_Input(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_LButtonDown(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_RButtonDown(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_MButtonDown(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_LButtonUp(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_RButtonUp(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_MButtonUp(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_KeyDown(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_KeyUp(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_EnterSizeMove(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_ExitSizeMove(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_ActivateApp(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_Size(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_Close(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_Destroy(win32Window* window, HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_MouseWheel(HWND hwnd, UINT msg, 
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_Input(HWND hwnd, UINT msg, 
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_LButtonDown(HWND hwnd, UINT msg, 
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_RButtonDown(HWND hwnd, UINT msg,
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_MButtonDown(HWND hwnd, UINT msg, 
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_LButtonUp(HWND hwnd, UINT msg,
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_RButtonUp(HWND hwnd, UINT msg,
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_MButtonUp(HWND hwnd, UINT msg, 
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_KeyDown(HWND hwnd, UINT msg,
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_KeyUp(HWND hwnd, UINT msg,
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_EnterSizeMove(HWND hwnd, UINT msg,
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_ExitSizeMove(HWND hwnd, UINT msg,
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_ActivateApp(HWND hwnd, UINT msg, 
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_Size(HWND hwnd, UINT msg, 
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_Close(HWND hwnd, UINT msg, 
+		WPARAM wparam, LPARAM lparam);
+	LRESULT onWM_Destroy(HWND hwnd, UINT msg,
+		WPARAM wparam, LPARAM lparam);
 
 private:
-	DWORD styleToDword(const windowStyle style) const;
+	DWORD styleToDword(const windowStyle inStyle) const;
 };
