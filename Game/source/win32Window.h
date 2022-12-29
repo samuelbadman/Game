@@ -35,7 +35,7 @@ enum class windowStyle : uint8_t
 struct win32WindowInitSettings
 {
 	std::wstring windowClassName = L"";
-	std::wstring windowTitle = L"new window";
+	std::wstring windowTitle = L"New window";
 	int32_t x = 0;
 	int32_t y = 0;
 	int32_t resX = 1280;

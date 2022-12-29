@@ -36,7 +36,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 	}
 
-	window->shutdown();
+	//window->shutdown();
 
 	return 0;
 }
