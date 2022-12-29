@@ -108,17 +108,17 @@ public:
 		WPARAM wparam, LPARAM lparam);
 	LRESULT onWM_Input(HWND hwnd, UINT msg, 
 		WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_LButtonDown(HWND hwnd, UINT msg, 
+	LRESULT onWM_LeftButtonDown(HWND hwnd, UINT msg, 
 		WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_RButtonDown(HWND hwnd, UINT msg,
+	LRESULT onWM_RightButtonDown(HWND hwnd, UINT msg,
 		WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_MButtonDown(HWND hwnd, UINT msg, 
+	LRESULT onWM_MiddleButtonDown(HWND hwnd, UINT msg, 
 		WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_LButtonUp(HWND hwnd, UINT msg,
+	LRESULT onWM_LeftButtonUp(HWND hwnd, UINT msg,
 		WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_RButtonUp(HWND hwnd, UINT msg,
+	LRESULT onWM_RightButtonUp(HWND hwnd, UINT msg,
 		WPARAM wparam, LPARAM lparam);
-	LRESULT onWM_MButtonUp(HWND hwnd, UINT msg, 
+	LRESULT onWM_MiddleButtonUp(HWND hwnd, UINT msg, 
 		WPARAM wparam, LPARAM lparam);
 	LRESULT onWM_KeyDown(HWND hwnd, UINT msg,
 		WPARAM wparam, LPARAM lparam);

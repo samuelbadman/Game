@@ -15,12 +15,12 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 	{
 		case WM_MOUSEWHEEL: return window->onWM_MouseWheel(hwnd, msg, wparam, lparam);
 		case WM_INPUT: return window->onWM_Input(hwnd, msg, wparam, lparam);
-		case WM_LBUTTONDOWN: return window->onWM_LButtonDown(hwnd, msg, wparam, lparam);
-		case WM_RBUTTONDOWN: return window->onWM_RButtonDown(hwnd, msg, wparam, lparam);
-		case WM_MBUTTONDOWN: return window->onWM_MButtonDown(hwnd, msg, wparam, lparam);
-		case WM_LBUTTONUP: return window->onWM_LButtonUp(hwnd, msg, wparam, lparam);
-		case WM_RBUTTONUP: return window->onWM_RButtonUp(hwnd, msg, wparam, lparam);
-		case WM_MBUTTONUP: return window->onWM_MButtonUp(hwnd, msg, wparam, lparam);
+		case WM_LBUTTONDOWN: return window->onWM_LeftButtonDown(hwnd, msg, wparam, lparam);
+		case WM_RBUTTONDOWN: return window->onWM_RightButtonDown(hwnd, msg, wparam, lparam);
+		case WM_MBUTTONDOWN: return window->onWM_MiddleButtonDown(hwnd, msg, wparam, lparam);
+		case WM_LBUTTONUP: return window->onWM_LeftButtonUp(hwnd, msg, wparam, lparam);
+		case WM_RBUTTONUP: return window->onWM_RightButtonUp(hwnd, msg, wparam, lparam);
+		case WM_MBUTTONUP: return window->onWM_MiddleButtonUp(hwnd, msg, wparam, lparam);
 		case WM_KEYDOWN: return window->onWM_KeyDown(hwnd, msg, wparam, lparam);
 		case WM_KEYUP: return window->onWM_KeyUp(hwnd, msg, wparam, lparam);
 		case WM_SIZE: return window->onWM_Size(hwnd, msg, wparam, lparam);
@@ -364,7 +364,7 @@ LRESULT win32Window::onWM_Input(HWND hwnd, UINT msg,
 	return 0;
 }
 
-LRESULT win32Window::onWM_LButtonDown(HWND hwnd, UINT msg,
+LRESULT win32Window::onWM_LeftButtonDown(HWND hwnd, UINT msg,
 	WPARAM wparam, LPARAM lparam)
 {
 	inputEvent event = {};
@@ -376,7 +376,7 @@ LRESULT win32Window::onWM_LButtonDown(HWND hwnd, UINT msg,
 	return 0;
 }
 
-LRESULT win32Window::onWM_RButtonDown(HWND hwnd, UINT msg, 
+LRESULT win32Window::onWM_RightButtonDown(HWND hwnd, UINT msg, 
 	WPARAM wparam, LPARAM lparam)
 {
 	inputEvent event = {};
@@ -388,7 +388,7 @@ LRESULT win32Window::onWM_RButtonDown(HWND hwnd, UINT msg,
 	return 0;
 }
 
-LRESULT win32Window::onWM_MButtonDown(HWND hwnd, UINT msg,
+LRESULT win32Window::onWM_MiddleButtonDown(HWND hwnd, UINT msg,
 	WPARAM wparam, LPARAM lparam)
 {
 	inputEvent event = {};
@@ -400,7 +400,7 @@ LRESULT win32Window::onWM_MButtonDown(HWND hwnd, UINT msg,
 	return 0;
 }
 
-LRESULT win32Window::onWM_LButtonUp(HWND hwnd, UINT msg,
+LRESULT win32Window::onWM_LeftButtonUp(HWND hwnd, UINT msg,
 	WPARAM wparam, LPARAM lparam)
 {
 	inputEvent event = {};
@@ -412,7 +412,7 @@ LRESULT win32Window::onWM_LButtonUp(HWND hwnd, UINT msg,
 	return 0;
 }
 
-LRESULT win32Window::onWM_RButtonUp(HWND hwnd, UINT msg, 
+LRESULT win32Window::onWM_RightButtonUp(HWND hwnd, UINT msg, 
 	WPARAM wparam, LPARAM lparam)
 {
 	inputEvent event = {};
@@ -424,7 +424,7 @@ LRESULT win32Window::onWM_RButtonUp(HWND hwnd, UINT msg,
 	return 0;
 }
 
-LRESULT win32Window::onWM_MButtonUp(HWND hwnd, UINT msg,
+LRESULT win32Window::onWM_MiddleButtonUp(HWND hwnd, UINT msg,
 	WPARAM wparam, LPARAM lparam)
 {
 	inputEvent event = {};
