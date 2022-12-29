@@ -11,7 +11,6 @@
 struct gameSettings
 {
 	// Window settings
-	static constexpr std::wstring windowTitle = L"Game";
 	static constexpr windowStyle windowStyle = windowStyle::windowed;
 
 	// Rendering settings
@@ -36,7 +35,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	win32WindowInitSettings settings = {};
 	settings.windowClassName = L"gameWindow";
-	settings.windowTitle = gameSettings::windowTitle;
+	settings.windowTitle = L"Game";
 	settings.style = gameSettings::windowStyle;
 
 	const bool windowInitResult = window->init(settings);
