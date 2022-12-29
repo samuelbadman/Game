@@ -1,5 +1,5 @@
 #include "win32Window.h"
-#include "inputKeyCode.h"
+#include "win32InputKeyCode.h"
 
 #include <memory>
 #include <assert.h>
@@ -292,7 +292,7 @@ LRESULT win32Window::onWM_MouseWheel(HWND hwnd, UINT msg,
 		// Mouse wheel up
 		inputEvent event = {};
 		event.repeatedKey = false;
-		event.input = inputKeyCode::Mouse_Wheel_Up;
+		event.input = win32InputKeyCode::Mouse_Wheel_Up;
 		event.port = 0;
 		event.data = 1.f;
 		onInput.broadcast(event);
@@ -302,7 +302,7 @@ LRESULT win32Window::onWM_MouseWheel(HWND hwnd, UINT msg,
 		// Mouse wheel down
 		inputEvent event = {};
 		event.repeatedKey = false;
-		event.input = inputKeyCode::Mouse_Wheel_Down;
+		event.input = win32InputKeyCode::Mouse_Wheel_Down;
 		event.port = 0;
 		event.data = 1.f;
 		onInput.broadcast(event);
@@ -349,14 +349,14 @@ LRESULT win32Window::onWM_Input(HWND hwnd, UINT msg,
 	// Raw mouse delta
 	inputEvent eventX = {};
 	eventX.repeatedKey = false;
-	eventX.input = inputKeyCode::Mouse_X;
+	eventX.input = win32InputKeyCode::Mouse_X;
 	eventX.port = 0;
 	eventX.data = static_cast<float>(raw->data.mouse.lLastX);
 	onInput.broadcast(eventX);
 
 	inputEvent eventY = {};
 	eventY.repeatedKey = false;
-	eventY.input = inputKeyCode::Mouse_Y;
+	eventY.input = win32InputKeyCode::Mouse_Y;
 	eventY.port = 0;
 	eventY.data = static_cast<float>(raw->data.mouse.lLastY);
 	onInput.broadcast(eventY);
@@ -369,7 +369,7 @@ LRESULT win32Window::onWM_LeftButtonDown(HWND hwnd, UINT msg,
 {
 	inputEvent event = {};
 	event.repeatedKey = false;
-	event.input = inputKeyCode::Left_Mouse_Button;
+	event.input = win32InputKeyCode::Left_Mouse_Button;
 	event.port = 0;
 	event.data = 1.f;
 	onInput.broadcast(event);
@@ -381,7 +381,7 @@ LRESULT win32Window::onWM_RightButtonDown(HWND hwnd, UINT msg,
 {
 	inputEvent event = {};
 	event.repeatedKey = false;
-	event.input = inputKeyCode::Right_Mouse_Button;
+	event.input = win32InputKeyCode::Right_Mouse_Button;
 	event.port = 0;
 	event.data = 1.f;
 	onInput.broadcast(event);
@@ -393,7 +393,7 @@ LRESULT win32Window::onWM_MiddleButtonDown(HWND hwnd, UINT msg,
 {
 	inputEvent event = {};
 	event.repeatedKey = false;
-	event.input = inputKeyCode::Middle_Mouse_Button;
+	event.input = win32InputKeyCode::Middle_Mouse_Button;
 	event.port = 0;
 	event.data = 1.f;
 	onInput.broadcast(event);
@@ -405,7 +405,7 @@ LRESULT win32Window::onWM_LeftButtonUp(HWND hwnd, UINT msg,
 {
 	inputEvent event = {};
 	event.repeatedKey = false;
-	event.input = inputKeyCode::Left_Mouse_Button;
+	event.input = win32InputKeyCode::Left_Mouse_Button;
 	event.port = 0;
 	event.data = 0.f;
 	onInput.broadcast(event);
@@ -417,7 +417,7 @@ LRESULT win32Window::onWM_RightButtonUp(HWND hwnd, UINT msg,
 {
 	inputEvent event = {};
 	event.repeatedKey = false;
-	event.input = inputKeyCode::Right_Mouse_Button;
+	event.input = win32InputKeyCode::Right_Mouse_Button;
 	event.port = 0;
 	event.data = 0.f;
 	onInput.broadcast(event);
@@ -429,7 +429,7 @@ LRESULT win32Window::onWM_MiddleButtonUp(HWND hwnd, UINT msg,
 {
 	inputEvent event = {};
 	event.repeatedKey = false;
-	event.input = inputKeyCode::Middle_Mouse_Button;
+	event.input = win32InputKeyCode::Middle_Mouse_Button;
 	event.port = 0;
 	event.data = 0.f;
 	onInput.broadcast(event);

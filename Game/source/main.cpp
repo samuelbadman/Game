@@ -1,10 +1,10 @@
 #include "win32Window.h"
-#include "display.h"
-#include "inputKeyCode.h"
+#include "win32Gamepads.h"
 
 #include <memory>
 #include <chrono>
 
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -31,6 +31,7 @@ static bool running = true;
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
 {
+	// Create and initialize window
 	std::unique_ptr<win32Window> window = std::make_unique<win32Window>();
 
 	win32WindowInitSettings settings = {};
@@ -44,8 +45,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		MessageBoxA(0, "Failed to init window,", "Error", MB_OK | MB_ICONERROR);
 	}
 
+	// Register core event callbacks
 	window->onClosed.add([](const closedEvent& event) { running = false; });
+	window->onInput.add([](const inputEvent& event) {
 
+		});
+	win32Gamepads::onInput.add([](const inputEvent& event) {
+
+		});
+
+	// Initialize game loop
 	double fixedTimeSliceMs = gameSettings::fixedTimeSlice * 1000.0;
 	double accumulator = 0.0;
 	std::chrono::time_point previousTime = std::chrono::high_resolution_clock::now();
@@ -67,6 +76,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			TranslateMessage(&msg);
 			DispatchMessage(&msg);
 		}
+
+		win32Gamepads::refresh();
 
 		// Fixed Tick
 		while (accumulator > fixedTimeSliceMs)

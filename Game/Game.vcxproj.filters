@@ -21,10 +21,13 @@
     <ClCompile Include="source\win32Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\display.cpp">
+    <ClCompile Include="source\win32Display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\callback.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\win32Gamepads.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -32,7 +35,7 @@
     <ClInclude Include="source\win32Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\display.h">
+    <ClInclude Include="source\win32Display.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\callback.h">
@@ -41,7 +44,7 @@
     <ClInclude Include="source\Events\Core\inputEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\inputKeyCode.h">
+    <ClInclude Include="source\win32InputKeyCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Events\Core\enterSizeMoveEvent.h">
@@ -78,6 +81,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Events\Core\exitFullScreenEvent.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\win32Gamepads.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

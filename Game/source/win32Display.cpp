@@ -1,6 +1,6 @@
-#include "display.h"
+#include "win32Display.h"
 
-displayInfo display::infoForDisplayAtIndex(const int32_t displayIndex)
+displayInfo win32Display::infoForDisplayAtIndex(const int32_t displayIndex)
 {
 	// Initialize property structure
 	displayInfo info = {};

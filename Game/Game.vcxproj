@@ -85,13 +85,14 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\callback.cpp" />
-    <ClCompile Include="source\display.cpp" />
+    <ClCompile Include="source\win32Display.cpp" />
+    <ClCompile Include="source\win32Gamepads.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\win32Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\callback.h" />
-    <ClInclude Include="source\display.h" />
+    <ClInclude Include="source\win32Display.h" />
     <ClInclude Include="source\Events\Core\closedEvent.h" />
     <ClInclude Include="source\Events\Core\destroyedEvent.h" />
     <ClInclude Include="source\Events\Core\enterFullScreenEvent.h" />
@@ -105,7 +106,8 @@
     <ClInclude Include="source\Events\Core\minimizedEvent.h" />
     <ClInclude Include="source\Events\Core\resizedEvent.h" />
     <ClInclude Include="source\Events\Core\restoredEvent.h" />
-    <ClInclude Include="source\inputKeyCode.h" />
+    <ClInclude Include="source\win32Gamepads.h" />
+    <ClInclude Include="source\win32InputKeyCode.h" />
     <ClInclude Include="source\win32Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -2,10 +2,12 @@
 
 #include <cstdint>
 
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
+#include <Xinput.h>
 
-class inputKeyCode
+class win32InputKeyCode
 {
 public:
 	static constexpr int16_t Backspace{ VK_BACK };
@@ -99,20 +101,34 @@ public:
 	static constexpr int16_t Mouse_X{ 401 };
 	static constexpr int16_t Mouse_Y{ 402 };
 
-	//static constexpr int16_t Gamepad_Face_Button_Bottom{ static_cast<int16_t>(XINPUT_GAMEPAD_A) };
-	//static constexpr int16_t Gamepad_Face_Button_Right{ static_cast<int16_t>(XINPUT_GAMEPAD_B) };
-	//static constexpr int16_t Gamepad_Face_Button_Left{ static_cast<int16_t>(XINPUT_GAMEPAD_X) };
-	//static constexpr int16_t Gamepad_Face_Button_Top{ static_cast<int16_t>(XINPUT_GAMEPAD_Y) };
-	//static constexpr int16_t Gamepad_D_Pad_Up{ static_cast<int16_t>(XINPUT_GAMEPAD_DPAD_UP) };
-	//static constexpr int16_t Gamepad_D_Pad_Down{ static_cast<int16_t>(XINPUT_GAMEPAD_DPAD_DOWN) };
-	//static constexpr int16_t Gamepad_D_Pad_Left{ static_cast<int16_t>(XINPUT_GAMEPAD_DPAD_LEFT) };
-	//static constexpr int16_t Gamepad_D_Pad_Right{ static_cast<int16_t>(XINPUT_GAMEPAD_DPAD_RIGHT) };
-	//static constexpr int16_t Gamepad_Left_Thumbstick_Button{ static_cast<int16_t>(XINPUT_GAMEPAD_LEFT_THUMB) };
-	//static constexpr int16_t Gamepad_Right_Thumbstick_Button{ static_cast<int16_t>(XINPUT_GAMEPAD_RIGHT_THUMB) };
-	//static constexpr int16_t Gamepad_Special_Left{ static_cast<int16_t>(XINPUT_GAMEPAD_BACK) };
-	//static constexpr int16_t Gamepad_Special_Right{ static_cast<int16_t>(XINPUT_GAMEPAD_START) };
-	//static constexpr int16_t Gamepad_Left_Shoulder{ static_cast<int16_t>(XINPUT_GAMEPAD_LEFT_SHOULDER) };
-	//static constexpr int16_t Gamepad_Right_Shoulder{ static_cast<int16_t>(XINPUT_GAMEPAD_RIGHT_SHOULDER) };
+	static constexpr int16_t Gamepad_Face_Button_Bottom{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_A) };
+	static constexpr int16_t Gamepad_Face_Button_Right{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_B) };
+	static constexpr int16_t Gamepad_Face_Button_Left{
+		static_cast<int16_t>(XINPUT_GAMEPAD_X) };
+	static constexpr int16_t Gamepad_Face_Button_Top{
+		static_cast<int16_t>(XINPUT_GAMEPAD_Y) };
+	static constexpr int16_t Gamepad_D_Pad_Up{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_DPAD_UP) };
+	static constexpr int16_t Gamepad_D_Pad_Down{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_DPAD_DOWN) };
+	static constexpr int16_t Gamepad_D_Pad_Left{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_DPAD_LEFT) };
+	static constexpr int16_t Gamepad_D_Pad_Right{
+		static_cast<int16_t>(XINPUT_GAMEPAD_DPAD_RIGHT) };
+	static constexpr int16_t Gamepad_Left_Thumbstick_Button{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_LEFT_THUMB) };
+	static constexpr int16_t Gamepad_Right_Thumbstick_Button{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_RIGHT_THUMB) };
+	static constexpr int16_t Gamepad_Special_Left{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_BACK) };
+	static constexpr int16_t Gamepad_Special_Right{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_START) };
+	static constexpr int16_t Gamepad_Left_Shoulder{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_LEFT_SHOULDER) };
+	static constexpr int16_t Gamepad_Right_Shoulder{ 
+		static_cast<int16_t>(XINPUT_GAMEPAD_RIGHT_SHOULDER) };
 
 	static constexpr int16_t Gamepad_Left_Thumbstick_X_Axis{ 404 };
 	static constexpr int16_t Gamepad_Left_Thumbstick_Y_Axis{ 405 };

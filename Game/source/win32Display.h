@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <string>
 
+#define NOMINMAX
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
@@ -17,7 +18,7 @@ struct displayInfo
 	int32_t verticalRefreshRateHertz;
 };
 
-class display
+class win32Display
 {
 public:
 	// Retrieves the number of displays connected to the device
