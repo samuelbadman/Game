@@ -77,9 +77,6 @@
     <ClInclude Include="source\events\core\minimizedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\events\core\restoredEvent.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\events\core\closedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>

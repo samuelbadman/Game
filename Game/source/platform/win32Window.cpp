@@ -230,7 +230,7 @@ bool win32Window::exitFullScreen()
 	return true;
 }
 
-bool win32Window::setPosition(int32_t x, int32_t y)
+bool win32Window::setPosition(uint32_t x, uint32_t y)
 {
 	return SetWindowPos(hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 }
@@ -252,7 +252,7 @@ bool win32Window::setStyle(windowStyle inStyle)
 	return ShowWindow(hwnd, SW_SHOW);
 }
 
-void win32Window::getRenderingResolution(int32_t& x, int32_t& y) const
+void win32Window::getRenderingResolution(uint32_t& x, uint32_t& y) const
 {
 	RECT clientRect = {};
 
@@ -267,7 +267,7 @@ void win32Window::getRenderingResolution(int32_t& x, int32_t& y) const
 	y = clientRect.bottom - clientRect.top;
 }
 
-void win32Window::getPosition(int32_t& x, int32_t& y) const
+void win32Window::getPosition(uint32_t& x, uint32_t& y) const
 {
 	RECT windowRect = {};
 
@@ -509,8 +509,8 @@ LRESULT win32Window::onWM_Size(HWND hwnd, UINT msg,
 			onMaximized.broadcast(maximize);
 
 			resizedEvent resize = {};
-			resize.newResX = LOWORD(lparam);
-			resize.newResY = HIWORD(lparam);
+			resize.newRenderingResolutionX = LOWORD(lparam);
+			resize.newRenderingResolutionY = HIWORD(lparam);
 			onResized.broadcast(resize);
 
 			return 0;
@@ -522,10 +522,10 @@ LRESULT win32Window::onWM_Size(HWND hwnd, UINT msg,
 			minimizedEvent minimize = {};
 			onMinimized.broadcast(minimize);
 
-			resizedEvent resize = {};
-			resize.newResX = LOWORD(lparam);
-			resize.newResY = HIWORD(lparam);
-			onResized.broadcast(resize);
+			//resizedEvent resize = {};
+			//resize.newRenderingResolutionX = LOWORD(lparam);
+			//resize.newRenderingResolutionY = HIWORD(lparam);
+			//onResized.broadcast(resize);
 
 			return 0;
 		}
@@ -533,13 +533,10 @@ LRESULT win32Window::onWM_Size(HWND hwnd, UINT msg,
 		case SIZE_RESTORED:
 		{
 			// Window restored
-			restoredEvent restored = {};
-			onRestored.broadcast(restored);
-
-			//resizedEvent resize = {};
-			//resize.newResX = LOWORD(lparam);
-			//resize.newResY = HIWORD(lparam);
-			//onResized.broadcast(resize);
+			resizedEvent resize = {};
+			resize.newRenderingResolutionX = LOWORD(lparam);
+			resize.newRenderingResolutionY = HIWORD(lparam);
+			onResized.broadcast(resize);
 
 			return 0;
 		}

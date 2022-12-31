@@ -113,7 +113,6 @@
     <ClInclude Include="source\events\core\maximizedEvent.h" />
     <ClInclude Include="source\events\core\minimizedEvent.h" />
     <ClInclude Include="source\events\core\resizedEvent.h" />
-    <ClInclude Include="source\events\core\restoredEvent.h" />
     <ClInclude Include="source\platform\win32Gamepads.h" />
     <ClInclude Include="source\platform\win32InputKeyCode.h" />
     <ClInclude Include="source\platform\win32Window.h" />

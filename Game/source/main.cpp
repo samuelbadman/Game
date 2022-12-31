@@ -17,6 +17,7 @@ struct gameSettings
 	static constexpr const wchar_t* windowTitle = L"Game";
 	static constexpr int32_t windowPosition[2] = { 0, 0 };
 	static constexpr int32_t windowDimensions[2] = { 1280, 720 };
+	static constexpr bool startFullScreen = false;
 
 	// Rendering settings
 	//ERenderingAPI RenderingAPI = ERenderingAPI::DirectX12;
@@ -32,6 +33,7 @@ struct gameSettings
 };
 
 static bool running = true;
+static std::unique_ptr<win32Window> window = nullptr;
 static std::unique_ptr<game> gameInstance = nullptr;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
@@ -46,7 +48,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	// Create and initialize window
-	std::unique_ptr<win32Window> window = std::make_unique<win32Window>();
+	window = std::make_unique<win32Window>();
 
 	win32WindowInitSettings settings = {};
 	settings.windowClassName = L"gameWindow";
@@ -65,8 +67,28 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return -1;
 	}
 
+	if (gameSettings::startFullScreen)
+	{
+		const bool enterFullScreenResult = window->enterFullScreen();
+		if (!enterFullScreenResult)
+		{
+			MessageBoxA(0, "Window failed to enter full screen.", "Error", MB_OK | MB_ICONERROR);
+			return -1;
+		}
+	}
+
 	// Register core event callbacks
 	window->onClosed.add([](const closedEvent& event) { running = false; });
+	//window->onDestroyed.add([](const destroyedEvent& event) {  });
+	//window->onEnterSizeMove.add([](const enterSizeMoveEvent& event) {  });
+	//window->onExitSizeMove.add([](const exitSizeMoveEvent& event) {  });
+	//window->onGainedFocus.add([](const gainedFocusEvent& event) {  });
+	//window->onLostFocus.add([](const lostFocusEvent& event) {  });
+	//window->onMaximized.add([](const maximizedEvent& event) {  });
+	//window->onMinimized.add([](const minimizedEvent& event) {  });
+	//window->onResized.add([](const resizedEvent& event) {  });
+	//window->onEnterFullScreen.add([](const enterFullScreenEvent& event) {  });
+	//window->onExitFullScreen.add([](const exitFullScreenEvent& event) {  });
 	window->onInput.add([](const inputEvent& event) {
 		gameInstance->onMouseKeyboardInput(event);
 		});
@@ -120,6 +142,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// Destroy the game instance
 	gameInstance.reset();
+
+	// Destroy the window
+	window.reset();
 
 	//win32Console::shutdown();
 	//window->shutdown();

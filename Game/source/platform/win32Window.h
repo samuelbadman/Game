@@ -10,7 +10,6 @@
 #include "events/core/lostFocusEvent.h"
 #include "events/core/maximizedEvent.h"
 #include "events/core/minimizedEvent.h"
-#include "events/core/restoredEvent.h"
 #include "events/core/resizedEvent.h"
 #include "events/core/enterFullScreenEvent.h"
 #include "events/core/exitFullScreenEvent.h"
@@ -88,7 +87,6 @@ public:
 	callback<const lostFocusEvent&> onLostFocus;
 	callback<const maximizedEvent&> onMaximized;
 	callback<const minimizedEvent&> onMinimized;
-	callback<const restoredEvent&> onRestored;
 	callback<const resizedEvent&> onResized;
 	callback<const enterFullScreenEvent&> onEnterFullScreen;
 	callback<const exitFullScreenEvent&> onExitFullScreen;
@@ -98,11 +96,11 @@ public:
 	bool shutdown();
 	bool enterFullScreen();
 	bool exitFullScreen();
-	bool setPosition(int32_t x, int32_t y);
+	bool setPosition(uint32_t x, uint32_t y);
 	bool setStyle(windowStyle inStyle);
 
-	void getRenderingResolution(int32_t& x, int32_t& y) const;
-	void getPosition(int32_t& x, int32_t& y) const;
+	void getRenderingResolution(uint32_t& x, uint32_t& y) const;
+	void getPosition(uint32_t& x, uint32_t& y) const;
 	bool isFullScreen() const { return inFullscreen; }
 
 	LRESULT onWM_MouseWheel(HWND hwnd, UINT msg, 
