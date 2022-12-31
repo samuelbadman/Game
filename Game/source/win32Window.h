@@ -39,8 +39,8 @@ struct win32WindowInitSettings
 	std::wstring windowTitle = L"New window";
 	int32_t x = 0;
 	int32_t y = 0;
-	int32_t resX = 1280;
-	int32_t resY = 720;
+	int32_t width = 1280;
+	int32_t height = 720;
 	void* parent = nullptr;
 	windowStyle style = windowStyle::windowed;
 };

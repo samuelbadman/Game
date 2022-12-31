@@ -99,7 +99,7 @@ bool win32Window::init(const win32WindowInitSettings& settings)
 	// Create the window and store a handle to it
 	hwnd = CreateWindowExW(0, windowClassNameCStr, settings.windowTitle.c_str(),
 		styleToDword(settings.style),
-		settings.x, settings.y, settings.resX, settings.resY,
+		settings.x, settings.y, settings.width, settings.height,
 		reinterpret_cast<HWND>(settings.parent), nullptr, hInstance, this);
 
 	if (hwnd == nullptr)

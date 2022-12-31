@@ -14,6 +14,9 @@ struct gameSettings
 {
 	// Window settings
 	static constexpr windowStyle windowStyle = windowStyle::windowed;
+	static constexpr const wchar_t* windowTitle = L"Game";
+	static constexpr int32_t windowPosition[2] = { 0, 0 };
+	static constexpr int32_t windowDimensions[2] = { 1280, 720 };
 
 	// Rendering settings
 	//ERenderingAPI RenderingAPI = ERenderingAPI::DirectX12;
@@ -27,6 +30,26 @@ struct gameSettings
 	// The step size used to step the simulation on each time slice update
 	static constexpr float fixedStep = 0.1f;
 };
+
+void beginPlay()
+{
+
+}
+
+void tick(float deltaTime)
+{
+
+}
+
+void fixedTick(float step)
+{
+
+}
+
+void render()
+{
+
+}
 
 static bool running = true;
 
@@ -46,8 +69,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	win32WindowInitSettings settings = {};
 	settings.windowClassName = L"gameWindow";
-	settings.windowTitle = L"Game";
+	settings.parent = nullptr;
 	settings.style = gameSettings::windowStyle;
+	settings.windowTitle = gameSettings::windowTitle;
+	settings.x = gameSettings::windowPosition[0];
+	settings.y = gameSettings::windowPosition[1];
+	settings.width = gameSettings::windowDimensions[0];
+	settings.height = gameSettings::windowDimensions[1];
 
 	const bool windowInitResult = window->init(settings);
 	if (!windowInitResult)
@@ -66,6 +94,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		});
 
 	// Initialize game loop
+	beginPlay();
+
 	double fixedTimeSliceMs = gameSettings::fixedTimeSlice * 1000.0;
 	double accumulator = 0.0;
 	std::chrono::time_point previousTime = std::chrono::high_resolution_clock::now();
@@ -93,15 +123,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// Fixed Tick
 		while (accumulator > fixedTimeSliceMs)
 		{
-			//fixedTick(gameSettings::fixedStep);
+			fixedTick(gameSettings::fixedStep);
 			accumulator -= fixedTimeSliceMs;
 		}
 
 		// Tick
-		//tick(static_cast<float>(deltaTime));
+		tick(static_cast<float>(deltaTime));
 
 		// Render
-		//render();
+		render();
 	}
 
 	//win32Console::shutdown();
