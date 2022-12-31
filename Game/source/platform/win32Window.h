@@ -1,19 +1,19 @@
 #pragma once
 
 #include "callback.h"
-#include "Events/Core/closedEvent.h"
-#include "Events/Core/destroyedEvent.h"
-#include "Events/Core/inputEvent.h"
-#include "Events/Core/enterSizeMoveEvent.h"
-#include "Events/Core/exitSizeMoveEvent.h"
-#include "Events/Core/gainedFocusEvent.h"
-#include "Events/Core/lostFocusEvent.h"
-#include "Events/Core/maximizedEvent.h"
-#include "Events/Core/minimizedEvent.h"
-#include "Events/Core/restoredEvent.h"
-#include "Events/Core/resizedEvent.h"
-#include "Events/Core/enterFullScreenEvent.h"
-#include "Events/Core/exitFullScreenEvent.h"
+#include "events/core/closedEvent.h"
+#include "events/core/destroyedEvent.h"
+#include "events/core/inputEvent.h"
+#include "events/core/enterSizeMoveEvent.h"
+#include "events/core/exitSizeMoveEvent.h"
+#include "events/core/gainedFocusEvent.h"
+#include "events/core/lostFocusEvent.h"
+#include "events/core/maximizedEvent.h"
+#include "events/core/minimizedEvent.h"
+#include "events/core/restoredEvent.h"
+#include "events/core/resizedEvent.h"
+#include "events/core/enterFullScreenEvent.h"
+#include "events/core/exitFullScreenEvent.h"
 
 #include <string>
 #include <cstdint>
