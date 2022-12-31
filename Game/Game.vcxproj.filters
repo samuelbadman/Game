@@ -30,6 +30,12 @@
     <ClCompile Include="source\win32Gamepads.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\win32Console.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\stringHelper.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\win32Window.h">
@@ -84,6 +90,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\win32Gamepads.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\win32Console.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\stringHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

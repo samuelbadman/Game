@@ -1,5 +1,7 @@
 #include "win32Window.h"
 #include "win32Gamepads.h"
+#include "win32Console.h"
+#include "stringHelper.h"
 
 #include <memory>
 #include <chrono>
@@ -31,6 +33,14 @@ static bool running = true;
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
 {
+	// Initialize console
+	const bool consoleInitResult = win32Console::init(2048);
+	if (!consoleInitResult)
+	{
+		MessageBoxA(0, "Failed to init console.", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
+
 	// Create and initialize window
 	std::unique_ptr<win32Window> window = std::make_unique<win32Window>();
 
@@ -42,7 +52,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	const bool windowInitResult = window->init(settings);
 	if (!windowInitResult)
 	{
-		MessageBoxA(0, "Failed to init window,", "Error", MB_OK | MB_ICONERROR);
+		MessageBoxA(0, "Failed to init window.", "Error", MB_OK | MB_ICONERROR);
+		return -1;
 	}
 
 	// Register core event callbacks
@@ -93,6 +104,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		//render();
 	}
 
+	//win32Console::shutdown();
 	//window->shutdown();
 
 	return 0;
