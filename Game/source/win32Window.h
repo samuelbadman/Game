@@ -101,7 +101,7 @@ public:
 	bool setPosition(int32_t x, int32_t y);
 	bool setStyle(windowStyle inStyle);
 
-	void getRenderingResolution(int32_t& resX, int32_t& resY) const;
+	void getRenderingResolution(int32_t& x, int32_t& y) const;
 	void getPosition(int32_t& x, int32_t& y) const;
 	bool isFullScreen() const { return inFullscreen; }
 

@@ -252,19 +252,19 @@ bool win32Window::setStyle(windowStyle inStyle)
 	return ShowWindow(hwnd, SW_SHOW);
 }
 
-void win32Window::getRenderingResolution(int32_t& resX, int32_t& resY) const
+void win32Window::getRenderingResolution(int32_t& x, int32_t& y) const
 {
 	RECT clientRect = {};
 
 	if (!GetClientRect(hwnd, &clientRect))
 	{
-		resX = 0;
-		resY = 0;
+		x = 0;
+		y = 0;
 		return;
 	}
 
-	resX = clientRect.right - clientRect.left;
-	resY = clientRect.bottom - clientRect.top;
+	x = clientRect.right - clientRect.left;
+	y = clientRect.bottom - clientRect.top;
 }
 
 void win32Window::getPosition(int32_t& x, int32_t& y) const
