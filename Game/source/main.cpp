@@ -1,7 +1,6 @@
 #include "platform/win32Window.h"
 #include "platform/win32Gamepads.h"
 #include "platform/win32Console.h"
-#include "stringHelper.h"
 #include "game.h"
 
 #include <memory>
@@ -39,7 +38,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	PWSTR pCmdLine, int nCmdShow)
 {
 	// Initialize console
-	const bool consoleInitResult = win32Console::init(2048);
+	const bool consoleInitResult = win32Console::init();
 	if (!consoleInitResult)
 	{
 		MessageBoxA(0, "Failed to init console.", "Error", MB_OK | MB_ICONERROR);

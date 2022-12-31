@@ -6,7 +6,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
-bool win32Console::init(uint32_t lines)
+bool win32Console::init()
 {
 	CONSOLE_SCREEN_BUFFER_INFO console_info;
 	FILE* fp;
@@ -18,7 +18,7 @@ bool win32Console::init(uint32_t lines)
 	}
 	// set the screen buffer to be big enough to let us scroll text
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
-	console_info.dwSize.Y = lines;
+	console_info.dwSize.Y = 0;
 	SetConsoleScreenBufferSize(GetStdHandle(STD_OUTPUT_HANDLE), console_info.dwSize);
 	// redirect unbuffered STDOUT to the console
 	if (GetStdHandle(STD_OUTPUT_HANDLE) != INVALID_HANDLE_VALUE)
