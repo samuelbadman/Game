@@ -2,6 +2,7 @@
 #include "win32Gamepads.h"
 #include "win32Console.h"
 #include "stringHelper.h"
+#include "game.h"
 
 #include <memory>
 #include <chrono>
@@ -31,27 +32,8 @@ struct gameSettings
 	static constexpr float fixedStep = 0.1f;
 };
 
-void beginPlay()
-{
-
-}
-
-void tick(float deltaTime)
-{
-
-}
-
-void fixedTick(float step)
-{
-
-}
-
-void render()
-{
-
-}
-
 static bool running = true;
+static std::unique_ptr<game> gameInstance = nullptr;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
@@ -87,14 +69,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// Register core event callbacks
 	window->onClosed.add([](const closedEvent& event) { running = false; });
 	window->onInput.add([](const inputEvent& event) {
-
+		gameInstance->onMouseKeyboardInput(event);
 		});
 	win32Gamepads::onInput.add([](const inputEvent& event) {
-
+		gameInstance->onGamepadInput(event);
 		});
 
+	// Create the game instance
+	gameInstance = std::make_unique<game>();
+
 	// Initialize game loop
-	beginPlay();
+	gameInstance->beginPlay();
 
 	double fixedTimeSliceMs = gameSettings::fixedTimeSlice * 1000.0;
 	double accumulator = 0.0;
@@ -123,16 +108,19 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// Fixed Tick
 		while (accumulator > fixedTimeSliceMs)
 		{
-			fixedTick(gameSettings::fixedStep);
+			gameInstance->fixedTick(gameSettings::fixedStep);
 			accumulator -= fixedTimeSliceMs;
 		}
 
 		// Tick
-		tick(static_cast<float>(deltaTime));
+		gameInstance->tick(static_cast<float>(deltaTime));
 
 		// Render
-		render();
+		gameInstance->render();
 	}
+
+	// Destroy the game instance
+	gameInstance.reset();
 
 	//win32Console::shutdown();
 	//window->shutdown();
