@@ -59,6 +59,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(ProjectDir)source\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -75,6 +76,7 @@
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalIncludeDirectories>$(ProjectDir)source\;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
@@ -87,34 +89,34 @@
     <ClCompile Include="source\callback.cpp" />
     <ClCompile Include="source\game.cpp" />
     <ClCompile Include="source\stringHelper.cpp" />
-    <ClCompile Include="source\win32Console.cpp" />
-    <ClCompile Include="source\win32Display.cpp" />
-    <ClCompile Include="source\win32Gamepads.cpp" />
+    <ClCompile Include="source\platform\win32Console.cpp" />
+    <ClCompile Include="source\platform\win32Display.cpp" />
+    <ClCompile Include="source\platform\win32Gamepads.cpp" />
     <ClCompile Include="source\main.cpp" />
-    <ClCompile Include="source\win32Window.cpp" />
+    <ClCompile Include="source\platform\win32Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\game.h" />
     <ClInclude Include="source\stringHelper.h" />
-    <ClInclude Include="source\win32Console.h" />
-    <ClInclude Include="source\win32Display.h" />
-    <ClInclude Include="source\Events\Core\closedEvent.h" />
-    <ClInclude Include="source\Events\Core\destroyedEvent.h" />
-    <ClInclude Include="source\Events\Core\enterFullScreenEvent.h" />
-    <ClInclude Include="source\Events\Core\enterSizeMoveEvent.h" />
-    <ClInclude Include="source\Events\Core\exitFullScreenEvent.h" />
-    <ClInclude Include="source\Events\Core\exitSizeMoveEvent.h" />
-    <ClInclude Include="source\Events\Core\gainedFocusEvent.h" />
-    <ClInclude Include="source\Events\Core\inputEvent.h" />
-    <ClInclude Include="source\Events\Core\lostFocusEvent.h" />
-    <ClInclude Include="source\Events\Core\maximizedEvent.h" />
-    <ClInclude Include="source\Events\Core\minimizedEvent.h" />
-    <ClInclude Include="source\Events\Core\resizedEvent.h" />
-    <ClInclude Include="source\Events\Core\restoredEvent.h" />
-    <ClInclude Include="source\win32Gamepads.h" />
-    <ClInclude Include="source\win32InputKeyCode.h" />
-    <ClInclude Include="source\win32Window.h" />
+    <ClInclude Include="source\platform\win32Console.h" />
+    <ClInclude Include="source\platform\win32Display.h" />
+    <ClInclude Include="source\events\core\closedEvent.h" />
+    <ClInclude Include="source\events\core\destroyedEvent.h" />
+    <ClInclude Include="source\events\core\enterFullScreenEvent.h" />
+    <ClInclude Include="source\events\core\enterSizeMoveEvent.h" />
+    <ClInclude Include="source\events\core\exitFullScreenEvent.h" />
+    <ClInclude Include="source\events\core\exitSizeMoveEvent.h" />
+    <ClInclude Include="source\events\core\gainedFocusEvent.h" />
+    <ClInclude Include="source\events\core\inputEvent.h" />
+    <ClInclude Include="source\events\core\lostFocusEvent.h" />
+    <ClInclude Include="source\events\core\maximizedEvent.h" />
+    <ClInclude Include="source\events\core\minimizedEvent.h" />
+    <ClInclude Include="source\events\core\resizedEvent.h" />
+    <ClInclude Include="source\events\core\restoredEvent.h" />
+    <ClInclude Include="source\platform\win32Gamepads.h" />
+    <ClInclude Include="source\platform\win32InputKeyCode.h" />
+    <ClInclude Include="source\platform\win32Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -18,19 +18,19 @@
     <ClCompile Include="source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\win32Window.cpp">
+    <ClCompile Include="source\platform\win32Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\win32Display.cpp">
+    <ClCompile Include="source\platform\win32Display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\callback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\win32Gamepads.cpp">
+    <ClCompile Include="source\platform\win32Gamepads.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\win32Console.cpp">
+    <ClCompile Include="source\platform\win32Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\stringHelper.cpp">
@@ -41,61 +41,61 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\win32Window.h">
+    <ClInclude Include="source\platform\win32Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\win32Display.h">
+    <ClInclude Include="source\platform\win32Display.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\callback.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\inputEvent.h">
+    <ClInclude Include="source\events\core\inputEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\win32InputKeyCode.h">
+    <ClInclude Include="source\platform\win32InputKeyCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\enterSizeMoveEvent.h">
+    <ClInclude Include="source\events\core\enterSizeMoveEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\exitSizeMoveEvent.h">
+    <ClInclude Include="source\events\core\exitSizeMoveEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\gainedFocusEvent.h">
+    <ClInclude Include="source\events\core\gainedFocusEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\lostFocusEvent.h">
+    <ClInclude Include="source\events\core\lostFocusEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\resizedEvent.h">
+    <ClInclude Include="source\events\core\resizedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\maximizedEvent.h">
+    <ClInclude Include="source\events\core\maximizedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\minimizedEvent.h">
+    <ClInclude Include="source\events\core\minimizedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\restoredEvent.h">
+    <ClInclude Include="source\events\core\restoredEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\closedEvent.h">
+    <ClInclude Include="source\events\core\closedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\destroyedEvent.h">
+    <ClInclude Include="source\events\core\destroyedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\enterFullScreenEvent.h">
+    <ClInclude Include="source\events\core\enterFullScreenEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Events\Core\exitFullScreenEvent.h">
+    <ClInclude Include="source\events\core\exitFullScreenEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\win32Gamepads.h">
+    <ClInclude Include="source\platform\win32Gamepads.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\win32Console.h">
+    <ClInclude Include="source\platform\win32Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\stringHelper.h">

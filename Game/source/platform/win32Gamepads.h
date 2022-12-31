@@ -1,6 +1,6 @@
 #pragma once
 
-#include "Events/Core/inputEvent.h"
+#include "events/core/inputEvent.h"
 #include "callback.h"
 
 #include <cstdint>
