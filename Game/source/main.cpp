@@ -2,6 +2,7 @@
 #include "win32Gamepads.h"
 #include "win32Console.h"
 #include "stringHelper.h"
+#include "game.h"
 
 #include <memory>
 #include <chrono>
@@ -30,26 +31,6 @@ struct gameSettings
 	// The step size used to step the simulation on each time slice update
 	static constexpr float fixedStep = 0.1f;
 };
-
-void beginPlay()
-{
-
-}
-
-void tick(float deltaTime)
-{
-
-}
-
-void fixedTick(float step)
-{
-
-}
-
-void render()
-{
-
-}
 
 static bool running = true;
 
@@ -93,8 +74,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		});
 
+	// Create the game instance
+	std::unique_ptr<game> gameInstance = std::make_unique<game>();
+
 	// Initialize game loop
-	beginPlay();
+	gameInstance->beginPlay();
 
 	double fixedTimeSliceMs = gameSettings::fixedTimeSlice * 1000.0;
 	double accumulator = 0.0;
@@ -123,15 +107,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// Fixed Tick
 		while (accumulator > fixedTimeSliceMs)
 		{
-			fixedTick(gameSettings::fixedStep);
+			gameInstance->fixedTick(gameSettings::fixedStep);
 			accumulator -= fixedTimeSliceMs;
 		}
 
 		// Tick
-		tick(static_cast<float>(deltaTime));
+		gameInstance->tick(static_cast<float>(deltaTime));
 
 		// Render
-		render();
+		gameInstance->render();
 	}
 
 	//win32Console::shutdown();
