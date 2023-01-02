@@ -22,6 +22,17 @@ bool d3d12Renderer::init()
 	}
 #endif // _DEBUG
 
+	// Create dxgi factory
+	UINT dxgiFactoryCreationFlags = 0;
+#ifdef _DEBUG
+	dxgiFactoryCreationFlags |= DXGI_CREATE_FACTORY_DEBUG;
+#endif // _DEBUG
+
+	if (FAILED(CreateDXGIFactory2(dxgiFactoryCreationFlags, IID_PPV_ARGS(&dxgiFactory))))
+	{
+		return false;
+	}
+
 
 
     return false;

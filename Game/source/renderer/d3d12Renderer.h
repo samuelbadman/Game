@@ -15,6 +15,7 @@ class d3d12Renderer : public renderer
 {
 private:
 	Microsoft::WRL::ComPtr<ID3D12Device9> mainDevice = nullptr;
+	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 
 public:
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
