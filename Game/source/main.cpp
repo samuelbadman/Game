@@ -1,6 +1,6 @@
-#include "platform/win32Window.h"
-#include "platform/win32Gamepads.h"
-#include "platform/win32Console.h"
+#include "platform/win32/win32Window.h"
+#include "platform/win32/win32Gamepads.h"
+#include "platform/win32/win32Console.h"
 #include "game.h"
 #include "renderer/renderer.h"
 

@@ -1,5 +1,3 @@
-#pragma comment(lib, "xinput.lib")
-
 #include "win32Gamepads.h"
 #include "win32InputKeyCode.h"
 

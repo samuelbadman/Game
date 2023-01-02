@@ -9,6 +9,8 @@
 #include <Windows.h>
 #include <Xinput.h>
 
+#pragma comment(lib, "xinput.lib")
+
 class win32Gamepads
 {
 private:
