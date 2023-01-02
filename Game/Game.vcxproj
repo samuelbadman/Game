@@ -88,6 +88,8 @@
   <ItemGroup>
     <ClCompile Include="source\callback.cpp" />
     <ClCompile Include="source\game.cpp" />
+    <ClCompile Include="source\renderer\d3d12Renderer.cpp" />
+    <ClCompile Include="source\renderer\renderer.cpp" />
     <ClCompile Include="source\stringHelper.cpp" />
     <ClCompile Include="source\platform\win32Console.cpp" />
     <ClCompile Include="source\platform\win32Display.cpp" />
@@ -98,6 +100,8 @@
   <ItemGroup>
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\game.h" />
+    <ClInclude Include="source\renderer\d3d12Renderer.h" />
+    <ClInclude Include="source\renderer\renderer.h" />
     <ClInclude Include="source\stringHelper.h" />
     <ClInclude Include="source\platform\win32Console.h" />
     <ClInclude Include="source\platform\win32Display.h" />

@@ -2,6 +2,7 @@
 #include "platform/win32Gamepads.h"
 #include "platform/win32Console.h"
 #include "game.h"
+#include "renderer/renderer.h"
 
 #include <memory>
 #include <chrono>
@@ -98,6 +99,16 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	win32Gamepads::onInput.add([](const inputEvent& event) {
 		gameInstance->onGamepadInput(event);
 		});
+
+	// Create and initialize renderer
+	std::unique_ptr<renderer> gameRenderer = renderer::create(rendererPlatform::direct3d12);
+
+	const bool rendererInitResult = gameRenderer->init();
+	if (!rendererInitResult)
+	{
+		MessageBoxA(0, "Failed to initialize renderer.", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
 
 	// Initialize game loop
 	gameInstance->beginPlay();
