@@ -47,6 +47,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return -1;
 	}
 
+	// Create the game instance
+	gameInstance = std::make_unique<game>();
+
 	// Create and initialize window
 	window = std::make_unique<win32Window>();
 
@@ -95,9 +98,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	win32Gamepads::onInput.add([](const inputEvent& event) {
 		gameInstance->onGamepadInput(event);
 		});
-
-	// Create the game instance
-	gameInstance = std::make_unique<game>();
 
 	// Initialize game loop
 	gameInstance->beginPlay();
