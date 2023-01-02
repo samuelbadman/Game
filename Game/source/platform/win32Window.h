@@ -102,6 +102,7 @@ public:
 	void getRenderingResolution(uint32_t& x, uint32_t& y) const;
 	void getPosition(uint32_t& x, uint32_t& y) const;
 	bool isFullScreen() const { return inFullscreen; }
+	HWND getHwnd() const { return hwnd; }
 
 	LRESULT onWM_MouseWheel(HWND hwnd, UINT msg, 
 		WPARAM wparam, LPARAM lparam);
