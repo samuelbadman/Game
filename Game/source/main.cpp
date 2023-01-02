@@ -16,9 +16,10 @@ struct gameSettings
 	// Window settings
 	static constexpr windowStyle windowStyle = windowStyle::windowed;
 	static constexpr const wchar_t* windowTitle = L"Game";
-	static constexpr int32_t windowPosition[2] = { 0, 0 };
-	static constexpr int32_t windowDimensions[2] = { 1280, 720 };
+	static constexpr uint32_t windowPosition[2] = { 0, 0 };
+	static constexpr uint32_t windowDimensions[2] = { 1280, 720 };
 	static constexpr bool startFullScreen = false;
+	static constexpr uint32_t defaultDisplayIndex = 0;
 
 	// Rendering settings
 	//ERenderingAPI RenderingAPI = ERenderingAPI::DirectX12;
@@ -36,6 +37,7 @@ struct gameSettings
 static bool running = true;
 static std::unique_ptr<win32Window> window = nullptr;
 static std::unique_ptr<game> gameInstance = nullptr;
+static std::unique_ptr<renderer> gameRenderer = nullptr;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
@@ -49,17 +51,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// Create and initialize window
 	window = std::make_unique<win32Window>();
 
-	win32WindowInitSettings settings = {};
-	settings.windowClassName = L"gameWindow";
-	settings.parent = nullptr;
-	settings.style = gameSettings::windowStyle;
-	settings.windowTitle = gameSettings::windowTitle;
-	settings.x = gameSettings::windowPosition[0];
-	settings.y = gameSettings::windowPosition[1];
-	settings.width = gameSettings::windowDimensions[0];
-	settings.height = gameSettings::windowDimensions[1];
+	win32WindowInitSettings windowSettings = {};
+	windowSettings.windowClassName = L"gameWindow";
+	windowSettings.parent = nullptr;
+	windowSettings.style = gameSettings::windowStyle;
+	windowSettings.windowTitle = gameSettings::windowTitle;
+	windowSettings.x = gameSettings::windowPosition[0];
+	windowSettings.y = gameSettings::windowPosition[1];
+	windowSettings.width = gameSettings::windowDimensions[0];
+	windowSettings.height = gameSettings::windowDimensions[1];
 
-	const bool windowInitResult = window->init(settings);
+	const bool windowInitResult = window->init(windowSettings);
 	if (!windowInitResult)
 	{
 		MessageBoxA(0, "Failed to init window.", "Error", MB_OK | MB_ICONERROR);
@@ -96,9 +98,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		});
 
 	// Create and initialize renderer
-	std::unique_ptr<renderer> gameRenderer = renderer::create(rendererPlatform::direct3d12);
+	gameRenderer = renderer::create(rendererPlatform::direct3d12);
 
-	const bool rendererInitResult = gameRenderer->init();
+	rendererInitSettings rendererSettings = {};
+	rendererSettings.initialDisplayInfo = win32Display::infoForDisplayAtIndex(gameSettings::defaultDisplayIndex);
+
+	const bool rendererInitResult = gameRenderer->init(rendererSettings);
 	if (!rendererInitResult)
 	{
 		MessageBoxA(0, "Failed to initialize renderer.", "Error", MB_OK | MB_ICONERROR);
@@ -156,6 +161,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// Destroy the game instance
 	gameInstance.reset();
+
+	// Destroy the renderer
+	gameRenderer.reset();
 
 	// Destroy the window
 	window.reset();

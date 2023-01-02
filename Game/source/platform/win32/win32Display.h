@@ -9,21 +9,22 @@
 
 struct displayInfo
 {
-	std::wstring name;
-	std::wstring adapterName;
-	int32_t topLeftX;
-	int32_t topLeftY;
-	int32_t resX;
-	int32_t resY;
-	int32_t verticalRefreshRateHertz;
+	std::wstring name = L"";
+	std::wstring adapterName = L"";
+	uint32_t topLeftX = 0;
+	uint32_t topLeftY = 0;
+	uint32_t width = 0;
+	uint32_t height = 0;
+	uint32_t verticalRefreshRateHertz = 0;
 };
 
 class win32Display
 {
 public:
 	// Retrieves the number of displays connected to the device
-	static int32_t displayCount() { return GetSystemMetrics(SM_CMONITORS); }
+	static uint32_t displayCount() { return GetSystemMetrics(SM_CMONITORS); }
 
-	// Creates a property structure for the monitor at the specified index. The primary display is at index 0
-	static displayInfo infoForDisplayAtIndex(const int32_t displayIndex);
+	// Creates a property structure for the monitor at the specified index. The primary display is at index 0.
+	// Index must be smaller than the number of monitors connected to the device
+	static displayInfo infoForDisplayAtIndex(const uint32_t displayIndex);
 };

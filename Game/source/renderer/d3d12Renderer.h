@@ -19,18 +19,21 @@ private:
 private:
 	Microsoft::WRL::ComPtr<ID3D12Device9> mainDevice = nullptr;
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
+	Microsoft::WRL::ComPtr<IDXGIAdapter4> mainAdapter = nullptr;
 
 public:
+	// Renderer interface
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
-	virtual bool init() final;
+	virtual bool init(const rendererInitSettings& settings) final;
 	virtual bool shutdown() final;
 
 private:
 	bool enableDebugLayer(const bool enableGPUValidation,
 		const D3D12_GPU_BASED_VALIDATION_FLAGS gpuBasedValidationFlags,
 		const bool enableSynchonizedCommandQueueValidation) const;
-	bool dxgiReportLiveObjects() const;
+	bool reportLiveObjects() const;
 	IDXGIAdapter4* enumerateAdapters(IDXGIFactory7* factory) const;
+
 	template<typename T>
 	void release(T*& resource) const;
 };

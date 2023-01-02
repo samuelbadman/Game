@@ -1,7 +1,10 @@
 #include "d3d12Renderer.h"
 #include "log.h"
+#include "stringHelper.h"
 
-bool d3d12Renderer::init()
+#include <cassert>
+
+bool d3d12Renderer::init(const rendererInitSettings& settings)
 {
     if (mainDevice != nullptr)
     {
@@ -15,12 +18,14 @@ bool d3d12Renderer::init()
 	{
 		return false;
 	}
+	LOG("Enabled d3d12 debug layer.");
 
-	const bool reportLiveObjectsResult = dxgiReportLiveObjects();
+	const bool reportLiveObjectsResult = reportLiveObjects();
 	if (!reportLiveObjectsResult)
 	{
 		return false;
 	}
+	LOG("Reporting live objects.")
 #endif // _DEBUG
 
 	// Create dxgi factory
@@ -33,17 +38,42 @@ bool d3d12Renderer::init()
 	{
 		return false;
 	}
+	LOG("Created dxgi factory.");
 
 	// Determine adapter to use
+	mainAdapter.Attach(enumerateAdapters(dxgiFactory.Get()));
+
+	if (mainAdapter == nullptr)
+	{
+		return false;
+	}
+
+	DXGI_ADAPTER_DESC3 adapterDesc3 = {};
+	if (FAILED(mainAdapter->GetDesc3(&adapterDesc3)))
+	{
+		return false;
+	}
+
+	// Check the specified display is connected to the adapter
+	if (settings.initialDisplayInfo.adapterName != adapterDesc3.Description)
+	{
+		return false;
+	}
+	LOG(stringHelper::printf("Using adapter: %S", adapterDesc3.Description));
 
 
+
+	LOG("Initialized d3d12 renderer.");
     return true;
 }
 
 bool d3d12Renderer::shutdown()
 {
 	dxgiFactory.Reset();
-    return false;
+	mainAdapter.Reset();
+
+	LOG("Shutdown d3d12 renderer.");
+	return true;
 }
 
 bool d3d12Renderer::enableDebugLayer(const bool enableGPUValidation,
@@ -66,7 +96,7 @@ bool d3d12Renderer::enableDebugLayer(const bool enableGPUValidation,
 	return true;
 }
 
-bool d3d12Renderer::dxgiReportLiveObjects() const
+bool d3d12Renderer::reportLiveObjects() const
 {
 	// Enable reporting of live objects
 	Microsoft::WRL::ComPtr<IDXGIDebug1> dxgiDebugInterface;

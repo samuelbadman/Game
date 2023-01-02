@@ -1,7 +1,11 @@
 #include "win32Display.h"
 
-displayInfo win32Display::infoForDisplayAtIndex(const int32_t displayIndex)
+#include <cassert>
+
+displayInfo win32Display::infoForDisplayAtIndex(const uint32_t displayIndex)
 {
+	assert(displayIndex < displayCount());
+
 	// Initialize property structure
 	displayInfo info = {};
 
@@ -23,8 +27,8 @@ displayInfo win32Display::infoForDisplayAtIndex(const int32_t displayIndex)
 	info.adapterName = displayDevice.DeviceString;
 	info.topLeftX = displaySettings.dmPosition.x;
 	info.topLeftY = displaySettings.dmPosition.y;
-	info.resX = displaySettings.dmPelsWidth;
-	info.resY = displaySettings.dmPelsHeight;
+	info.width = displaySettings.dmPelsWidth;
+	info.height = displaySettings.dmPelsHeight;
 	info.verticalRefreshRateHertz = displaySettings.dmDisplayFrequency;
 
 	// Return the hardware property info
