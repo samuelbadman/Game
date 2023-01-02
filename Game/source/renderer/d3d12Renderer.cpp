@@ -1,4 +1,5 @@
 #include "d3d12Renderer.h"
+#include "log.h"
 
 bool d3d12Renderer::init()
 {
@@ -33,13 +34,15 @@ bool d3d12Renderer::init()
 		return false;
 	}
 
+	// Determine adapter to use
 
 
-    return false;
+    return true;
 }
 
 bool d3d12Renderer::shutdown()
 {
+	dxgiFactory.Reset();
     return false;
 }
 
@@ -76,4 +79,25 @@ bool d3d12Renderer::dxgiReportLiveObjects() const
 		return false;
 	}
 	return true;
+}
+
+IDXGIAdapter4* d3d12Renderer::enumerateAdapters(IDXGIFactory7* factory) const
+{
+	IDXGIAdapter4* adapter = nullptr;
+
+	// Get adapters in descending order of performance (highest performance first)
+	for (UINT i = 0; factory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND; ++i)
+	{
+		// Return the first adapter that supports the minimum feature level
+		if (SUCCEEDED(D3D12CreateDevice(adapter, minSupportedFeatureLevel, __uuidof(ID3D12Device), nullptr)))
+		{
+			return adapter;
+		}
+
+		// Release the adapter as it does not meet minimum requirements
+		release(adapter);
+	}
+
+	// No adapters were found that meet minimum requirements
+	return nullptr;
 }

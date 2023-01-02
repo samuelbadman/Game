@@ -1,6 +1,6 @@
 #include "platform/win32/win32Window.h"
 #include "platform/win32/win32Gamepads.h"
-#include "platform/win32/win32Console.h"
+#include "log.h"
 #include "game.h"
 #include "renderer/renderer.h"
 
@@ -40,13 +40,8 @@ static std::unique_ptr<game> gameInstance = nullptr;
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
 {
-	// Initialize console
-	const bool consoleInitResult = win32Console::init();
-	if (!consoleInitResult)
-	{
-		MessageBoxA(0, "Failed to init console.", "Error", MB_OK | MB_ICONERROR);
-		return -1;
-	}
+	// Initialize logging
+	LOG_INIT();
 
 	// Create the game instance
 	gameInstance = std::make_unique<game>();
@@ -151,13 +146,21 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		gameInstance->render();
 	}
 
+	// Shutdown the renderer
+	const bool rendererShutdownResult = gameRenderer->shutdown();
+	if (!rendererShutdownResult)
+	{
+		MessageBoxA(0, "Failed to shutdown renderer.", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
+
 	// Destroy the game instance
 	gameInstance.reset();
 
 	// Destroy the window
 	window.reset();
 
-	//win32Console::shutdown();
+	//LOG_SHUTDOWN();
 	//window->shutdown();
 
 	return 0;

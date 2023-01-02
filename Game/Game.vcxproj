@@ -100,6 +100,7 @@
   <ItemGroup>
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\game.h" />
+    <ClInclude Include="source\log.h" />
     <ClInclude Include="source\renderer\d3d12Renderer.h" />
     <ClInclude Include="source\renderer\renderer.h" />
     <ClInclude Include="source\stringHelper.h" />

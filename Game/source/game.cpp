@@ -1,5 +1,5 @@
 #include "game.h"
-#include "platform/win32/win32Console.h"
+#include "log.h"
 #include "stringHelper.h"
 
 void game::beginPlay()

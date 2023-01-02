@@ -113,5 +113,8 @@
     <ClInclude Include="source\renderer\d3d12Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\log.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

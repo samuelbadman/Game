@@ -14,6 +14,9 @@
 class d3d12Renderer : public renderer
 {
 private:
+	static constexpr D3D_FEATURE_LEVEL minSupportedFeatureLevel = D3D_FEATURE_LEVEL_11_0;
+
+private:
 	Microsoft::WRL::ComPtr<ID3D12Device9> mainDevice = nullptr;
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 
@@ -27,4 +30,17 @@ private:
 		const D3D12_GPU_BASED_VALIDATION_FLAGS gpuBasedValidationFlags,
 		const bool enableSynchonizedCommandQueueValidation) const;
 	bool dxgiReportLiveObjects() const;
+	IDXGIAdapter4* enumerateAdapters(IDXGIFactory7* factory) const;
+	template<typename T>
+	void release(T*& resource) const;
 };
+
+template<typename T>
+inline void d3d12Renderer::release(T*& resource) const
+{
+	if (resource != nullptr)
+	{
+		resource->Release();
+		resource = nullptr;
+	}
+}
