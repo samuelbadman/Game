@@ -120,6 +120,7 @@ bool d3d12Renderer::shutdown()
 {
 	dxgiFactory.Reset();
 	mainAdapter.Reset();
+	mainDevice.Reset();
 
 	LOG("Shutdown d3d12 renderer.");
 	return true;
