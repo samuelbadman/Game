@@ -14,10 +14,10 @@
 class d3d12Renderer : public renderer
 {
 private:
-	static constexpr D3D_FEATURE_LEVEL minSupportedFeatureLevel = D3D_FEATURE_LEVEL_11_0;
+	static constexpr D3D_FEATURE_LEVEL minimumSupportedFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
 private:
-	Microsoft::WRL::ComPtr<ID3D12Device9> mainDevice = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12Device8> mainDevice = nullptr;
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> mainAdapter = nullptr;
 
@@ -33,6 +33,8 @@ private:
 		const bool enableSynchonizedCommandQueueValidation) const;
 	bool reportLiveObjects() const;
 	IDXGIAdapter4* enumerateAdapters(IDXGIFactory7* factory) const;
+	D3D_FEATURE_LEVEL getAdapterMaximumFeatureLevel(IDXGIAdapter4* adapter) const;
+	bool enableDeviceDebugInfo(const Microsoft::WRL::ComPtr<ID3D12Device8>& device) const;
 
 	template<typename T>
 	void release(T*& resource) const;
