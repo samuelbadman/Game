@@ -41,6 +41,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// Create the game instance
 	gameInstance = std::make_unique<game>();
+	LOG("Created game instance.");
 
 	// Create and initialize window
 	window = std::make_unique<win32Window>();
@@ -90,6 +91,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	win32Gamepads::onInput.add([](const inputEvent& event) {
 		gameInstance->onGamepadInput(event);
 		});
+	LOG("Initialized win32 window.");
 
 	// Create and initialize renderer
 	gameRenderer = renderer::create(rendererPlatform::direct3d12);
@@ -105,6 +107,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	// Initialize game loop
+	LOG("Entering game loop.");
 	gameInstance->beginPlay();
 
 	double fixedTimeSliceMs = gameSettings::fixedTimeSlice * 1000.0;
@@ -145,6 +148,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		gameInstance->render();
 	}
 
+	// Destroy the game instance
+	gameInstance.reset();
+
 	// Shutdown and destroy the renderer
 	const bool rendererShutdownResult = gameRenderer->shutdown();
 	if (!rendererShutdownResult)
@@ -153,14 +159,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		return -1;
 	}
 
-	// Destroy the game instance
-	gameInstance.reset();
-
 	// Destroy the renderer
 	gameRenderer.reset();
+	LOG("Destroyed renderer.");
 
 	// Destroy the window
 	window.reset();
+	LOG("Destroyed win32 window.");
 
 	//LOG_SHUTDOWN();
 	//window->shutdown();
