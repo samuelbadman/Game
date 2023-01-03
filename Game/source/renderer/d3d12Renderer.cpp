@@ -72,22 +72,7 @@ bool d3d12Renderer::init(const rendererInitSettings& settings)
 	{
 		return false;
 	}
-
-#if LOGGING_ENABLED
-	switch (mainAdapterMaximumSupportedFeatureLevel)
-	{
-	case D3D_FEATURE_LEVEL_9_1:	LOG("Supported feature level: D3D_FEATURE_LEVEL_9_1"); break;
-	case D3D_FEATURE_LEVEL_9_2:	LOG("Supported feature level: D3D_FEATURE_LEVEL_9_2"); break;
-	case D3D_FEATURE_LEVEL_9_3:	LOG("Supported feature level: D3D_FEATURE_LEVEL_9_3"); break;
-	case D3D_FEATURE_LEVEL_10_0: LOG("Supported feature level: D3D_FEATURE_LEVEL_10_0"); break;
-	case D3D_FEATURE_LEVEL_10_1: LOG("Supported feature level: D3D_FEATURE_LEVEL_10_1"); break;
-	case D3D_FEATURE_LEVEL_11_0: LOG("Supported feature level: D3D_FEATURE_LEVEL_11_0"); break;
-	case D3D_FEATURE_LEVEL_11_1: LOG("Supported feature level: D3D_FEATURE_LEVEL_11_1"); break;
-	case D3D_FEATURE_LEVEL_12_0: LOG("Supported feature level: D3D_FEATURE_LEVEL_12_0"); break;
-	case D3D_FEATURE_LEVEL_12_1: LOG("Supported feature level: D3D_FEATURE_LEVEL_12_1"); break;
-	case D3D_FEATURE_LEVEL_12_2: LOG("Supported feature level: D3D_FEATURE_LEVEL_12_2"); break;
-	}
-#endif // LOGGING_ENABLED
+	LOG("Supported feature level: " + getD3dFeatureLevelAsString(mainAdapterMaximumSupportedFeatureLevel));
 
 	// Create main device
 	if (FAILED(D3D12CreateDevice(mainAdapter.Get(), mainAdapterMaximumSupportedFeatureLevel, 
@@ -259,4 +244,22 @@ bool d3d12Renderer::enableDeviceDebugInfo(const Microsoft::WRL::ComPtr<ID3D12Dev
 	}
 
 	return true;
+}
+
+std::string d3d12Renderer::getD3dFeatureLevelAsString(const D3D_FEATURE_LEVEL featureLevel) const
+{
+	switch (featureLevel)
+	{
+	case D3D_FEATURE_LEVEL_9_1:	 return "D3D_FEATURE_LEVEL_9_1";
+	case D3D_FEATURE_LEVEL_9_2:	 return "D3D_FEATURE_LEVEL_9_2";
+	case D3D_FEATURE_LEVEL_9_3:	 return "D3D_FEATURE_LEVEL_9_3";
+	case D3D_FEATURE_LEVEL_10_0: return "D3D_FEATURE_LEVEL_10_0";
+	case D3D_FEATURE_LEVEL_10_1: return "D3D_FEATURE_LEVEL_10_1";
+	case D3D_FEATURE_LEVEL_11_0: return "D3D_FEATURE_LEVEL_11_0";
+	case D3D_FEATURE_LEVEL_11_1: return "D3D_FEATURE_LEVEL_11_1";
+	case D3D_FEATURE_LEVEL_12_0: return "D3D_FEATURE_LEVEL_12_0";
+	case D3D_FEATURE_LEVEL_12_1: return "D3D_FEATURE_LEVEL_12_1";
+	case D3D_FEATURE_LEVEL_12_2: return "D3D_FEATURE_LEVEL_12_2";
+	}
+	return "INVALID_FEATURE_LEVEL";
 }

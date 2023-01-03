@@ -2,6 +2,7 @@
 
 #include "renderer.h"
 
+#include <string>
 #include <dxgi1_6.h>
 #include <dxgidebug.h>
 #include <d3d12.h>
@@ -45,6 +46,7 @@ private:
 	IDXGIAdapter4* enumerateAdapters(IDXGIFactory7* factory) const;
 	D3D_FEATURE_LEVEL getAdapterMaximumFeatureLevel(IDXGIAdapter4* adapter) const;
 	bool enableDeviceDebugInfo(const Microsoft::WRL::ComPtr<ID3D12Device8>& device) const;
+	std::string getD3dFeatureLevelAsString(const D3D_FEATURE_LEVEL featureLevel) const;
 
 	template<typename T>
 	void release(T*& resource) const;
