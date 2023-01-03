@@ -1,11 +1,14 @@
 #include "d3d12Renderer.h"
 #include "log.h"
 #include "stringHelper.h"
+#include "platform/win32/win32Display.h"
 
 #include <cassert>
 
 bool d3d12Renderer::init(const rendererInitSettings& settings)
 {
+	LOG("Initializing d3d12 renderer.");
+
     if (mainDevice != nullptr)
     {
         shutdown();
@@ -55,7 +58,7 @@ bool d3d12Renderer::init(const rendererInitSettings& settings)
 	}
 
 	// Check the specified display is connected to the adapter
-	if (settings.initialDisplayInfo.adapterName != adapterDesc3.Description)
+	if (win32Display::infoForDisplayAtIndex(settings.displayIndex).adapterName != adapterDesc3.Description)
 	{
 		return false;
 	}

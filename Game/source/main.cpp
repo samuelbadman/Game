@@ -101,7 +101,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	gameRenderer = renderer::create(rendererPlatform::direct3d12);
 
 	rendererInitSettings rendererSettings = {};
-	rendererSettings.initialDisplayInfo = win32Display::infoForDisplayAtIndex(gameSettings::defaultDisplayIndex);
+	rendererSettings.displayIndex = gameSettings::defaultDisplayIndex;
 
 	const bool rendererInitResult = gameRenderer->init(rendererSettings);
 	if (!rendererInitResult)
@@ -151,7 +151,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		gameInstance->render();
 	}
 
-	// Shutdown the renderer
+	// Shutdown and destroy the renderer
 	const bool rendererShutdownResult = gameRenderer->shutdown();
 	if (!rendererShutdownResult)
 	{

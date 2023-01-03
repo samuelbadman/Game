@@ -1,8 +1,7 @@
 #pragma once
 
-#include "platform/win32/win32Display.h"
-
 #include <memory>
+#include <cstdint>
 
 enum class rendererPlatform : uint8_t
 {
@@ -12,7 +11,7 @@ enum class rendererPlatform : uint8_t
 
 struct rendererInitSettings
 {
-	displayInfo initialDisplayInfo = {};
+	uint32_t displayIndex = 0;
 };
 
 class renderer
