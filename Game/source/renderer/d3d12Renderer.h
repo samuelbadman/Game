@@ -37,6 +37,7 @@ private:
 	D3D_FEATURE_LEVEL getAdapterMaximumFeatureLevel(IDXGIAdapter4* adapter) const;
 	bool enableDeviceDebugInfo(const Microsoft::WRL::ComPtr<ID3D12Device8>& device) const;
 	std::string getD3dFeatureLevelAsString(const D3D_FEATURE_LEVEL featureLevel) const;
+	bool getTearingSupport(IDXGIFactory7* factory) const;
 
 	template<typename T>
 	void release(T*& resource) const;

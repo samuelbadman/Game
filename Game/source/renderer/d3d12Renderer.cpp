@@ -57,7 +57,8 @@ bool d3d12Renderer::init(const rendererInitSettings& settings)
 	}
 
 	// Check the specified display is connected to the adapter
-	if (win32Display::infoForDisplayAtIndex(settings.displayIndex).adapterName != adapterDesc3.Description)
+	const displayInfo display = win32Display::infoForDisplayAtIndex(settings.displayIndex);
+	if (display.adapterName != adapterDesc3.Description)
 	{
 		return false;
 	}
@@ -261,4 +262,16 @@ std::string d3d12Renderer::getD3dFeatureLevelAsString(const D3D_FEATURE_LEVEL fe
 	case D3D_FEATURE_LEVEL_12_2: return "D3D_FEATURE_LEVEL_12_2";
 	}
 	return "INVALID_FEATURE_LEVEL";
+}
+
+bool d3d12Renderer::getTearingSupport(IDXGIFactory7* factory) const
+{
+	BOOL allowTearing = FALSE;
+
+	if (FAILED(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
+	{
+		allowTearing = FALSE;
+	}
+
+	return (allowTearing == TRUE);
 }
