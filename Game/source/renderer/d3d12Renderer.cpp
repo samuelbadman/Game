@@ -4,9 +4,148 @@
 #include "stringHelper.h"
 #include "platform/win32/win32Display.h"
 
+static std::string getD3dFeatureLevelAsString(const D3D_FEATURE_LEVEL featureLevel)
+{
+	switch (featureLevel)
+	{
+	case D3D_FEATURE_LEVEL_9_1:	 return "D3D_FEATURE_LEVEL_9_1";
+	case D3D_FEATURE_LEVEL_9_2:	 return "D3D_FEATURE_LEVEL_9_2";
+	case D3D_FEATURE_LEVEL_9_3:	 return "D3D_FEATURE_LEVEL_9_3";
+	case D3D_FEATURE_LEVEL_10_0: return "D3D_FEATURE_LEVEL_10_0";
+	case D3D_FEATURE_LEVEL_10_1: return "D3D_FEATURE_LEVEL_10_1";
+	case D3D_FEATURE_LEVEL_11_0: return "D3D_FEATURE_LEVEL_11_0";
+	case D3D_FEATURE_LEVEL_11_1: return "D3D_FEATURE_LEVEL_11_1";
+	case D3D_FEATURE_LEVEL_12_0: return "D3D_FEATURE_LEVEL_12_0";
+	case D3D_FEATURE_LEVEL_12_1: return "D3D_FEATURE_LEVEL_12_1";
+	case D3D_FEATURE_LEVEL_12_2: return "D3D_FEATURE_LEVEL_12_2";
+	}
+	return "INVALID_FEATURE_LEVEL";
+}
+
+static std::string getCommandListTypeAsString(const D3D12_COMMAND_LIST_TYPE type)
+{
+	switch (type)
+	{
+	case D3D12_COMMAND_LIST_TYPE_DIRECT: return "D3D12_COMMAND_LIST_TYPE_DIRECT";
+	case D3D12_COMMAND_LIST_TYPE_COMPUTE: return "D3D12_COMMAND_LIST_TYPE_COMPUTE";
+	case D3D12_COMMAND_LIST_TYPE_COPY: return "D3D12_COMMAND_LIST_TYPE_COPY";
+	case D3D12_COMMAND_LIST_TYPE_BUNDLE: return "D3D12_COMMAND_LIST_TYPE_BUNDLE";
+	case D3D12_COMMAND_LIST_TYPE_VIDEO_DECODE: return "D3D12_COMMAND_LIST_TYPE_VIDEO_DECODE";
+	case D3D12_COMMAND_LIST_TYPE_VIDEO_ENCODE: return "D3D12_COMMAND_LIST_TYPE_VIDEO_ENCODE";
+	case D3D12_COMMAND_LIST_TYPE_VIDEO_PROCESS: return "D3D12_COMMAND_LIST_TYPE_VIDEO_PROCESS";
+	}
+	return "INVALID_COMMAND_LIST_TYPE";
+}
+
+bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uint32_t inFlightFrameCount)
+{
+	LOG(stringHelper::printf("Initializing render engine with type: %s and in flight frame count: %d.", getCommandListTypeAsString(type).c_str(), inFlightFrameCount));
+	// Create command queue
+	D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+	commandQueueDesc.Type = type;
+	commandQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+	commandQueueDesc.NodeMask = 0;
+	commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+
+	if (FAILED(device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue))))
+	{
+		return false;
+	}
+
+	if (FAILED(commandQueue->SetName(type == D3D12_COMMAND_LIST_TYPE_DIRECT ? 
+		L"graphics_command_queue" :
+		type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+		L"compute_command_queue" : L"command_queue")))
+	{
+		return false;
+	}
+	LOG("Created command queue.");
+
+	// Create command allocators for each in flight frame
+	commandAllocators.resize(static_cast<size_t>(inFlightFrameCount), nullptr);
+	for (uint32_t i = 0; i < inFlightFrameCount; ++i)
+	{
+		Microsoft::WRL::ComPtr<ID3D12CommandAllocator>& commandAllocator = commandAllocators[static_cast<size_t>(i)];
+
+		if (FAILED(device->CreateCommandAllocator(type, IID_PPV_ARGS(&commandAllocator))))
+		{
+			return false;
+		}
+
+		if (FAILED(commandAllocator->SetName(type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+			std::wstring(L"graphics_command_allocator" + std::to_wstring(i)).c_str() :
+			type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+			std::wstring(L"compute_command_allocator" + std::to_wstring(i)).c_str() :
+			std::wstring(L"command_allocator" + std::to_wstring(i)).c_str())))
+		{
+			return false;
+		}
+		LOG("Created command allocator.");
+	}
+
+	// Create command list
+	if(FAILED(device->CreateCommandList(0, type, commandAllocators[0].Get(), nullptr, IID_PPV_ARGS(&commandList))))
+	{
+		return false;
+	}
+
+	if (FAILED(commandList->Close()))
+	{
+		return false;
+	}
+
+	if (FAILED(commandList->SetName(type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+		L"graphics_command_list" :
+		type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+		L"compute_command_list" : L"command_list")))
+	{
+		return false;
+	}
+	LOG("Created command list.");
+
+	// Create synchronization objects
+	currentFenceValue = 0;
+	inFlightFenceValues.resize(static_cast<size_t>(inFlightFrameCount), 0);
+
+	if (FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence))))
+	{
+		return false;
+	}
+
+	if (FAILED(fence->SetName(type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+		L"graphics_fence" :
+		type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+		L"compute_fence" : L"command_fence")))
+	{
+		return false;
+	}
+
+	fenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+
+	if (fenceEvent == nullptr)
+	{
+		return false;
+	}
+	LOG("Created synchronization objects.");
+
+	return true;
+}
+
+bool renderEngine::shutdown()
+{
+	// TODO Flush executing queues method
+
+	commandQueue.Reset();
+	commandList.Reset();
+	commandAllocators.clear();
+	fence.Reset();
+
+	return true;
+}
+
 bool d3d12Renderer::init(const rendererInitSettings& settings)
 {
-	LOG("Initializing d3d12 renderer.");
+	LOG("Initializing d3d12 renderer:");
 
     if (mainDevice != nullptr)
     {
@@ -102,6 +241,17 @@ bool d3d12Renderer::init(const rendererInitSettings& settings)
 	descriptorSizes.sampler = mainDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 	LOG("Retrieved descriptor increment sizes.");
 
+	// Initialize graphics engine
+	LOG("Initializing graphics render engine:");
+	const bool initGraphicsEngineResult = graphicsEngine.init(mainDevice.Get(),
+		D3D12_COMMAND_LIST_TYPE_DIRECT, settings.backBufferCount);
+
+	if (!initGraphicsEngineResult)
+	{
+		return false;
+	}
+	LOG("Initialized graphics render engine.");
+
 
 
 	LOG("Initialized d3d12 renderer.");
@@ -110,6 +260,13 @@ bool d3d12Renderer::init(const rendererInitSettings& settings)
 
 bool d3d12Renderer::shutdown()
 {
+	const bool graphicsEngineShutdownResult = graphicsEngine.shutdown();
+	if (!graphicsEngineShutdownResult)
+	{
+		return false;
+	}
+	LOG("Shutdown graphics render engine.");
+
 	dxgiFactory.Reset();
 	mainAdapter.Reset();
 	mainDevice.Reset();
@@ -244,24 +401,6 @@ bool d3d12Renderer::enableDeviceDebugInfo(const Microsoft::WRL::ComPtr<ID3D12Dev
 	}
 
 	return true;
-}
-
-std::string d3d12Renderer::getD3dFeatureLevelAsString(const D3D_FEATURE_LEVEL featureLevel) const
-{
-	switch (featureLevel)
-	{
-	case D3D_FEATURE_LEVEL_9_1:	 return "D3D_FEATURE_LEVEL_9_1";
-	case D3D_FEATURE_LEVEL_9_2:	 return "D3D_FEATURE_LEVEL_9_2";
-	case D3D_FEATURE_LEVEL_9_3:	 return "D3D_FEATURE_LEVEL_9_3";
-	case D3D_FEATURE_LEVEL_10_0: return "D3D_FEATURE_LEVEL_10_0";
-	case D3D_FEATURE_LEVEL_10_1: return "D3D_FEATURE_LEVEL_10_1";
-	case D3D_FEATURE_LEVEL_11_0: return "D3D_FEATURE_LEVEL_11_0";
-	case D3D_FEATURE_LEVEL_11_1: return "D3D_FEATURE_LEVEL_11_1";
-	case D3D_FEATURE_LEVEL_12_0: return "D3D_FEATURE_LEVEL_12_0";
-	case D3D_FEATURE_LEVEL_12_1: return "D3D_FEATURE_LEVEL_12_1";
-	case D3D_FEATURE_LEVEL_12_2: return "D3D_FEATURE_LEVEL_12_2";
-	}
-	return "INVALID_FEATURE_LEVEL";
 }
 
 bool d3d12Renderer::getTearingSupport(IDXGIFactory7* factory) const

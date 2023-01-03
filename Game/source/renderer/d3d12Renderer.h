@@ -10,6 +10,22 @@ struct descriptorIncrementSizes
 	uint32_t sampler = 0;
 };
 
+class renderEngine
+{
+private:
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
+	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6> commandList = nullptr;
+	std::vector<Microsoft::WRL::ComPtr<ID3D12CommandAllocator>> commandAllocators;
+	uint64_t currentFenceValue = 0;
+	std::vector<uint64_t> inFlightFenceValues;
+	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
+	HANDLE fenceEvent = nullptr;
+
+public:
+	bool init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uint32_t inFlightFrameCount);
+	bool shutdown();
+};
+
 class d3d12Renderer : public renderer
 {
 private:
@@ -22,6 +38,8 @@ private:
 
 	descriptorIncrementSizes descriptorSizes = {};
 
+	renderEngine graphicsEngine = {};
+
 public:
 	// Renderer interface
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
@@ -29,6 +47,7 @@ public:
 	virtual bool shutdown() final;
 
 private:
+	// TODO Make these free functions inside d3d12Renderer.cpp including release
 	bool enableDebugLayer(const bool enableGPUValidation,
 		const D3D12_GPU_BASED_VALIDATION_FLAGS gpuBasedValidationFlags,
 		const bool enableSynchonizedCommandQueueValidation) const;
@@ -36,7 +55,6 @@ private:
 	IDXGIAdapter4* enumerateAdapters(IDXGIFactory7* factory) const;
 	D3D_FEATURE_LEVEL getAdapterMaximumFeatureLevel(IDXGIAdapter4* adapter) const;
 	bool enableDeviceDebugInfo(const Microsoft::WRL::ComPtr<ID3D12Device8>& device) const;
-	std::string getD3dFeatureLevelAsString(const D3D_FEATURE_LEVEL featureLevel) const;
 	bool getTearingSupport(IDXGIFactory7* factory) const;
 
 	template<typename T>

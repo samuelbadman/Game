@@ -9,6 +9,7 @@ enum class rendererPlatform : uint8_t
 struct rendererInitSettings
 {
 	uint32_t displayIndex = 0;
+	uint32_t backBufferCount = 3;
 };
 
 class renderer

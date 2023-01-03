@@ -16,10 +16,10 @@ struct gameSettings
 	static constexpr uint32_t defaultDisplayIndex = 0;
 
 	// Rendering settings
-	//ERenderingAPI RenderingAPI = ERenderingAPI::DirectX12;
+	static constexpr rendererPlatform renderingPlatform = rendererPlatform::direct3d12;
+	static constexpr uint32_t backBufferCount = 3;
 	//Vector4D ClearColor = Vector4D(0.0f, 0.0f, 0.0f, 1.0f);
 	//bool VSyncEnabled = true;
-	//uint8_t BackBufferCount = 3; // Require renderer restart to apply change
 
 	// Tick settings
 	// The time taken in between fixed updates in seconds
@@ -94,10 +94,11 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LOG("Initialized win32 window.");
 
 	// Create and initialize renderer
-	gameRenderer = renderer::create(rendererPlatform::direct3d12);
+	gameRenderer = renderer::create(gameSettings::renderingPlatform);
 
 	rendererInitSettings rendererSettings = {};
 	rendererSettings.displayIndex = gameSettings::defaultDisplayIndex;
+	rendererSettings.backBufferCount = gameSettings::backBufferCount;
 
 	const bool rendererInitResult = gameRenderer->init(rendererSettings);
 	if (!rendererInitResult)
