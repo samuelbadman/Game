@@ -110,6 +110,13 @@ bool d3d12Renderer::init(const rendererInitSettings& settings)
 #endif // _DEBUG
 	LOG("Created d3d12 device.");
 
+	// Retreive descriptor increment sizes
+	descriptorSizes.cbv_srv_uav = mainDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	descriptorSizes.rtv = mainDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	descriptorSizes.dsv = mainDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	descriptorSizes.sampler = mainDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+	LOG("Retrieved descriptor increment sizes.");
+
 
 
 	LOG("Initialized d3d12 renderer.");

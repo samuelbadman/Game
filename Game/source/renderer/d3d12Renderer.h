@@ -11,6 +11,14 @@
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "d3d12.lib")
 
+struct descriptorIncrementSizes
+{
+	uint32_t cbv_srv_uav = 0;
+	uint32_t rtv = 0;
+	uint32_t dsv = 0;
+	uint32_t sampler = 0;
+};
+
 class d3d12Renderer : public renderer
 {
 private:
@@ -20,6 +28,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Device8> mainDevice = nullptr;
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> mainAdapter = nullptr;
+
+	descriptorIncrementSizes descriptorSizes = {};
 
 public:
 	// Renderer interface
