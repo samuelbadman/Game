@@ -1,8 +1,5 @@
 #pragma once
 
-#include <memory>
-#include <cstdint>
-
 enum class rendererPlatform : uint8_t
 {
 	direct3d12 = 0,

@@ -1,8 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
-
 class win32Console
 {
 public:

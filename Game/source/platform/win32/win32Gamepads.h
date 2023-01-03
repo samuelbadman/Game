@@ -3,14 +3,6 @@
 #include "events/core/inputEvent.h"
 #include "callback.h"
 
-#include <cstdint>
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-#include <Xinput.h>
-
-#pragma comment(lib, "xinput.lib")
-
 class win32Gamepads
 {
 private:

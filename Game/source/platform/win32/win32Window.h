@@ -14,13 +14,6 @@
 #include "events/core/enterFullScreenEvent.h"
 #include "events/core/exitFullScreenEvent.h"
 
-#include <string>
-#include <cstdint>
-
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
 // Window style enumeration
 enum class windowStyle : uint8_t
 {

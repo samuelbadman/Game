@@ -1,6 +1,5 @@
+#include "pch.h"
 #include "win32Display.h"
-
-#include <cassert>
 
 displayInfo win32Display::infoForDisplayAtIndex(const uint32_t displayIndex)
 {

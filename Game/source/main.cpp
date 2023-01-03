@@ -1,15 +1,9 @@
+#include "pch.h"
 #include "platform/win32/win32Window.h"
 #include "platform/win32/win32Gamepads.h"
 #include "log.h"
 #include "game.h"
 #include "renderer/renderer.h"
-
-#include <memory>
-#include <chrono>
-
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
 
 struct gameSettings
 {

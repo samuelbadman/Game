@@ -1,12 +1,5 @@
 #pragma once
 
-#include <cstdint>
-#include <string>
-
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
 struct displayInfo
 {
 	std::wstring name = L"";

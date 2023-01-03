@@ -1,10 +1,5 @@
+#include "pch.h"
 #include "win32Console.h"
-
-#include <iostream>
-
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
 
 bool win32Console::init()
 {

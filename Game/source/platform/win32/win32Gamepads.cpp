@@ -1,7 +1,6 @@
+#include "pch.h"
 #include "win32Gamepads.h"
 #include "win32InputKeyCode.h"
-
-#include <algorithm>
 
 XINPUT_STATE win32Gamepads::prevStates[XUSER_MAX_COUNT];
 callback<const inputEvent&> win32Gamepads::onInput;

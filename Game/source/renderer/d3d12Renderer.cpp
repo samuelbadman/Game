@@ -1,9 +1,8 @@
+#include "pch.h"
 #include "d3d12Renderer.h"
 #include "log.h"
 #include "stringHelper.h"
 #include "platform/win32/win32Display.h"
-
-#include <cassert>
 
 bool d3d12Renderer::init(const rendererInitSettings& settings)
 {

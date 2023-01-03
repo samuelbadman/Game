@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "renderer.h"
 #include "d3d12Renderer.h"
 

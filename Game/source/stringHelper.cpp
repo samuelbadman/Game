@@ -1,6 +1,5 @@
+#include "pch.h"
 #include "stringHelper.h"
-
-#include <cstdarg>
 
 std::string stringHelper::printf(const char* format, ...)
 {

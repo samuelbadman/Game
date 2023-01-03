@@ -1,8 +1,6 @@
+#include "pch.h"
 #include "win32Window.h"
 #include "win32InputKeyCode.h"
-
-#include <memory>
-#include <assert.h>
 
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
