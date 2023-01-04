@@ -10,9 +10,11 @@ struct descriptorIncrementSizes
 	uint32_t sampler = 0;
 };
 
-class renderEngine
+class renderContext
 {
 private:
+	renderCommand::commandContext context = renderCommand::commandContext::unknown;
+	class d3d12Renderer* owner = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12CommandQueue> commandQueue = nullptr;
 	Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6> commandList = nullptr;
 	std::vector<Microsoft::WRL::ComPtr<ID3D12CommandAllocator>> commandAllocators;
@@ -22,9 +24,15 @@ private:
 	HANDLE fenceEvent = nullptr;
 
 public:
-	bool init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uint32_t inFlightFrameCount);
+	bool init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, class d3d12Renderer* renderer, uint32_t inFlightFrameCount);
 	bool shutdown();
 	bool flush();
+	bool waitOnCallingCPUThreadForFrame(uint32_t frameIndex);
+	void receiveCommand(const renderCommand& command);
+
+	// Command implementation methods
+	void command_BeginFrame_Impl(const renderCommand_beginFrame& command);
+	void command_EndFrame_Impl(const renderCommand_endFrame& command);
 };
 
 class d3d12Renderer : public renderer
@@ -39,11 +47,12 @@ private:
 
 	descriptorIncrementSizes descriptorSizes = {};
 
-	renderEngine graphicsEngine = {};
+	renderContext graphicsContext = {};
 
 public:
 	// Renderer interface
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
 	virtual bool init(const rendererInitSettings& settings) final;
 	virtual bool shutdown() final;
+	virtual void submitRenderCommand(const renderCommand& command) final;
 };

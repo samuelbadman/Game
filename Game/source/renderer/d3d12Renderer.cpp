@@ -206,9 +206,18 @@ bool waitForValueOnCurrentCPUThread(HANDLE fenceEvent, ID3D12Fence* const fence,
 	return true;
 }
 
-bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uint32_t inFlightFrameCount)
+bool renderContext::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, d3d12Renderer* renderer, uint32_t inFlightFrameCount)
 {
-	LOG(stringHelper::printf("Initializing render engine with type: %s and in flight frame count: %d.", getCommandListTypeAsString(type).c_str(), inFlightFrameCount));
+	LOG(stringHelper::printf("Initializing render context with type: %s and in flight frame count: %d.",
+		getCommandListTypeAsString(type).c_str(), inFlightFrameCount));
+
+	context = type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+		renderCommand::commandContext::graphics :
+		type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
+		renderCommand::commandContext::compute : renderCommand::commandContext::unknown;
+
+	owner = renderer;
+
 	// Create command queue
 	D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
 	commandQueueDesc.Type = type;
@@ -309,7 +318,7 @@ bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uin
 	return true;
 }
 
-bool renderEngine::shutdown()
+bool renderContext::shutdown()
 {
 	// TODO Flush executing queues method
 
@@ -321,7 +330,7 @@ bool renderEngine::shutdown()
 	return true;
 }
 
-bool renderEngine::flush()
+bool renderContext::flush()
 {
 	// Wait for all frames to finish executing
 	const size_t inFlightFrameCount = inFlightFenceValues.size();
@@ -331,6 +340,32 @@ bool renderEngine::flush()
 	}
 
 	return true;
+}
+
+bool renderContext::waitOnCallingCPUThreadForFrame(uint32_t frameIndex)
+{
+	return waitForValueOnCurrentCPUThread(fenceEvent, fence.Get(), inFlightFenceValues[static_cast<size_t>(frameIndex)]);
+}
+
+void renderContext::receiveCommand(const renderCommand& command)
+{
+	assert(command.context == context);
+
+	switch (command.type)
+	{
+		case renderCommand::commandType::beginFrame: command_BeginFrame_Impl(static_cast<const renderCommand_beginFrame&>(command)); break;
+		case renderCommand::commandType::endFrame: command_EndFrame_Impl(static_cast<const renderCommand_endFrame&>(command)); break;
+	}
+}
+
+void renderContext::command_BeginFrame_Impl(const renderCommand_beginFrame& command)
+{
+
+}
+
+void renderContext::command_EndFrame_Impl(const renderCommand_endFrame& command)
+{
+
 }
 
 bool d3d12Renderer::init(const rendererInitSettings& settings)
@@ -431,16 +466,16 @@ bool d3d12Renderer::init(const rendererInitSettings& settings)
 	descriptorSizes.sampler = mainDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 	LOG("Retrieved descriptor increment sizes.");
 
-	// Initialize graphics engine
-	LOG("Initializing graphics render engine:");
-	const bool initGraphicsEngineResult = graphicsEngine.init(mainDevice.Get(),
-		D3D12_COMMAND_LIST_TYPE_DIRECT, settings.buffering == bufferingType::doubleBuffering ? 2 : 3);
+	// Initialize graphics context
+	LOG("Initializing graphics render context:");
+	const bool initGraphicsContextResult = graphicsContext.init(mainDevice.Get(),
+		D3D12_COMMAND_LIST_TYPE_DIRECT, this, settings.buffering == bufferingType::doubleBuffering ? 2 : 3);
 
-	if (!initGraphicsEngineResult)
+	if (!initGraphicsContextResult)
 	{
 		return false;
 	}
-	LOG("Initialized graphics render engine.");
+	LOG("Initialized graphics render context.");
 
 
 
@@ -450,12 +485,12 @@ bool d3d12Renderer::init(const rendererInitSettings& settings)
 
 bool d3d12Renderer::shutdown()
 {
-	const bool graphicsEngineShutdownResult = graphicsEngine.shutdown();
-	if (!graphicsEngineShutdownResult)
+	const bool graphicsContextShutdownResult = graphicsContext.shutdown();
+	if (!graphicsContextShutdownResult)
 	{
 		return false;
 	}
-	LOG("Shutdown graphics render engine.");
+	LOG("Shutdown graphics render context.");
 
 	dxgiFactory.Reset();
 	mainAdapter.Reset();
@@ -463,4 +498,14 @@ bool d3d12Renderer::shutdown()
 
 	LOG("Shutdown d3d12 renderer.");
 	return true;
+}
+
+void d3d12Renderer::submitRenderCommand(const renderCommand& command)
+{
+	// Submit the command to the correct render context
+	switch (command.context)
+	{
+	case renderCommand::commandContext::graphics: graphicsContext.receiveCommand(command); break;
+	case renderCommand::commandContext::compute: assert(false);  break;
+	}
 }
