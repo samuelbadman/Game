@@ -6,10 +6,16 @@ enum class rendererPlatform : uint8_t
 	vulkan = 1
 };
 
+enum class bufferingType : uint8_t
+{
+	doubleBuffering = 0,
+	tripleBuffering = 1
+};
+
 struct rendererInitSettings
 {
 	uint32_t displayIndex = 0;
-	uint32_t backBufferCount = 3;
+	bufferingType buffering = bufferingType::tripleBuffering;
 };
 
 class renderer

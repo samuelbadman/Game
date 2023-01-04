@@ -24,11 +24,12 @@ private:
 public:
 	bool init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uint32_t inFlightFrameCount);
 	bool shutdown();
+	bool flush();
 };
 
 class d3d12Renderer : public renderer
 {
-private:
+public:
 	static constexpr D3D_FEATURE_LEVEL minimumSupportedFeatureLevel = D3D_FEATURE_LEVEL_11_0;
 
 private:
@@ -45,28 +46,4 @@ public:
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
 	virtual bool init(const rendererInitSettings& settings) final;
 	virtual bool shutdown() final;
-
-private:
-	// TODO Make these free functions inside d3d12Renderer.cpp including release
-	bool enableDebugLayer(const bool enableGPUValidation,
-		const D3D12_GPU_BASED_VALIDATION_FLAGS gpuBasedValidationFlags,
-		const bool enableSynchonizedCommandQueueValidation) const;
-	bool reportLiveObjects() const;
-	IDXGIAdapter4* enumerateAdapters(IDXGIFactory7* factory) const;
-	D3D_FEATURE_LEVEL getAdapterMaximumFeatureLevel(IDXGIAdapter4* adapter) const;
-	bool enableDeviceDebugInfo(const Microsoft::WRL::ComPtr<ID3D12Device8>& device) const;
-	bool getTearingSupport(IDXGIFactory7* factory) const;
-
-	template<typename T>
-	void release(T*& resource) const;
 };
-
-template<typename T>
-inline void d3d12Renderer::release(T*& resource) const
-{
-	if (resource != nullptr)
-	{
-		resource->Release();
-		resource = nullptr;
-	}
-}

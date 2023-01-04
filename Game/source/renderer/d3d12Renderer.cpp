@@ -37,6 +37,175 @@ static std::string getCommandListTypeAsString(const D3D12_COMMAND_LIST_TYPE type
 	return "INVALID_COMMAND_LIST_TYPE";
 }
 
+template<typename T>
+void release(T*& resource)
+{
+	if (resource != nullptr)
+	{
+		resource->Release();
+		resource = nullptr;
+	}
+}
+
+bool enableDebugLayer(const bool enableGPUValidation,
+	const D3D12_GPU_BASED_VALIDATION_FLAGS gpuBasedValidationFlags,
+	const bool enableSynchonizedCommandQueueValidation)
+{
+	// Enable debug layer
+	Microsoft::WRL::ComPtr<ID3D12Debug3> debugInterface;
+	if (FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
+	{
+		return false;
+	}
+	debugInterface->EnableDebugLayer();
+
+	// Enable GPU based validation and synchronized command queue validation
+	debugInterface->SetEnableGPUBasedValidation(enableGPUValidation);
+	debugInterface->SetGPUBasedValidationFlags(gpuBasedValidationFlags);
+	debugInterface->SetEnableSynchronizedCommandQueueValidation(enableSynchonizedCommandQueueValidation);
+
+	return true;
+}
+
+bool reportLiveObjects()
+{
+	// Enable reporting of live objects
+	Microsoft::WRL::ComPtr<IDXGIDebug1> dxgiDebugInterface;
+	if (FAILED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebugInterface))))
+	{
+		return false;
+	}
+	if (FAILED(dxgiDebugInterface->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL)))
+	{
+		return false;
+	}
+	return true;
+}
+
+IDXGIAdapter4* enumerateAdapters(IDXGIFactory7* factory)
+{
+	IDXGIAdapter4* adapter = nullptr;
+
+	// Get adapters in descending order of performance (highest performance first)
+	for (UINT i = 0; factory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND; ++i)
+	{
+		// Return the first adapter that supports the minimum feature level
+		if (SUCCEEDED(D3D12CreateDevice(adapter, d3d12Renderer::minimumSupportedFeatureLevel, __uuidof(ID3D12Device), nullptr)))
+		{
+			return adapter;
+		}
+
+		// Release the adapter as it does not meet minimum requirements
+		release(adapter);
+	}
+
+	// No adapters were found that meet minimum requirements
+	return nullptr;
+}
+
+D3D_FEATURE_LEVEL getAdapterMaximumFeatureLevel(IDXGIAdapter4* adapter)
+{
+	constexpr size_t featureLevelsCount = 5;
+	constexpr D3D_FEATURE_LEVEL featureLevels[featureLevelsCount] =
+	{
+		D3D_FEATURE_LEVEL_11_0,
+		D3D_FEATURE_LEVEL_11_1,
+		D3D_FEATURE_LEVEL_12_0,
+		D3D_FEATURE_LEVEL_12_1,
+		D3D_FEATURE_LEVEL_12_2
+	};
+
+	D3D12_FEATURE_DATA_FEATURE_LEVELS featureLevelInfo = {};
+	featureLevelInfo.NumFeatureLevels = static_cast<UINT>(featureLevelsCount);
+	featureLevelInfo.pFeatureLevelsRequested = featureLevels;
+
+	Microsoft::WRL::ComPtr<ID3D12Device> device;
+	if (FAILED(D3D12CreateDevice(adapter, d3d12Renderer::minimumSupportedFeatureLevel, IID_PPV_ARGS(&device))))
+	{
+		return D3D_FEATURE_LEVEL();
+	}
+
+	if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &featureLevelInfo, sizeof(featureLevelInfo))))
+	{
+		return D3D_FEATURE_LEVEL();
+	}
+
+	return featureLevelInfo.MaxSupportedFeatureLevel;
+}
+
+bool enableDeviceDebugInfo(const Microsoft::WRL::ComPtr<ID3D12Device8>& device)
+{
+	// Enable device debug info
+	Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue;
+	if (FAILED(device.As(&infoQueue)))
+	{
+		return false;
+	}
+
+	infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+	infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+	infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+
+	D3D12_MESSAGE_SEVERITY severities[] =
+	{
+		D3D12_MESSAGE_SEVERITY_INFO
+	};
+
+	D3D12_MESSAGE_ID denyIds[] =
+	{
+		D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+		D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,
+		D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE,
+		// Workarounds for debug layer errors on hybrid-graphics systems
+		D3D12_MESSAGE_ID_EXECUTECOMMANDLISTS_WRONGSWAPCHAINBUFFERREFERENCE,
+		D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE
+	};
+
+	D3D12_INFO_QUEUE_FILTER queueFilter = {};
+	queueFilter.DenyList.NumSeverities = _countof(severities);
+	queueFilter.DenyList.pSeverityList = severities;
+	queueFilter.DenyList.NumIDs = _countof(denyIds);
+	queueFilter.DenyList.pIDList = denyIds;
+
+	if (FAILED(infoQueue->PushStorageFilter(&queueFilter)))
+	{
+		return false;
+	}
+
+	return true;
+}
+
+bool getTearingSupport(IDXGIFactory7* factory)
+{
+	BOOL allowTearing = FALSE;
+
+	if (FAILED(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
+	{
+		allowTearing = FALSE;
+	}
+
+	return (allowTearing == TRUE);
+}
+
+bool waitForValueOnCurrentCPUThread(HANDLE fenceEvent, ID3D12Fence* const fence, uint64_t value)
+{
+	// If the fence's current value is less than the fence value, then the GPU is still
+	// executing commands and has not reached the CommandQueue->Signal() command yet
+	if (fence->GetCompletedValue() < value)
+	{
+		// Set event to be executed once the fence value reaches the command frame's fence value
+		if (FAILED(fence->SetEventOnCompletion(value, fenceEvent)))
+		{
+			return false;
+		}
+
+		// Wait until the fence has triggered the event 
+		WaitForSingleObject(fenceEvent, static_cast<DWORD>(std::chrono::milliseconds::max().count()));
+	}
+
+	return true;
+}
+
 bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uint32_t inFlightFrameCount)
 {
 	LOG(stringHelper::printf("Initializing render engine with type: %s and in flight frame count: %d.", getCommandListTypeAsString(type).c_str(), inFlightFrameCount));
@@ -52,14 +221,16 @@ bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uin
 		return false;
 	}
 
-	if (FAILED(commandQueue->SetName(type == D3D12_COMMAND_LIST_TYPE_DIRECT ? 
+	const std::wstring commandQueueName = type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
 		L"graphics_command_queue" :
 		type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
-		L"compute_command_queue" : L"command_queue")))
+		L"compute_command_queue" : L"command_queue";
+
+	if (FAILED(commandQueue->SetName(commandQueueName.c_str())))
 	{
 		return false;
 	}
-	LOG("Created command queue.");
+	LOG(stringHelper::printf("Created %S.", commandQueueName.c_str()));
 
 	// Create command allocators for each in flight frame
 	commandAllocators.resize(static_cast<size_t>(inFlightFrameCount), nullptr);
@@ -72,15 +243,17 @@ bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uin
 			return false;
 		}
 
-		if (FAILED(commandAllocator->SetName(type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+		const std::wstring commandAllocatorName = type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
 			std::wstring(L"graphics_command_allocator" + std::to_wstring(i)).c_str() :
 			type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
 			std::wstring(L"compute_command_allocator" + std::to_wstring(i)).c_str() :
-			std::wstring(L"command_allocator" + std::to_wstring(i)).c_str())))
+			std::wstring(L"command_allocator" + std::to_wstring(i)).c_str();
+
+		if (FAILED(commandAllocator->SetName(commandAllocatorName.c_str())))
 		{
 			return false;
 		}
-		LOG("Created command allocator.");
+		LOG(stringHelper::printf("Created %S.", commandAllocatorName.c_str()));
 	}
 
 	// Create command list
@@ -94,14 +267,16 @@ bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uin
 		return false;
 	}
 
-	if (FAILED(commandList->SetName(type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+	const std::wstring commandListName = type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
 		L"graphics_command_list" :
 		type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
-		L"compute_command_list" : L"command_list")))
+		L"compute_command_list" : L"command_list";
+
+	if (FAILED(commandList->SetName(commandListName.c_str())))
 	{
 		return false;
 	}
-	LOG("Created command list.");
+	LOG(stringHelper::printf("Created %S.", commandListName.c_str()));
 
 	// Create synchronization objects
 	currentFenceValue = 0;
@@ -112,13 +287,16 @@ bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uin
 		return false;
 	}
 
-	if (FAILED(fence->SetName(type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
+	const std::wstring fenceName = type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
 		L"graphics_fence" :
 		type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
-		L"compute_fence" : L"command_fence")))
+		L"compute_fence" : L"command_fence";
+
+	if (FAILED(fence->SetName(fenceName.c_str())))
 	{
 		return false;
 	}
+	LOG(stringHelper::printf("Created %S.", fenceName.c_str()));
 
 	fenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
 
@@ -126,7 +304,7 @@ bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uin
 	{
 		return false;
 	}
-	LOG("Created synchronization objects.");
+	LOG("Created fence event.");
 
 	return true;
 }
@@ -139,6 +317,18 @@ bool renderEngine::shutdown()
 	commandList.Reset();
 	commandAllocators.clear();
 	fence.Reset();
+
+	return true;
+}
+
+bool renderEngine::flush()
+{
+	// Wait for all frames to finish executing
+	const size_t inFlightFrameCount = inFlightFenceValues.size();
+	for (size_t i = 0; i < inFlightFrameCount; ++i)
+	{
+		if (!waitForValueOnCurrentCPUThread(fenceEvent, fence.Get(), inFlightFenceValues[i])) return false;
+	}
 
 	return true;
 }
@@ -244,7 +434,7 @@ bool d3d12Renderer::init(const rendererInitSettings& settings)
 	// Initialize graphics engine
 	LOG("Initializing graphics render engine:");
 	const bool initGraphicsEngineResult = graphicsEngine.init(mainDevice.Get(),
-		D3D12_COMMAND_LIST_TYPE_DIRECT, settings.backBufferCount);
+		D3D12_COMMAND_LIST_TYPE_DIRECT, settings.buffering == bufferingType::doubleBuffering ? 2 : 3);
 
 	if (!initGraphicsEngineResult)
 	{
@@ -273,144 +463,4 @@ bool d3d12Renderer::shutdown()
 
 	LOG("Shutdown d3d12 renderer.");
 	return true;
-}
-
-bool d3d12Renderer::enableDebugLayer(const bool enableGPUValidation,
-	const D3D12_GPU_BASED_VALIDATION_FLAGS gpuBasedValidationFlags,
-	const bool enableSynchonizedCommandQueueValidation) const
-{
-	// Enable debug layer
-	Microsoft::WRL::ComPtr<ID3D12Debug3> debugInterface;
-	if (FAILED(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface))))
-	{
-		return false;
-	}
-	debugInterface->EnableDebugLayer();
-
-	// Enable GPU based validation and synchronized command queue validation
-	debugInterface->SetEnableGPUBasedValidation(enableGPUValidation);
-	debugInterface->SetGPUBasedValidationFlags(gpuBasedValidationFlags);
-	debugInterface->SetEnableSynchronizedCommandQueueValidation(enableSynchonizedCommandQueueValidation);
-
-	return true;
-}
-
-bool d3d12Renderer::reportLiveObjects() const
-{
-	// Enable reporting of live objects
-	Microsoft::WRL::ComPtr<IDXGIDebug1> dxgiDebugInterface;
-	if (FAILED(DXGIGetDebugInterface1(0, IID_PPV_ARGS(&dxgiDebugInterface))))
-	{
-		return false;
-	}
-	if (FAILED(dxgiDebugInterface->ReportLiveObjects(DXGI_DEBUG_ALL, DXGI_DEBUG_RLO_IGNORE_INTERNAL)))
-	{
-		return false;
-	}
-	return true;
-}
-
-IDXGIAdapter4* d3d12Renderer::enumerateAdapters(IDXGIFactory7* factory) const
-{
-	IDXGIAdapter4* adapter = nullptr;
-
-	// Get adapters in descending order of performance (highest performance first)
-	for (UINT i = 0; factory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND; ++i)
-	{
-		// Return the first adapter that supports the minimum feature level
-		if (SUCCEEDED(D3D12CreateDevice(adapter, minimumSupportedFeatureLevel, __uuidof(ID3D12Device), nullptr)))
-		{
-			return adapter;
-		}
-
-		// Release the adapter as it does not meet minimum requirements
-		release(adapter);
-	}
-
-	// No adapters were found that meet minimum requirements
-	return nullptr;
-}
-
-D3D_FEATURE_LEVEL d3d12Renderer::getAdapterMaximumFeatureLevel(IDXGIAdapter4* adapter) const
-{
-	constexpr size_t featureLevelsCount = 5;
-	constexpr D3D_FEATURE_LEVEL featureLevels[featureLevelsCount] =
-	{
-		D3D_FEATURE_LEVEL_11_0,
-		D3D_FEATURE_LEVEL_11_1,
-		D3D_FEATURE_LEVEL_12_0,
-		D3D_FEATURE_LEVEL_12_1,
-		D3D_FEATURE_LEVEL_12_2
-	};
-
-	D3D12_FEATURE_DATA_FEATURE_LEVELS featureLevelInfo = {};
-	featureLevelInfo.NumFeatureLevels = static_cast<UINT>(featureLevelsCount);
-	featureLevelInfo.pFeatureLevelsRequested = featureLevels;
-
-	Microsoft::WRL::ComPtr<ID3D12Device> device;
-	if (FAILED(D3D12CreateDevice(adapter, minimumSupportedFeatureLevel, IID_PPV_ARGS(&device))))
-	{
-		return D3D_FEATURE_LEVEL();
-	}
-
-	if (FAILED(device->CheckFeatureSupport(D3D12_FEATURE_FEATURE_LEVELS, &featureLevelInfo, sizeof(featureLevelInfo))))
-	{
-		return D3D_FEATURE_LEVEL();
-	}
-
-	return featureLevelInfo.MaxSupportedFeatureLevel;
-}
-
-bool d3d12Renderer::enableDeviceDebugInfo(const Microsoft::WRL::ComPtr<ID3D12Device8>& device) const
-{
-	// Enable device debug info
-	Microsoft::WRL::ComPtr<ID3D12InfoQueue> infoQueue;
-	if (FAILED(device.As(&infoQueue)))
-	{
-		return false;
-	}
-
-	infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
-	infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
-	infoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
-
-	D3D12_MESSAGE_SEVERITY severities[] =
-	{
-		D3D12_MESSAGE_SEVERITY_INFO
-	};
-
-	D3D12_MESSAGE_ID denyIds[] =
-	{
-		D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
-		D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,
-		D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE,
-		// Workarounds for debug layer errors on hybrid-graphics systems
-		D3D12_MESSAGE_ID_EXECUTECOMMANDLISTS_WRONGSWAPCHAINBUFFERREFERENCE,
-		D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE
-	};
-
-	D3D12_INFO_QUEUE_FILTER queueFilter = {};
-	queueFilter.DenyList.NumSeverities = _countof(severities);
-	queueFilter.DenyList.pSeverityList = severities;
-	queueFilter.DenyList.NumIDs = _countof(denyIds);
-	queueFilter.DenyList.pIDList = denyIds;
-
-	if (FAILED(infoQueue->PushStorageFilter(&queueFilter)))
-	{
-		return false;
-	}
-
-	return true;
-}
-
-bool d3d12Renderer::getTearingSupport(IDXGIFactory7* factory) const
-{
-	BOOL allowTearing = FALSE;
-
-	if (FAILED(factory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
-	{
-		allowTearing = FALSE;
-	}
-
-	return (allowTearing == TRUE);
 }

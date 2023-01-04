@@ -17,7 +17,7 @@ struct gameSettings
 
 	// Rendering settings
 	static constexpr rendererPlatform renderingPlatform = rendererPlatform::direct3d12;
-	static constexpr uint32_t backBufferCount = 3;
+	static constexpr bufferingType buffering = bufferingType::tripleBuffering;
 	//Vector4D ClearColor = Vector4D(0.0f, 0.0f, 0.0f, 1.0f);
 	//bool VSyncEnabled = true;
 
@@ -98,7 +98,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	rendererInitSettings rendererSettings = {};
 	rendererSettings.displayIndex = gameSettings::defaultDisplayIndex;
-	rendererSettings.backBufferCount = gameSettings::backBufferCount;
+	rendererSettings.buffering = gameSettings::buffering;
 
 	const bool rendererInitResult = gameRenderer->init(rendererSettings);
 	if (!rendererInitResult)
