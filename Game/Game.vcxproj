@@ -111,6 +111,7 @@
     <ClInclude Include="source\log.h" />
     <ClInclude Include="source\pch.h" />
     <ClInclude Include="source\renderer\d3d12Renderer.h" />
+    <ClInclude Include="source\renderer\renderCommands.h" />
     <ClInclude Include="source\renderer\renderer.h" />
     <ClInclude Include="source\stringHelper.h" />
     <ClInclude Include="source\platform\win32\win32Console.h" />

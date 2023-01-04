@@ -1,5 +1,7 @@
 #pragma once
 
+#include "renderCommands.h"
+
 enum class rendererPlatform : uint8_t
 {
 	direct3d12 = 0,
@@ -12,19 +14,47 @@ enum class bufferingType : uint8_t
 	tripleBuffering = 1
 };
 
-struct rendererInitSettings
+struct renderDeviceInitSettings
 {
 	uint32_t displayIndex = 0;
 	bufferingType buffering = bufferingType::tripleBuffering;
 };
 
-class renderer
+struct renderContextInitSettings
 {
+	renderCommand::commandContext context = renderCommand::commandContext::unknown;
+};
+
+class renderContext
+{
+private:
+	renderCommand::commandContext context = renderCommand::commandContext::unknown;
+
 public:
-	static std::unique_ptr<renderer> create(const rendererPlatform platform);
+	virtual ~renderContext() = default;
 
 public:
 	virtual rendererPlatform getPlatform() const = 0;
-	virtual bool init(const rendererInitSettings& settings) = 0;
+	virtual void submitRenderCommand(const renderCommand& command) = 0;
+
+public:
+	renderCommand::commandContext getCommandContext() const { return context; }
+
+protected:
+	void setCommandContext(renderCommand::commandContext inContext) { context = inContext; }
+};
+
+class renderDevice
+{
+public:
+	static std::unique_ptr<renderDevice> create(const rendererPlatform platform);
+
+public:
+	virtual ~renderDevice() = default;
+
+public:
+	virtual rendererPlatform getPlatform() const = 0;
+	virtual bool init(const renderDeviceInitSettings& settings) = 0;
 	virtual bool shutdown() = 0;
+	virtual bool flush() = 0;
 };

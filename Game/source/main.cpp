@@ -31,7 +31,8 @@ struct gameSettings
 static bool running = true;
 static std::unique_ptr<win32Window> window = nullptr;
 static std::unique_ptr<game> gameInstance = nullptr;
-static std::unique_ptr<renderer> gameRenderer = nullptr;
+static std::unique_ptr<renderDevice> gameRenderDevice = nullptr;
+static std::unique_ptr<renderContext> graphicsRenderContext = nullptr;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
@@ -94,18 +95,25 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	LOG("Initialized win32 window.");
 
 	// Create and initialize renderer
-	gameRenderer = renderer::create(gameSettings::renderingPlatform);
+	// Render device
+	gameRenderDevice = renderDevice::create(gameSettings::renderingPlatform);
 
-	rendererInitSettings rendererSettings = {};
-	rendererSettings.displayIndex = gameSettings::defaultDisplayIndex;
-	rendererSettings.buffering = gameSettings::buffering;
+	renderDeviceInitSettings renderDeviceSettings = {};
+	renderDeviceSettings.displayIndex = gameSettings::defaultDisplayIndex;
+	renderDeviceSettings.buffering = gameSettings::buffering;
 
-	const bool rendererInitResult = gameRenderer->init(rendererSettings);
-	if (!rendererInitResult)
+	const bool renderDeviceInitResult = gameRenderDevice->init(renderDeviceSettings);
+	if (!renderDeviceInitResult)
 	{
-		MessageBoxA(0, "Failed to initialize renderer.", "Error", MB_OK | MB_ICONERROR);
+		MessageBoxA(0, "Failed to initialize render device.", "Error", MB_OK | MB_ICONERROR);
 		return -1;
 	}
+
+	// Graphics render context
+
+
+	// Swap chain
+
 
 	// Initialize game loop
 	LOG("Entering game loop.");
@@ -153,16 +161,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	gameInstance.reset();
 
 	// Shutdown and destroy the renderer
-	const bool rendererShutdownResult = gameRenderer->shutdown();
-	if (!rendererShutdownResult)
+
+
+	const bool renderDeviceShutdownResult = gameRenderDevice->shutdown();
+	if (!renderDeviceShutdownResult)
 	{
 		MessageBoxA(0, "Failed to shutdown renderer.", "Error", MB_OK | MB_ICONERROR);
 		return -1;
 	}
 
-	// Destroy the renderer
-	gameRenderer.reset();
-	LOG("Destroyed renderer.");
+	gameRenderDevice.reset();
+	LOG("Destroyed render device.");
 
 	// Destroy the window
 	window.reset();

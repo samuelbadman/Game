@@ -37,6 +37,15 @@ static std::string getCommandListTypeAsString(const D3D12_COMMAND_LIST_TYPE type
 	return "INVALID_COMMAND_LIST_TYPE";
 }
 
+static D3D12_COMMAND_LIST_TYPE commandContextToD3d12CommandListType(const renderCommand::commandContext commandContext)
+{
+	switch (commandContext)
+	{
+	case renderCommand::commandContext::graphics: return D3D12_COMMAND_LIST_TYPE_DIRECT;
+	}
+	return D3D12_COMMAND_LIST_TYPE();
+}
+
 template<typename T>
 void release(T*& resource)
 {
@@ -90,7 +99,7 @@ IDXGIAdapter4* enumerateAdapters(IDXGIFactory7* factory)
 	for (UINT i = 0; factory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&adapter)) != DXGI_ERROR_NOT_FOUND; ++i)
 	{
 		// Return the first adapter that supports the minimum feature level
-		if (SUCCEEDED(D3D12CreateDevice(adapter, d3d12Renderer::minimumSupportedFeatureLevel, __uuidof(ID3D12Device), nullptr)))
+		if (SUCCEEDED(D3D12CreateDevice(adapter, d3d12RenderDevice::minimumSupportedFeatureLevel, __uuidof(ID3D12Device), nullptr)))
 		{
 			return adapter;
 		}
@@ -120,7 +129,7 @@ D3D_FEATURE_LEVEL getAdapterMaximumFeatureLevel(IDXGIAdapter4* adapter)
 	featureLevelInfo.pFeatureLevelsRequested = featureLevels;
 
 	Microsoft::WRL::ComPtr<ID3D12Device> device;
-	if (FAILED(D3D12CreateDevice(adapter, d3d12Renderer::minimumSupportedFeatureLevel, IID_PPV_ARGS(&device))))
+	if (FAILED(D3D12CreateDevice(adapter, d3d12RenderDevice::minimumSupportedFeatureLevel, IID_PPV_ARGS(&device))))
 	{
 		return D3D_FEATURE_LEVEL();
 	}
@@ -206,31 +215,14 @@ bool waitForValueOnCurrentCPUThread(HANDLE fenceEvent, ID3D12Fence* const fence,
 	return true;
 }
 
-bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uint32_t inFlightFrameCount)
+bool d3d12RenderContext::init(ID3D12Device8* const device, const uint8_t inFlightFrameCount, const renderCommand::commandContext commandContext)
 {
-	LOG(stringHelper::printf("Initializing render engine with type: %s and in flight frame count: %d.", getCommandListTypeAsString(type).c_str(), inFlightFrameCount));
-	// Create command queue
-	D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
-	commandQueueDesc.Type = type;
-	commandQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-	commandQueueDesc.NodeMask = 0;
-	commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	setCommandContext(commandContext);
 
-	if (FAILED(device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&commandQueue))))
-	{
-		return false;
-	}
+	const D3D12_COMMAND_LIST_TYPE type = commandContextToD3d12CommandListType(commandContext);
 
-	const std::wstring commandQueueName = type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
-		L"graphics_command_queue" :
-		type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
-		L"compute_command_queue" : L"command_queue";
-
-	if (FAILED(commandQueue->SetName(commandQueueName.c_str())))
-	{
-		return false;
-	}
-	LOG(stringHelper::printf("Created %S.", commandQueueName.c_str()));
+	LOG(stringHelper::printf("Initializing render context with type: %s and in flight frame count: %d.",
+		getCommandListTypeAsString(type).c_str(), inFlightFrameCount));
 
 	// Create command allocators for each in flight frame
 	commandAllocators.resize(static_cast<size_t>(inFlightFrameCount), nullptr);
@@ -278,64 +270,24 @@ bool renderEngine::init(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, uin
 	}
 	LOG(stringHelper::printf("Created %S.", commandListName.c_str()));
 
-	// Create synchronization objects
-	currentFenceValue = 0;
-	inFlightFenceValues.resize(static_cast<size_t>(inFlightFrameCount), 0);
-
-	if (FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence))))
-	{
-		return false;
-	}
-
-	const std::wstring fenceName = type == D3D12_COMMAND_LIST_TYPE_DIRECT ?
-		L"graphics_fence" :
-		type == D3D12_COMMAND_LIST_TYPE_COMPUTE ?
-		L"compute_fence" : L"command_fence";
-
-	if (FAILED(fence->SetName(fenceName.c_str())))
-	{
-		return false;
-	}
-	LOG(stringHelper::printf("Created %S.", fenceName.c_str()));
-
-	fenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
-
-	if (fenceEvent == nullptr)
-	{
-		return false;
-	}
-	LOG("Created fence event.");
-
 	return true;
 }
 
-bool renderEngine::shutdown()
+bool d3d12RenderContext::shutdown()
 {
-	// TODO Flush executing queues method
-
-	commandQueue.Reset();
 	commandList.Reset();
 	commandAllocators.clear();
-	fence.Reset();
 
 	return true;
 }
 
-bool renderEngine::flush()
+void d3d12RenderContext::submitRenderCommand(const renderCommand& command)
 {
-	// Wait for all frames to finish executing
-	const size_t inFlightFrameCount = inFlightFenceValues.size();
-	for (size_t i = 0; i < inFlightFrameCount; ++i)
-	{
-		if (!waitForValueOnCurrentCPUThread(fenceEvent, fence.Get(), inFlightFenceValues[i])) return false;
-	}
-
-	return true;
 }
 
-bool d3d12Renderer::init(const rendererInitSettings& settings)
+bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 {
-	LOG("Initializing d3d12 renderer:");
+	LOG("Initializing d3d12 render device:");
 
     if (mainDevice != nullptr)
     {
@@ -431,36 +383,77 @@ bool d3d12Renderer::init(const rendererInitSettings& settings)
 	descriptorSizes.sampler = mainDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 	LOG("Retrieved descriptor increment sizes.");
 
-	// Initialize graphics engine
-	LOG("Initializing graphics render engine:");
-	const bool initGraphicsEngineResult = graphicsEngine.init(mainDevice.Get(),
-		D3D12_COMMAND_LIST_TYPE_DIRECT, settings.buffering == bufferingType::doubleBuffering ? 2 : 3);
+	// Create graphics command queue
+	D3D12_COMMAND_QUEUE_DESC graphicsCommandQueueDesc = {};
+	graphicsCommandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+	graphicsCommandQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+	graphicsCommandQueueDesc.NodeMask = 0;
+	graphicsCommandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
 
-	if (!initGraphicsEngineResult)
+	if (FAILED(mainDevice->CreateCommandQueue(&graphicsCommandQueueDesc, IID_PPV_ARGS(&graphicsQueue))))
 	{
 		return false;
 	}
-	LOG("Initialized graphics render engine.");
 
+	const std::wstring graphicsQueueName = L"graphics_command_queue";
+	if (FAILED(graphicsQueue->SetName(graphicsQueueName.c_str())))
+	{
+		return false;
+	}
+	LOG(stringHelper::printf("Created %S.", graphicsQueueName.c_str()));
 
+	// Create synchronization objects
+	currentFenceValue = 0;
+	inFlightFenceValues.resize(static_cast<size_t>(settings.buffering == bufferingType::doubleBuffering ?
+		2 : 3),
+		0);
 
-	LOG("Initialized d3d12 renderer.");
+	if (FAILED(mainDevice->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&fence))))
+	{
+		return false;
+	}
+
+	const std::wstring fenceName = L"graphics_fence";
+	if (FAILED(fence->SetName(fenceName.c_str())))
+	{
+		return false;
+	}
+	LOG(stringHelper::printf("Created %S.", fenceName.c_str()));
+
+	fenceEvent = CreateEventEx(nullptr, nullptr, 0, EVENT_ALL_ACCESS);
+
+	if (fenceEvent == nullptr)
+	{
+		return false;
+	}
+	LOG("Created fence event.");
+
+	LOG("Initialized d3d12 render device.");
     return true;
 }
 
-bool d3d12Renderer::shutdown()
+bool d3d12RenderDevice::shutdown()
 {
-	const bool graphicsEngineShutdownResult = graphicsEngine.shutdown();
-	if (!graphicsEngineShutdownResult)
-	{
-		return false;
-	}
-	LOG("Shutdown graphics render engine.");
-
 	dxgiFactory.Reset();
 	mainAdapter.Reset();
 	mainDevice.Reset();
+	graphicsQueue.Reset();
 
-	LOG("Shutdown d3d12 renderer.");
+	LOG("Shutdown d3d12 render device.");
+	return true;
+}
+
+bool d3d12RenderDevice::flush()
+{
+	// Wait for all in flight frames to finish executing
+	const size_t inFlightFrameCount = inFlightFenceValues.size();
+	for (size_t i = 0; i < inFlightFrameCount; ++i)
+	{
+		if (!waitForValueOnCurrentCPUThread(fenceEvent, fence.Get(), inFlightFenceValues[i]))
+		{
+			return false;
+		}
+	}
+
 	return true;
 }
