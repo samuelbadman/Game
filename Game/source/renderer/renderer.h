@@ -18,6 +18,7 @@ struct renderDeviceInitSettings
 {
 	uint32_t displayIndex = 0;
 	bufferingType buffering = bufferingType::tripleBuffering;
+	size_t contextSubmissionsPerFrameCount = 0;
 };
 
 struct renderContextInitSettings

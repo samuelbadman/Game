@@ -101,6 +101,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	renderDeviceInitSettings renderDeviceSettings = {};
 	renderDeviceSettings.displayIndex = gameSettings::defaultDisplayIndex;
 	renderDeviceSettings.buffering = gameSettings::buffering;
+	renderDeviceSettings.contextSubmissionsPerFrameCount = 1;
 
 	const bool renderDeviceInitResult = gameRenderDevice->init(renderDeviceSettings);
 	if (!renderDeviceInitResult)

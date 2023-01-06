@@ -362,7 +362,8 @@ bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 		return false;
 	}
 
-	if (FAILED(mainDevice->SetName(L"main_device")))
+	const std::wstring mainDeviceName = L"main_device";
+	if (FAILED(mainDevice->SetName(mainDeviceName.c_str())))
 	{
 		return false;
 	}
@@ -374,7 +375,7 @@ bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 		return false;
 	}
 #endif // _DEBUG
-	LOG("Created d3d12 device.");
+	LOG(stringHelper::printf("Created %S.", mainDeviceName.c_str()));
 
 	// Retreive descriptor increment sizes
 	descriptorSizes.cbv_srv_uav = mainDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
@@ -427,6 +428,10 @@ bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 		return false;
 	}
 	LOG("Created fence event.");
+
+	// Allocate command list submissions
+	commandListSubmissions.resize(static_cast<size_t>(settings.contextSubmissionsPerFrameCount), nullptr);
+	LOG(stringHelper::printf("Context submissions per frame allocated: %d", settings.contextSubmissionsPerFrameCount));
 
 	LOG("Initialized d3d12 render device.");
     return true;

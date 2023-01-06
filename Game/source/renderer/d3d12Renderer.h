@@ -46,6 +46,8 @@ private:
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 	HANDLE fenceEvent = nullptr;
 
+	std::vector<ID3D12CommandList*> commandListSubmissions;
+
 public:
 	// Render device interface
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
