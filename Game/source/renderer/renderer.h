@@ -18,7 +18,7 @@ struct renderDeviceInitSettings
 {
 	uint32_t displayIndex = 0;
 	bufferingType buffering = bufferingType::tripleBuffering;
-	size_t contextSubmissionsPerFrameCount = 0;
+	size_t graphicsContextSubmissionsPerFrameCount = 0;
 };
 
 struct renderContextInitSettings
@@ -58,4 +58,5 @@ public:
 	virtual bool init(const renderDeviceInitSettings& settings) = 0;
 	virtual bool shutdown() = 0;
 	virtual bool flush() = 0;
+	virtual void submitRenderContexts(const renderCommand::commandContext commandContext, renderContext*const* contexts) = 0;
 };

@@ -41,9 +41,18 @@ static D3D12_COMMAND_LIST_TYPE commandContextToD3d12CommandListType(const render
 {
 	switch (commandContext)
 	{
-	case renderCommand::commandContext::graphics: return D3D12_COMMAND_LIST_TYPE_DIRECT;
+		case renderCommand::commandContext::graphics: return D3D12_COMMAND_LIST_TYPE_DIRECT;
 	}
 	return D3D12_COMMAND_LIST_TYPE();
+}
+
+static renderCommand::commandContext d3d12CommandListTypeToCommandContext(const D3D12_COMMAND_LIST_TYPE type)
+{
+	switch (type)
+	{
+		case D3D12_COMMAND_LIST_TYPE_DIRECT: return renderCommand::commandContext::graphics;
+	}
+	return renderCommand::commandContext::unknown;
 }
 
 template<typename T>
@@ -215,7 +224,63 @@ bool waitForValueOnCurrentCPUThread(HANDLE fenceEvent, ID3D12Fence* const fence,
 	return true;
 }
 
-bool d3d12RenderContext::init(ID3D12Device8* const device, const uint8_t inFlightFrameCount, const renderCommand::commandContext commandContext)
+bool d3d12HardwareQueue::init(ID3D12Device8* const device, const D3D12_COMMAND_LIST_TYPE type, 
+	const size_t contextSubmissionsPerFrameCount)
+{
+	// Set hardware queue context
+	queueContext = d3d12CommandListTypeToCommandContext(type);
+
+	// Create command queue
+	D3D12_COMMAND_QUEUE_DESC commandQueueDesc = {};
+	commandQueueDesc.Type = type;
+	commandQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+	commandQueueDesc.NodeMask = 0;
+	commandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+
+	if (FAILED(device->CreateCommandQueue(&commandQueueDesc, IID_PPV_ARGS(&queue))))
+	{
+		return false;
+	}
+
+	const std::wstring queueName = type == D3D12_COMMAND_LIST_TYPE_DIRECT ? 
+		L"graphics_command_queue" : type == D3D12_COMMAND_LIST_TYPE_COMPUTE ? 
+		L"compute_command_queue" : L"copy_command_queue";
+	if (FAILED(queue->SetName(queueName.c_str())))
+	{
+		return false;
+	}
+	LOG(stringHelper::printf("Created %S.", queueName.c_str()));
+
+	// Allocate command list submissions for queue
+	commandListSubmissions.resize(static_cast<size_t>(contextSubmissionsPerFrameCount), nullptr);
+	LOG(stringHelper::printf("Context submissions per frame allocated: %d", contextSubmissionsPerFrameCount));
+
+	return true;
+}
+
+void d3d12HardwareQueue::shutdown()
+{
+	queue.Reset();
+	commandListSubmissions.clear();
+}
+
+void d3d12HardwareQueue::submitRenderContexts(renderContext*const* contexts)
+{
+	const size_t submissionCount = commandListSubmissions.size();
+	for (size_t i = 0; i < submissionCount; ++i)
+	{
+		d3d12RenderContext* const d3d12Context = static_cast<d3d12RenderContext* const>(contexts[i]);
+
+		assert(d3d12Context->getCommandContext() == queueContext);
+
+		commandListSubmissions[i] = d3d12Context->getCommandList();
+	}
+
+	queue->ExecuteCommandLists(static_cast<UINT>(submissionCount), commandListSubmissions.data());
+}
+
+bool d3d12RenderContext::init(ID3D12Device8* const device, const uint8_t inFlightFrameCount, 
+	const renderCommand::commandContext commandContext)
 {
 	setCommandContext(commandContext);
 
@@ -384,24 +449,15 @@ bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 	descriptorSizes.sampler = mainDevice->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
 	LOG("Retrieved descriptor increment sizes.");
 
-	// Create graphics command queue
-	D3D12_COMMAND_QUEUE_DESC graphicsCommandQueueDesc = {};
-	graphicsCommandQueueDesc.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
-	graphicsCommandQueueDesc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
-	graphicsCommandQueueDesc.NodeMask = 0;
-	graphicsCommandQueueDesc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
-
-	if (FAILED(mainDevice->CreateCommandQueue(&graphicsCommandQueueDesc, IID_PPV_ARGS(&graphicsQueue))))
+	// Create hardware queues
+	const bool graphicsQueueInitResult = graphicsQueue.init(mainDevice.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT,
+		settings.graphicsContextSubmissionsPerFrameCount);
+	if (!graphicsQueueInitResult)
 	{
 		return false;
 	}
 
-	const std::wstring graphicsQueueName = L"graphics_command_queue";
-	if (FAILED(graphicsQueue->SetName(graphicsQueueName.c_str())))
-	{
-		return false;
-	}
-	LOG(stringHelper::printf("Created %S.", graphicsQueueName.c_str()));
+	LOG("Initialized graphics hardware queue.");
 
 	// Create synchronization objects
 	currentFenceValue = 0;
@@ -414,7 +470,7 @@ bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 		return false;
 	}
 
-	const std::wstring fenceName = L"graphics_fence";
+	const std::wstring fenceName = L"synchronization_fence";
 	if (FAILED(fence->SetName(fenceName.c_str())))
 	{
 		return false;
@@ -429,10 +485,6 @@ bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 	}
 	LOG("Created fence event.");
 
-	// Allocate command list submissions
-	commandListSubmissions.resize(static_cast<size_t>(settings.contextSubmissionsPerFrameCount), nullptr);
-	LOG(stringHelper::printf("Context submissions per frame allocated: %d", settings.contextSubmissionsPerFrameCount));
-
 	LOG("Initialized d3d12 render device.");
     return true;
 }
@@ -442,7 +494,7 @@ bool d3d12RenderDevice::shutdown()
 	dxgiFactory.Reset();
 	mainAdapter.Reset();
 	mainDevice.Reset();
-	graphicsQueue.Reset();
+	graphicsQueue.shutdown();
 
 	LOG("Shutdown d3d12 render device.");
 	return true;
@@ -461,4 +513,18 @@ bool d3d12RenderDevice::flush()
 	}
 
 	return true;
+}
+
+void d3d12RenderDevice::submitRenderContexts(const renderCommand::commandContext commandContext, renderContext*const* contexts)
+{
+	assert(commandContext != renderCommand::commandContext::unknown);
+
+	switch (commandContext)
+	{
+		case renderCommand::commandContext::graphics:
+		{
+			graphicsQueue.submitRenderContexts(contexts);
+		}
+		break;
+	}
 }

@@ -101,7 +101,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	renderDeviceInitSettings renderDeviceSettings = {};
 	renderDeviceSettings.displayIndex = gameSettings::defaultDisplayIndex;
 	renderDeviceSettings.buffering = gameSettings::buffering;
-	renderDeviceSettings.contextSubmissionsPerFrameCount = 1;
+	renderDeviceSettings.graphicsContextSubmissionsPerFrameCount = 1;
 
 	const bool renderDeviceInitResult = gameRenderDevice->init(renderDeviceSettings);
 	if (!renderDeviceInitResult)
@@ -159,24 +159,22 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	// Destroy the game instance
-	gameInstance.reset();
+	//gameInstance.reset();
 
 	// Shutdown and destroy the renderer
+	//const bool renderDeviceShutdownResult = gameRenderDevice->shutdown();
+	//if (!renderDeviceShutdownResult)
+	//{
+	//	MessageBoxA(0, "Failed to shutdown renderer.", "Error", MB_OK | MB_ICONERROR);
+	//	return -1;
+	//}
 
-
-	const bool renderDeviceShutdownResult = gameRenderDevice->shutdown();
-	if (!renderDeviceShutdownResult)
-	{
-		MessageBoxA(0, "Failed to shutdown renderer.", "Error", MB_OK | MB_ICONERROR);
-		return -1;
-	}
-
-	gameRenderDevice.reset();
-	LOG("Destroyed render device.");
+	//gameRenderDevice.reset();
+	//LOG("Destroyed render device.");
 
 	// Destroy the window
-	window.reset();
-	LOG("Destroyed win32 window.");
+	//window.reset();
+	//LOG("Destroyed win32 window.");
 
 	//LOG_SHUTDOWN();
 	//window->shutdown();

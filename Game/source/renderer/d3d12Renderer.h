@@ -10,6 +10,20 @@ struct descriptorIncrementSizes
 	uint32_t sampler = 0;
 };
 
+class d3d12HardwareQueue
+{
+private:
+	renderCommand::commandContext queueContext = renderCommand::commandContext::unknown;
+	Microsoft::WRL::ComPtr<ID3D12CommandQueue> queue = nullptr;
+	std::vector<ID3D12CommandList*> commandListSubmissions;
+
+public:
+	bool init(ID3D12Device8* const device, const D3D12_COMMAND_LIST_TYPE type, 
+		const size_t graphicsContextSubmissionsPerFrameCount);
+	void shutdown();
+	void submitRenderContexts(renderContext*const* contexts);
+};
+
 class d3d12RenderContext : public renderContext
 {
 private:
@@ -22,7 +36,8 @@ public:
 	virtual void submitRenderCommand(const renderCommand& command) final;
 
 public:
-	bool init(ID3D12Device8* const device, const uint8_t inFlightFrameCount, const renderCommand::commandContext commandContext);
+	bool init(ID3D12Device8* const device, const uint8_t inFlightFrameCount, 
+		const renderCommand::commandContext commandContext);
 	bool shutdown();
 	ID3D12GraphicsCommandList6* getCommandList() { return commandList.Get(); }
 };
@@ -39,14 +54,12 @@ private:
 
 	descriptorIncrementSizes descriptorSizes = {};
 
-	Microsoft::WRL::ComPtr<ID3D12CommandQueue> graphicsQueue = nullptr;
+	d3d12HardwareQueue graphicsQueue = {};
 
 	uint64_t currentFenceValue = 0;
 	std::vector<uint64_t> inFlightFenceValues;
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 	HANDLE fenceEvent = nullptr;
-
-	std::vector<ID3D12CommandList*> commandListSubmissions;
 
 public:
 	// Render device interface
@@ -54,4 +67,5 @@ public:
 	virtual bool init(const renderDeviceInitSettings& settings) final;
 	virtual bool shutdown() final;
 	virtual bool flush() final;
+	virtual void submitRenderContexts(const renderCommand::commandContext commandContext, renderContext*const* contexts) final;
 };
