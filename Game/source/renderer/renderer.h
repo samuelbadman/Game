@@ -56,7 +56,7 @@ public:
 public:
 	virtual rendererPlatform getPlatform() const = 0;
 	virtual bool init(const renderDeviceInitSettings& settings) = 0;
-	virtual bool shutdown() = 0;
+	virtual void shutdown() = 0;
 	virtual bool flush() = 0;
 	virtual void submitRenderContexts(const renderCommand::commandContext commandContext, renderContext*const* contexts) = 0;
 };

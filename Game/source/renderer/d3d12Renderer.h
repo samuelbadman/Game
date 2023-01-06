@@ -65,7 +65,7 @@ public:
 	// Render device interface
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
 	virtual bool init(const renderDeviceInitSettings& settings) final;
-	virtual bool shutdown() final;
+	virtual void shutdown() final;
 	virtual bool flush() final;
 	virtual void submitRenderContexts(const renderCommand::commandContext commandContext, renderContext*const* contexts) final;
 };

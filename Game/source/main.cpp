@@ -162,13 +162,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//gameInstance.reset();
 
 	// Shutdown and destroy the renderer
-	//const bool renderDeviceShutdownResult = gameRenderDevice->shutdown();
-	//if (!renderDeviceShutdownResult)
-	//{
-	//	MessageBoxA(0, "Failed to shutdown renderer.", "Error", MB_OK | MB_ICONERROR);
-	//	return -1;
-	//}
-
+	//gameRenderDevice->shutdown();
 	//gameRenderDevice.reset();
 	//LOG("Destroyed render device.");
 

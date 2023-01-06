@@ -489,7 +489,7 @@ bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
     return true;
 }
 
-bool d3d12RenderDevice::shutdown()
+void d3d12RenderDevice::shutdown()
 {
 	dxgiFactory.Reset();
 	mainAdapter.Reset();
@@ -497,7 +497,6 @@ bool d3d12RenderDevice::shutdown()
 	graphicsQueue.shutdown();
 
 	LOG("Shutdown d3d12 render device.");
-	return true;
 }
 
 bool d3d12RenderDevice::flush()
