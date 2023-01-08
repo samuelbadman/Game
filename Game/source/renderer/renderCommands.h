@@ -18,6 +18,7 @@ struct renderCommand
 	renderCommand(const commandContext inContext, const commandType inType) : context(inContext), type(inType)
 	{}
 
+private:
 	commandContext context;
 	commandType type;
 };
