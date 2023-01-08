@@ -258,7 +258,8 @@ bool d3d12HardwareQueue::init(ID3D12Device8* const device, const D3D12_COMMAND_L
 
 	// Allocate command list submissions for queue
 	commandListSubmissions.resize(static_cast<size_t>(contextSubmissionsPerFrameCount), nullptr);
-	LOG(stringHelper::printf("Context submissions per frame allocated: %d", contextSubmissionsPerFrameCount));
+	LOG(stringHelper::printf("Pre allocated %d render context submissions per frame for %S.", 
+		contextSubmissionsPerFrameCount, queueName.c_str()));
 
 	return true;
 }
@@ -290,12 +291,14 @@ void d3d12HardwareQueue::submitRenderContexts(const uint32_t numContexts, render
 // ---------------------------------------------
 bool d3d12SwapChain::init(IDXGIFactory7* factory)
 {
+	LOG("Initialized d3d12 swap chain.");
 	return true;
 }
 
 bool d3d12SwapChain::shutdown()
 {
 	dxgiSwapChain.Reset();
+	LOG("Shutdown d3d12 swap chain.");
 	return true;
 }
 
