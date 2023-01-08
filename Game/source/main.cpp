@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "platform/win32/win32Window.h"
 #include "platform/win32/win32Gamepads.h"
+#include "platform/win32/win32Display.h"
 #include "log.h"
 #include "game.h"
 #include "renderer/renderer.h"
@@ -40,6 +41,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// Initialize logging
 	LOG_INIT();
 
+	// Get the default display info
+	displayInfo defaultDisplayInfo = win32Display::infoForDisplayAtIndex(
+		gameSettings::defaultDisplayIndex);
+
 	// Create the game instance
 	gameInstance = std::make_unique<game>();
 	LOG("Created game instance.");
@@ -52,8 +57,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	windowSettings.parent = nullptr;
 	windowSettings.style = gameSettings::windowStyle;
 	windowSettings.windowTitle = gameSettings::windowTitle;
-	windowSettings.x = gameSettings::windowPosition[0];
-	windowSettings.y = gameSettings::windowPosition[1];
+	windowSettings.x = defaultDisplayInfo.topLeftX + gameSettings::windowPosition[0];
+	windowSettings.y = defaultDisplayInfo.topLeftY + gameSettings::windowPosition[1];
 	windowSettings.width = gameSettings::windowDimensions[0];
 	windowSettings.height = gameSettings::windowDimensions[1];
 
@@ -99,7 +104,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	gameRenderDevice = renderDevice::create(gameSettings::renderingPlatform);
 
 	renderDeviceInitSettings renderDeviceSettings = {};
-	renderDeviceSettings.displayIndex = gameSettings::defaultDisplayIndex;
+	renderDeviceSettings.desiredDisplayConnectedAdapterName = defaultDisplayInfo.adapterName;
 	renderDeviceSettings.buffering = gameSettings::buffering;
 	renderDeviceSettings.graphicsContextSubmissionsPerFrameCount = 1;
 

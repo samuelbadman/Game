@@ -2,7 +2,6 @@
 #include "d3d12Renderer.h"
 #include "log.h"
 #include "stringHelper.h"
-#include "platform/win32/win32Display.h"
 
 static std::string getD3dFeatureLevelAsString(const D3D_FEATURE_LEVEL featureLevel)
 {
@@ -404,8 +403,7 @@ bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 	}
 
 	// Check the specified display is connected to the adapter
-	const displayInfo display = win32Display::infoForDisplayAtIndex(settings.displayIndex);
-	if (display.adapterName != adapterDesc3.Description)
+	if (settings.desiredDisplayConnectedAdapterName != adapterDesc3.Description)
 	{
 		return false;
 	}
