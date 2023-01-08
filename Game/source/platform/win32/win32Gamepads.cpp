@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "win32Gamepads.h"
 #include "win32InputKeyCode.h"
+#include "log.h"
 
 XINPUT_STATE win32Gamepads::prevStates[XUSER_MAX_COUNT];
 callback<const inputEvent&> win32Gamepads::onInput;
@@ -21,6 +22,23 @@ void win32Gamepads::refresh()
 
 		prevStates[i] = state;
 	}
+}
+
+bool win32Gamepads::setVibration(const uint32_t port,
+	const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
+{
+	XINPUT_VIBRATION vibration = {};
+	vibration.wLeftMotorSpeed = leftMotorSpeed;
+	vibration.wRightMotorSpeed = rightMotorSpeed;
+	const DWORD setStateResult = XInputSetState(static_cast<DWORD>(port), &vibration);
+
+	if (setStateResult == ERROR_DEVICE_NOT_CONNECTED)
+	{
+		LOG("Error: Setting vibration for a gamepad that is not connected to the specified port.");
+		return false;
+	}
+
+	return setStateResult == ERROR_SUCCESS;
 }
 
 void win32Gamepads::applyCircularDeadzone(float& axisX, float& axisY, 

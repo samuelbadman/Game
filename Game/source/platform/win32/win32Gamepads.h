@@ -18,6 +18,8 @@ public:
 
 public:
 	static void refresh();
+	static bool setVibration(const uint32_t port, 
+		const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed);
 
 private:
 	static void applyCircularDeadzone(float& axisX, float& axisY, 
