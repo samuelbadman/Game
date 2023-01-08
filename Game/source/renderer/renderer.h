@@ -16,7 +16,7 @@ enum class bufferingType : uint8_t
 
 struct renderDeviceInitSettings
 {
-	std::wstring desiredDisplayConnectedAdapterName = L"";
+	std::wstring displayConnectedAdapterName = L"";
 	bufferingType buffering = bufferingType::tripleBuffering;
 	size_t graphicsContextSubmissionsPerFrameCount = 0;
 };

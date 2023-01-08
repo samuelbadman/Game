@@ -104,7 +104,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	gameRenderDevice = renderDevice::create(gameSettings::renderingPlatform);
 
 	renderDeviceInitSettings renderDeviceSettings = {};
-	renderDeviceSettings.desiredDisplayConnectedAdapterName = defaultDisplayInfo.adapterName;
+	renderDeviceSettings.displayConnectedAdapterName = defaultDisplayInfo.adapterName;
 	renderDeviceSettings.buffering = gameSettings::buffering;
 	renderDeviceSettings.graphicsContextSubmissionsPerFrameCount = 1;
 

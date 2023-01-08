@@ -403,7 +403,7 @@ bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 	}
 
 	// Check the specified display is connected to the adapter
-	if (settings.desiredDisplayConnectedAdapterName != adapterDesc3.Description)
+	if (settings.displayConnectedAdapterName != adapterDesc3.Description)
 	{
 		return false;
 	}

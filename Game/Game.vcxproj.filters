@@ -42,7 +42,7 @@
     <ClCompile Include="source\renderer\renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\renderer\d3d12Renderer.cpp">
+    <ClCompile Include="source\renderer\d3d12\d3d12Renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\pch.cpp">
@@ -113,7 +113,7 @@
     <ClInclude Include="source\renderer\renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\renderer\d3d12Renderer.h">
+    <ClInclude Include="source\renderer\d3d12\d3d12Renderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\log.h">
