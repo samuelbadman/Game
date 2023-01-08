@@ -264,19 +264,20 @@ void d3d12HardwareQueue::shutdown()
 	commandListSubmissions.clear();
 }
 
-void d3d12HardwareQueue::submitRenderContexts(renderContext*const* contexts)
+void d3d12HardwareQueue::submitRenderContexts(const uint32_t numContexts, renderContext*const* contexts)
 {
-	const size_t submissionCount = commandListSubmissions.size();
-	for (size_t i = 0; i < submissionCount; ++i)
+	assert(static_cast<size_t>(numContexts) == commandListSubmissions.size());
+
+	for (uint32_t i = 0; i < numContexts; ++i)
 	{
-		d3d12RenderContext* const d3d12Context = static_cast<d3d12RenderContext* const>(contexts[i]);
+		d3d12RenderContext* const d3d12Context = static_cast<d3d12RenderContext* const>(contexts[static_cast<size_t>(i)]);
 
 		assert(d3d12Context->getCommandContext() == queueContext);
 
-		commandListSubmissions[i] = d3d12Context->getCommandList();
+		commandListSubmissions[static_cast<size_t>(i)] = d3d12Context->getCommandList();
 	}
 
-	queue->ExecuteCommandLists(static_cast<UINT>(submissionCount), commandListSubmissions.data());
+	queue->ExecuteCommandLists(numContexts, commandListSubmissions.data());
 }
 
 bool d3d12RenderContext::init(ID3D12Device8* const device, const uint8_t inFlightFrameCount, 
@@ -514,7 +515,8 @@ bool d3d12RenderDevice::flush()
 	return true;
 }
 
-void d3d12RenderDevice::submitRenderContexts(const renderCommand::commandContext commandContext, renderContext*const* contexts)
+void d3d12RenderDevice::submitRenderContexts(const renderCommand::commandContext commandContext, 
+	const uint32_t numContexts, renderContext*const* contexts)
 {
 	assert(commandContext != renderCommand::commandContext::unknown);
 
@@ -522,8 +524,39 @@ void d3d12RenderDevice::submitRenderContexts(const renderCommand::commandContext
 	{
 		case renderCommand::commandContext::graphics:
 		{
-			graphicsQueue.submitRenderContexts(contexts);
+			graphicsQueue.submitRenderContexts(numContexts, contexts);
 		}
 		break;
 	}
+}
+
+bool d3d12RenderDevice::createRenderContext(const renderCommand::commandContext commandContext,
+	std::unique_ptr<renderContext>& outRenderContext) const
+{
+	d3d12RenderContext* newContext = new d3d12RenderContext;
+
+	const bool initResult = newContext->init(mainDevice.Get(),
+		static_cast<uint8_t>(inFlightFenceValues.size()), commandContext);
+
+	if (!initResult)
+	{
+		return false;
+	}
+
+	outRenderContext.reset(newContext);
+
+	return true;
+}
+
+bool d3d12RenderDevice::destroyRenderContext(std::unique_ptr<renderContext>& outRenderContext)
+{
+	d3d12RenderContext* d3d12Context = static_cast<d3d12RenderContext*>(outRenderContext.get());
+	assert(d3d12Context != nullptr);
+	const bool shutdownResult = d3d12Context->shutdown();
+	if (!shutdownResult)
+	{
+		return false;
+	}
+	outRenderContext.reset();
+	return true;
 }

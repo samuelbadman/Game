@@ -111,7 +111,13 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	// Graphics render context
-
+	const bool createGraphicsContextResult = gameRenderDevice->createRenderContext(
+		renderCommand::commandContext::graphics, graphicsRenderContext);
+	if (!createGraphicsContextResult)
+	{
+		MessageBoxA(0, "Failed to create graphics render context.", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
 
 	// Swap chain
 
@@ -162,6 +168,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//gameInstance.reset();
 
 	// Shutdown and destroy the renderer
+	//gameRenderDevice->destroyRenderContext(graphicsRenderContext);
+	//LOG("Destroyed graphics render context.");
 	//gameRenderDevice->shutdown();
 	//gameRenderDevice.reset();
 	//LOG("Destroyed render device.");

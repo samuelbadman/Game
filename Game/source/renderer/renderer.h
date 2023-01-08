@@ -21,11 +21,6 @@ struct renderDeviceInitSettings
 	size_t graphicsContextSubmissionsPerFrameCount = 0;
 };
 
-struct renderContextInitSettings
-{
-	renderCommand::commandContext context = renderCommand::commandContext::unknown;
-};
-
 class renderContext
 {
 private:
@@ -58,5 +53,9 @@ public:
 	virtual bool init(const renderDeviceInitSettings& settings) = 0;
 	virtual void shutdown() = 0;
 	virtual bool flush() = 0;
-	virtual void submitRenderContexts(const renderCommand::commandContext commandContext, renderContext*const* contexts) = 0;
+	virtual void submitRenderContexts(const renderCommand::commandContext commandContext, 
+		const uint32_t numContexts, renderContext*const* contexts) = 0;
+	virtual bool createRenderContext(const renderCommand::commandContext commandContext,
+		std::unique_ptr<renderContext>& outRenderContext) const = 0;
+	virtual bool destroyRenderContext(std::unique_ptr<renderContext>& outRenderContext) = 0;
 };

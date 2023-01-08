@@ -21,7 +21,7 @@ public:
 	bool init(ID3D12Device8* const device, const D3D12_COMMAND_LIST_TYPE type, 
 		const size_t graphicsContextSubmissionsPerFrameCount);
 	void shutdown();
-	void submitRenderContexts(renderContext*const* contexts);
+	void submitRenderContexts(const uint32_t numContexts, renderContext*const* contexts);
 };
 
 class d3d12RenderContext : public renderContext
@@ -67,5 +67,9 @@ public:
 	virtual bool init(const renderDeviceInitSettings& settings) final;
 	virtual void shutdown() final;
 	virtual bool flush() final;
-	virtual void submitRenderContexts(const renderCommand::commandContext commandContext, renderContext*const* contexts) final;
+	virtual void submitRenderContexts(const renderCommand::commandContext commandContext, 
+		const uint32_t numContexts, renderContext*const* contexts) final;
+	virtual bool createRenderContext(const renderCommand::commandContext commandContext,
+		std::unique_ptr<renderContext>& outRenderContext) const final;
+	virtual bool destroyRenderContext(std::unique_ptr<renderContext>& outRenderContext) final;
 };
