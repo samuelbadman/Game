@@ -3,6 +3,9 @@
 #include "log.h"
 #include "stringHelper.h"
 
+// ---------------------------------------------
+// Free functions
+// ---------------------------------------------
 static std::string getD3dFeatureLevelAsString(const D3D_FEATURE_LEVEL featureLevel)
 {
 	switch (featureLevel)
@@ -223,6 +226,9 @@ bool waitForValueOnCurrentCPUThread(HANDLE fenceEvent, ID3D12Fence* const fence,
 	return true;
 }
 
+// ---------------------------------------------
+// Hardware queue
+// ---------------------------------------------
 bool d3d12HardwareQueue::init(ID3D12Device8* const device, const D3D12_COMMAND_LIST_TYPE type, 
 	const size_t contextSubmissionsPerFrameCount)
 {
@@ -279,6 +285,9 @@ void d3d12HardwareQueue::submitRenderContexts(const uint32_t numContexts, render
 	queue->ExecuteCommandLists(numContexts, commandListSubmissions.data());
 }
 
+// ---------------------------------------------
+// Render context
+// ---------------------------------------------
 bool d3d12RenderContext::init(ID3D12Device8* const device, const uint8_t inFlightFrameCount, 
 	const renderCommand::commandContext commandContext)
 {
@@ -350,6 +359,9 @@ void d3d12RenderContext::submitRenderCommand(const renderCommand& command)
 {
 }
 
+// ---------------------------------------------
+// Render device
+// ---------------------------------------------
 bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 {
 	LOG("Initializing d3d12 render device:");

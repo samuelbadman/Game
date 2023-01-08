@@ -2,6 +2,9 @@
 
 #include "renderer/renderer.h"
 
+// ---------------------------------------------
+// Structs
+// ---------------------------------------------
 struct descriptorIncrementSizes
 {
 	uint32_t cbv_srv_uav = 0;
@@ -10,6 +13,9 @@ struct descriptorIncrementSizes
 	uint32_t sampler = 0;
 };
 
+// ---------------------------------------------
+// Hardware queue
+// ---------------------------------------------
 class d3d12HardwareQueue
 {
 private:
@@ -24,6 +30,9 @@ public:
 	void submitRenderContexts(const uint32_t numContexts, renderContext*const* contexts);
 };
 
+// ---------------------------------------------
+// Render context
+// ---------------------------------------------
 class d3d12RenderContext : public renderContext
 {
 private:
@@ -42,6 +51,9 @@ public:
 	ID3D12GraphicsCommandList6* getCommandList() { return commandList.Get(); }
 };
 
+// ---------------------------------------------
+// Render device
+// ---------------------------------------------
 class d3d12RenderDevice : public renderDevice
 {
 public:

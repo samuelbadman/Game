@@ -2,6 +2,9 @@
 
 #include "renderCommands.h"
 
+// ---------------------------------------------
+// Enums
+// ---------------------------------------------
 enum class rendererPlatform : uint8_t
 {
 	direct3d12 = 0,
@@ -14,6 +17,9 @@ enum class bufferingType : uint8_t
 	tripleBuffering = 1
 };
 
+// ---------------------------------------------
+// Structs
+// ---------------------------------------------
 struct renderDeviceInitSettings
 {
 	std::wstring displayConnectedAdapterName = L"";
@@ -21,6 +27,14 @@ struct renderDeviceInitSettings
 	size_t graphicsContextSubmissionsPerFrameCount = 0;
 };
 
+// ---------------------------------------------
+// Swap chain
+// ---------------------------------------------
+
+
+// ---------------------------------------------
+// Render context
+// ---------------------------------------------
 class renderContext
 {
 private:
@@ -40,6 +54,9 @@ protected:
 	void setCommandContext(renderCommand::commandContext inContext) { context = inContext; }
 };
 
+// ---------------------------------------------
+// Render device
+// ---------------------------------------------
 class renderDevice
 {
 public:
