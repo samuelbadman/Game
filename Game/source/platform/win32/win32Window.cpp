@@ -19,7 +19,9 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		case WM_LBUTTONUP: return window->onWM_LeftButtonUp(hwnd, msg, wparam, lparam);
 		case WM_RBUTTONUP: return window->onWM_RightButtonUp(hwnd, msg, wparam, lparam);
 		case WM_MBUTTONUP: return window->onWM_MiddleButtonUp(hwnd, msg, wparam, lparam);
+		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN: return window->onWM_KeyDown(hwnd, msg, wparam, lparam);
+		case WM_SYSKEYUP:
 		case WM_KEYUP: return window->onWM_KeyUp(hwnd, msg, wparam, lparam);
 		case WM_SIZE: return window->onWM_Size(hwnd, msg, wparam, lparam);
 		case WM_ENTERSIZEMOVE: return window->onWM_EnterSizeMove(hwnd, msg, wparam, lparam);

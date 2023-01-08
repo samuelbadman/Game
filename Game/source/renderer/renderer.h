@@ -27,10 +27,22 @@ struct renderDeviceInitSettings
 	size_t graphicsContextSubmissionsPerFrameCount = 0;
 };
 
+struct swapChainInitSettings
+{
+
+};
+
 // ---------------------------------------------
 // Swap chain
 // ---------------------------------------------
+class swapChain
+{
+public:
+	virtual ~swapChain() = default;
 
+public:
+	virtual rendererPlatform getPlatform() const = 0;
+};
 
 // ---------------------------------------------
 // Render context
@@ -75,4 +87,7 @@ public:
 	virtual bool createRenderContext(const renderCommand::commandContext commandContext,
 		std::unique_ptr<renderContext>& outRenderContext) const = 0;
 	virtual bool destroyRenderContext(std::unique_ptr<renderContext>& outRenderContext) = 0;
+	virtual bool createSwapChain(const swapChainInitSettings& settings,
+		std::unique_ptr<swapChain>& outSwapChain) = 0;
+	virtual bool destroySwapChain(std::unique_ptr<swapChain>& outSwapChain) = 0;
 };

@@ -286,6 +286,20 @@ void d3d12HardwareQueue::submitRenderContexts(const uint32_t numContexts, render
 }
 
 // ---------------------------------------------
+// Swap chain
+// ---------------------------------------------
+bool d3d12SwapChain::init(IDXGIFactory7* factory)
+{
+	return true;
+}
+
+bool d3d12SwapChain::shutdown()
+{
+	dxgiSwapChain.Reset();
+	return true;
+}
+
+// ---------------------------------------------
 // Render context
 // ---------------------------------------------
 bool d3d12RenderContext::init(ID3D12Device8* const device, const uint8_t inFlightFrameCount, 
@@ -295,7 +309,7 @@ bool d3d12RenderContext::init(ID3D12Device8* const device, const uint8_t inFligh
 
 	const D3D12_COMMAND_LIST_TYPE type = commandContextToD3d12CommandListType(commandContext);
 
-	LOG(stringHelper::printf("Initializing render context with type: %s and in flight frame count: %d.",
+	LOG(stringHelper::printf("Initializing d3d12 render context with type: %s and in flight frame count: %d.",
 		getCommandListTypeAsString(type).c_str(), inFlightFrameCount));
 
 	// Create command allocators for each in flight frame
@@ -568,5 +582,34 @@ bool d3d12RenderDevice::destroyRenderContext(std::unique_ptr<renderContext>& out
 		return false;
 	}
 	outRenderContext.reset();
+	return true;
+}
+
+bool d3d12RenderDevice::createSwapChain(const swapChainInitSettings& settings,
+	std::unique_ptr<swapChain>& outSwapChain)
+{
+	d3d12SwapChain* newSwapChain = new d3d12SwapChain;
+
+	const bool initResult = newSwapChain->init(dxgiFactory.Get());
+
+	if (!initResult)
+	{
+		return false;
+	}
+
+	outSwapChain.reset(newSwapChain);
+	return true;
+}
+
+bool d3d12RenderDevice::destroySwapChain(std::unique_ptr<swapChain>& outSwapChain)
+{
+	d3d12SwapChain* inD3d12SwapChain = static_cast<d3d12SwapChain*>(outSwapChain.get());
+	assert(inD3d12SwapChain != nullptr);
+	const bool shutdownResult = inD3d12SwapChain->shutdown();
+	if (!shutdownResult)
+	{
+		return false;
+	}
+	outSwapChain.reset();
 	return true;
 }

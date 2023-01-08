@@ -34,6 +34,7 @@ static std::unique_ptr<win32Window> window = nullptr;
 static std::unique_ptr<game> gameInstance = nullptr;
 static std::unique_ptr<renderDevice> gameRenderDevice = nullptr;
 static std::unique_ptr<renderContext> graphicsRenderContext = nullptr;
+static std::unique_ptr<swapChain> windowSwapChain = nullptr;
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
@@ -125,7 +126,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	// Swap chain
+	swapChainInitSettings swapChainSettings = {};
 
+
+	const bool swapChainInitResult = gameRenderDevice->createSwapChain(swapChainSettings, windowSwapChain);
+	if (!swapChainInitResult)
+	{
+		MessageBoxA(0, "Failed to create swap chain.", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
 
 	// Initialize game loop
 	LOG("Entering game loop.");
@@ -173,6 +182,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//gameInstance.reset();
 
 	// Shutdown and destroy the renderer
+	//gameRenderDevice->destroySwapChain(windowSwapChain);
+	//LOG("Destroyed swap chain.");
 	//gameRenderDevice->destroyRenderContext(graphicsRenderContext);
 	//LOG("Destroyed graphics render context.");
 	//gameRenderDevice->shutdown();

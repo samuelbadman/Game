@@ -31,6 +31,23 @@ public:
 };
 
 // ---------------------------------------------
+// Swap chain
+// ---------------------------------------------
+class d3d12SwapChain : public swapChain
+{
+private:
+	Microsoft::WRL::ComPtr<IDXGISwapChain4> dxgiSwapChain = nullptr;
+
+public:
+	// Swap chain interface
+	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
+
+public:
+	bool init(IDXGIFactory7* factory);
+	bool shutdown();
+};
+
+// ---------------------------------------------
 // Render context
 // ---------------------------------------------
 class d3d12RenderContext : public renderContext
@@ -84,4 +101,7 @@ public:
 	virtual bool createRenderContext(const renderCommand::commandContext commandContext,
 		std::unique_ptr<renderContext>& outRenderContext) const final;
 	virtual bool destroyRenderContext(std::unique_ptr<renderContext>& outRenderContext) final;
+	virtual bool createSwapChain(const swapChainInitSettings& settings, 
+		std::unique_ptr<swapChain>& outSwapChain) final;
+	virtual bool destroySwapChain(std::unique_ptr<swapChain>& outSwapChain) final;
 };
