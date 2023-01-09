@@ -5,12 +5,27 @@
 // ---------------------------------------------
 // Structs
 // ---------------------------------------------
-struct descriptorIncrementSizes
+struct d3d12DescriptorIncrementSizes
 {
-	uint32_t cbv_srv_uav = 0;
-	uint32_t rtv = 0;
-	uint32_t dsv = 0;
-	uint32_t sampler = 0;
+	UINT cbv_srv_uav = 0;
+	UINT rtv = 0;
+	UINT dsv = 0;
+	UINT sampler = 0;
+};
+
+// ---------------------------------------------
+// Descriptor heap
+// ---------------------------------------------
+class d3d12DescriptorHeap
+{
+private:
+	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap = nullptr;
+
+public:
+	bool init(ID3D12Device8* const device, const UINT descriptorCount,
+		const D3D12_DESCRIPTOR_HEAP_TYPE type, const bool shaderVisible);
+	void shutdown();
+	D3D12_CPU_DESCRIPTOR_HANDLE getCPUHandleForDescriptorAtHeapStart() const;
 };
 
 // ---------------------------------------------
@@ -37,17 +52,29 @@ public:
 class d3d12SwapChain : public swapChain
 {
 private:
+	// Swap chain
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> dxgiSwapChain = nullptr;
+
+	// Resources
+	std::vector<Microsoft::WRL::ComPtr<ID3D12Resource>> rtvs;
+	Microsoft::WRL::ComPtr<ID3D12Resource> dsv = nullptr;
+
+	// Resource descriptor heaps
+	d3d12DescriptorHeap rtDescriptorHeap = {};
+	d3d12DescriptorHeap dsDescriptorHeap = {};
 
 public:
 	// Swap chain interface
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
 
 public:
-	bool init(IDXGIFactory7* factory, ID3D12CommandQueue* const directCommandQueue,
+	bool init(IDXGIFactory7* const factory, ID3D12CommandQueue* const directCommandQueue,
+		ID3D12Device8* const device,
 		const uint32_t width, const uint32_t height,
 		const uint32_t backBufferCount, HWND hwnd);
 	bool shutdown();
+	bool updateBackBufferRTVs(ID3D12Device8* const device, const UINT rtvDescriptorSize);
+	bool updateDSV(ID3D12Device8* const device, const UINT64 width, const UINT height);
 };
 
 // ---------------------------------------------
@@ -84,10 +111,11 @@ private:
 	Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> mainAdapter = nullptr;
 
-	descriptorIncrementSizes descriptorSizes = {};
+	d3d12DescriptorIncrementSizes descriptorSizes = {};
 
 	d3d12HardwareQueue graphicsQueue = {};
 
+	// Frame synchronization
 	uint64_t currentFenceValue = 0;
 	std::vector<uint64_t> inFlightFenceValues;
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;

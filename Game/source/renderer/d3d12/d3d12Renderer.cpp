@@ -6,6 +6,18 @@
 // ---------------------------------------------
 // Free functions
 // ---------------------------------------------
+static std::string getD3dDescriptorHeapTypeAsString(const D3D12_DESCRIPTOR_HEAP_TYPE type)
+{
+	switch (type)
+	{
+	case D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV: return "D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV";
+	case D3D12_DESCRIPTOR_HEAP_TYPE_RTV: return "D3D12_DESCRIPTOR_HEAP_TYPE_RTV";
+	case D3D12_DESCRIPTOR_HEAP_TYPE_DSV: return "D3D12_DESCRIPTOR_HEAP_TYPE_DSV";
+	case D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER: return "D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER";
+	}
+	return "INVALID_DESCRIPTOR_HEAP_TYPE";
+}
+
 static std::string getD3dFeatureLevelAsString(const D3D_FEATURE_LEVEL featureLevel)
 {
 	switch (featureLevel)
@@ -227,6 +239,38 @@ bool waitForValueOnCurrentCPUThread(HANDLE fenceEvent, ID3D12Fence* const fence,
 }
 
 // ---------------------------------------------
+// Descriptor heap
+// ---------------------------------------------
+bool d3d12DescriptorHeap::init(ID3D12Device8* const device, const UINT descriptorCount, 
+	const D3D12_DESCRIPTOR_HEAP_TYPE type, const bool shaderVisible)
+{
+	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	desc.NumDescriptors = descriptorCount;
+	desc.Type = type;
+	desc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+
+	if (FAILED(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&heap))))
+	{
+		return false;
+	}
+
+	LOG(stringHelper::printf("Created descriptor heap of type %s. Allocated descriptor count: %d.\n%s",
+		getD3dDescriptorHeapTypeAsString(type).c_str(), descriptorCount, shaderVisible ?
+		"Descriptor heap is shader visible." : "Descriptor heap is not shader visible."));
+	return true;
+}
+
+void d3d12DescriptorHeap::shutdown()
+{
+	heap.Reset();
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE d3d12DescriptorHeap::getCPUHandleForDescriptorAtHeapStart() const
+{
+	return heap->GetCPUDescriptorHandleForHeapStart();
+}
+
+// ---------------------------------------------
 // Hardware queue
 // ---------------------------------------------
 bool d3d12HardwareQueue::init(ID3D12Device8* const device, const D3D12_COMMAND_LIST_TYPE type, 
@@ -289,7 +333,8 @@ void d3d12HardwareQueue::submitRenderContexts(const uint32_t numContexts, render
 // ---------------------------------------------
 // Swap chain
 // ---------------------------------------------
-bool d3d12SwapChain::init(IDXGIFactory7* factory, ID3D12CommandQueue* const directCommandQueue, 
+bool d3d12SwapChain::init(IDXGIFactory7* const factory, ID3D12CommandQueue* const directCommandQueue, 
+	ID3D12Device8* const device,
 	const uint32_t width, const uint32_t height,
 	const uint32_t backBufferCount, HWND hwnd)
 {
@@ -333,14 +378,112 @@ bool d3d12SwapChain::init(IDXGIFactory7* factory, ID3D12CommandQueue* const dire
 		return false;
 	}
 
+	// Create render target descriptor heap
+	const bool rtDescriptorHeapInitResult = rtDescriptorHeap.init(device, static_cast<UINT>(backBufferCount),
+		D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
+
+	if (!rtDescriptorHeapInitResult)
+	{
+		return false;
+	}
+
+	// Create depth stencil descriptor heap
+	const bool dsDescriptorHeapInitResult = dsDescriptorHeap.init(device, 1,
+		D3D12_DESCRIPTOR_HEAP_TYPE_DSV, false);
+
+	if (!dsDescriptorHeapInitResult)
+	{
+		return false;
+	}
+
+	// Initialize render target view pointers
+	rtvs.resize(backBufferCount, nullptr);
+
 	LOG("Initialized d3d12 swap chain.");
 	return true;
 }
 
 bool d3d12SwapChain::shutdown()
 {
+	rtDescriptorHeap.shutdown();
+	dsDescriptorHeap.shutdown();
+	rtvs.clear();
+	dsv.Reset();
 	dxgiSwapChain.Reset();
 	LOG("Shutdown d3d12 swap chain.");
+	return true;
+}
+
+bool d3d12SwapChain::updateBackBufferRTVs(ID3D12Device8* const device, const UINT rtvDescriptorSize)
+{
+	// Get a cpu handle to the first rtv descriptor in the rtv heap
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtDescriptorHeap.getCPUHandleForDescriptorAtHeapStart();
+
+	// For each back buffer
+	const UINT backBufferCount = static_cast<UINT>(rtvs.size());
+	for (UINT i = 0; i < backBufferCount; ++i)
+	{
+		// Get the buffer from the swap chain
+		Microsoft::WRL::ComPtr<ID3D12Resource> backBuffer;
+		if (FAILED(dxgiSwapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffer))))
+		{
+			return false;
+		}
+
+		// Create a render target view from the buffer
+		device->CreateRenderTargetView(backBuffer.Get(), nullptr, rtvHandle);
+
+		// Store the back buffer resource
+		rtvs[i] = backBuffer;
+
+		// Increment the rtv handle to the next descriptor in the heap
+		rtvHandle.ptr += rtvDescriptorSize;
+	}
+
+	return true;
+}
+
+bool d3d12SwapChain::updateDSV(ID3D12Device8* const device, const UINT64 width, const UINT height)
+{
+	static constexpr DXGI_FORMAT depthStencilViewFormat = DXGI_FORMAT_D32_FLOAT;
+
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = depthStencilViewFormat;
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+	D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+	depthOptimizedClearValue.Format = depthStencilViewFormat;
+	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+	depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+	D3D12_HEAP_PROPERTIES depthStencilHeapProperties = CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT);
+	D3D12_RESOURCE_DESC depthStencilResourceDesc = CD3DX12_RESOURCE_DESC::Tex2D(depthStencilViewFormat,
+		width,
+		height,
+		1,
+		1,
+		1,
+		0,
+		D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL
+	);
+	if (FAILED(device->CreateCommittedResource(&depthStencilHeapProperties,
+		D3D12_HEAP_FLAG_NONE,
+		&depthStencilResourceDesc,
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		&depthOptimizedClearValue,
+		IID_PPV_ARGS(&dsv)
+	)))
+	{
+		return false;
+	}
+	if (FAILED(dsv->SetName(L"dsv_resource")))
+	{
+		return false;
+	}
+
+	device->CreateDepthStencilView(dsv.Get(), &dsvDesc, dsDescriptorHeap.getCPUHandleForDescriptorAtHeapStart());
+
 	return true;
 }
 
@@ -635,10 +778,23 @@ bool d3d12RenderDevice::createSwapChain(const swapChainInitSettings& settings,
 	d3d12SwapChain* newSwapChain = new d3d12SwapChain;
 
 	const bool initResult = newSwapChain->init(dxgiFactory.Get(), graphicsQueue.GetCommandQueue(), 
+		mainDevice.Get(),
 		settings.width, settings.height, static_cast<uint32_t>(inFlightFenceValues.size()), 
 		static_cast<HWND>(settings.windowHandle));
 
 	if (!initResult)
+	{
+		return false;
+	}
+
+	const bool updateRTVResult = newSwapChain->updateBackBufferRTVs(mainDevice.Get(), descriptorSizes.rtv);
+	if (!updateRTVResult)
+	{
+		return false;
+	}
+
+	const bool updateDSVResult = newSwapChain->updateDSV(mainDevice.Get(), settings.width, settings.height);
+	if (!updateDSVResult)
 	{
 		return false;
 	}

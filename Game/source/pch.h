@@ -22,3 +22,4 @@
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "d3d12.lib")
+#include "renderer/d3d12/d3dx12.h"
