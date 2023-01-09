@@ -29,7 +29,9 @@ struct renderDeviceInitSettings
 
 struct swapChainInitSettings
 {
-
+	uint32_t width = 0;
+	uint32_t height = 0;
+	void* windowHandle = nullptr;
 };
 
 // ---------------------------------------------

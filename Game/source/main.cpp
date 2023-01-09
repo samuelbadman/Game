@@ -127,7 +127,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// Swap chain
 	swapChainInitSettings swapChainSettings = {};
-
+	swapChainSettings.windowHandle = static_cast<void*>(window->getHwnd());
+	window->getRenderingResolution(swapChainSettings.width, swapChainSettings.height);
 
 	const bool swapChainInitResult = gameRenderDevice->createSwapChain(swapChainSettings, windowSwapChain);
 	if (!swapChainInitResult)

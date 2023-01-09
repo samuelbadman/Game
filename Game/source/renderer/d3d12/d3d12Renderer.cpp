@@ -289,8 +289,50 @@ void d3d12HardwareQueue::submitRenderContexts(const uint32_t numContexts, render
 // ---------------------------------------------
 // Swap chain
 // ---------------------------------------------
-bool d3d12SwapChain::init(IDXGIFactory7* factory)
+bool d3d12SwapChain::init(IDXGIFactory7* factory, ID3D12CommandQueue* const directCommandQueue, 
+	const uint32_t width, const uint32_t height,
+	const uint32_t backBufferCount, HWND hwnd)
 {
+	LOG(stringHelper::printf("Initializing d3d12 swap chain at %dx%d with %d back buffers.", width, height, backBufferCount));
+
+	// Create swap chain
+	DXGI_SWAP_CHAIN_DESC1 swapChainDesc = {};
+	swapChainDesc.Width = static_cast<UINT>(width);
+	swapChainDesc.Height = static_cast<UINT>(height);
+	swapChainDesc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	swapChainDesc.Stereo = FALSE;
+	swapChainDesc.SampleDesc = { 1, 0 };
+	swapChainDesc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	swapChainDesc.BufferCount = static_cast<UINT>(backBufferCount);
+	swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
+	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+	swapChainDesc.Flags = getTearingSupport(factory) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
+	Microsoft::WRL::ComPtr<IDXGISwapChain1> swapChain1;
+	if (FAILED(factory->CreateSwapChainForHwnd(directCommandQueue,
+		hwnd,
+		&swapChainDesc,
+		nullptr,
+		nullptr,
+		&swapChain1)))
+	{
+		return false;
+	}
+
+	// Disable alt + enter fullscreen shortcut
+	if (FAILED(factory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER)))
+	{
+		return false;
+	}
+	LOG("Disabled alt+enter fullscreen shortcut.");
+
+	// Convert swap chain 1 interface to swap chain 4 interface
+	if (FAILED(swapChain1.As(&dxgiSwapChain)))
+	{
+		return false;
+	}
+
 	LOG("Initialized d3d12 swap chain.");
 	return true;
 }
@@ -578,7 +620,6 @@ bool d3d12RenderDevice::createRenderContext(const renderCommand::commandContext 
 bool d3d12RenderDevice::destroyRenderContext(std::unique_ptr<renderContext>& outRenderContext)
 {
 	d3d12RenderContext* d3d12Context = static_cast<d3d12RenderContext*>(outRenderContext.get());
-	assert(d3d12Context != nullptr);
 	const bool shutdownResult = d3d12Context->shutdown();
 	if (!shutdownResult)
 	{
@@ -593,7 +634,9 @@ bool d3d12RenderDevice::createSwapChain(const swapChainInitSettings& settings,
 {
 	d3d12SwapChain* newSwapChain = new d3d12SwapChain;
 
-	const bool initResult = newSwapChain->init(dxgiFactory.Get());
+	const bool initResult = newSwapChain->init(dxgiFactory.Get(), graphicsQueue.GetCommandQueue(), 
+		settings.width, settings.height, static_cast<uint32_t>(inFlightFenceValues.size()), 
+		static_cast<HWND>(settings.windowHandle));
 
 	if (!initResult)
 	{
@@ -607,7 +650,6 @@ bool d3d12RenderDevice::createSwapChain(const swapChainInitSettings& settings,
 bool d3d12RenderDevice::destroySwapChain(std::unique_ptr<swapChain>& outSwapChain)
 {
 	d3d12SwapChain* inD3d12SwapChain = static_cast<d3d12SwapChain*>(outSwapChain.get());
-	assert(inD3d12SwapChain != nullptr);
 	const bool shutdownResult = inD3d12SwapChain->shutdown();
 	if (!shutdownResult)
 	{

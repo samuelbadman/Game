@@ -28,6 +28,7 @@ public:
 		const size_t graphicsContextSubmissionsPerFrameCount);
 	void shutdown();
 	void submitRenderContexts(const uint32_t numContexts, renderContext*const* contexts);
+	ID3D12CommandQueue* GetCommandQueue() const { return queue.Get(); }
 };
 
 // ---------------------------------------------
@@ -43,7 +44,9 @@ public:
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
 
 public:
-	bool init(IDXGIFactory7* factory);
+	bool init(IDXGIFactory7* factory, ID3D12CommandQueue* const directCommandQueue,
+		const uint32_t width, const uint32_t height,
+		const uint32_t backBufferCount, HWND hwnd);
 	bool shutdown();
 };
 
