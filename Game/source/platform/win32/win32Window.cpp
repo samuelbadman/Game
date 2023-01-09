@@ -472,6 +472,8 @@ LRESULT win32Window::onWM_ExitSizeMove(HWND hwnd, UINT msg,
 	WPARAM wparam, LPARAM lparam)
 {
 	exitSizeMoveEvent event = {};
+	getRenderingResolution(event.newRenderingResolutionX, event.newRenderingResolutionY);
+
 	onExitSizeMove.broadcast(event);
 	return 0;
 }

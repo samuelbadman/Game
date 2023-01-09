@@ -3,6 +3,7 @@
 #include "platform/win32/win32Gamepads.h"
 #include "platform/win32/win32Display.h"
 #include "log.h"
+#include "stringHelper.h"
 #include "game.h"
 #include "renderer/renderer.h"
 
@@ -30,11 +31,19 @@ struct gameSettings
 };
 
 static bool running = true;
+static bool inSizeMove = false;
 static std::unique_ptr<win32Window> window = nullptr;
 static std::unique_ptr<game> gameInstance = nullptr;
 static std::unique_ptr<renderDevice> gameRenderDevice = nullptr;
 static std::unique_ptr<renderContext> graphicsRenderContext = nullptr;
 static std::unique_ptr<swapChain> windowSwapChain = nullptr;
+
+static void onRendererResize(const uint32_t newX, const uint32_t newY)
+{
+	// TODO Check current renderer size is different to new size before resizing render objects
+
+	LOG(stringHelper::printf("Resized to %dx%d", newX, newY));
+}
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
@@ -81,15 +90,27 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	}
 
 	// Register core event callbacks
-	window->onClosed.add([](const closedEvent& event) { running = false; });
+	window->onClosed.add([](const closedEvent& event) { 
+		running = false; 
+		});
 	//window->onDestroyed.add([](const destroyedEvent& event) {  });
-	//window->onEnterSizeMove.add([](const enterSizeMoveEvent& event) {  });
-	//window->onExitSizeMove.add([](const exitSizeMoveEvent& event) {  });
+	window->onEnterSizeMove.add([](const enterSizeMoveEvent& event) {
+		inSizeMove = true;
+		});
+	window->onExitSizeMove.add([](const exitSizeMoveEvent& event) {
+		inSizeMove = false;
+		onRendererResize(event.newRenderingResolutionX, event.newRenderingResolutionY);
+		});
 	//window->onGainedFocus.add([](const gainedFocusEvent& event) {  });
 	//window->onLostFocus.add([](const lostFocusEvent& event) {  });
 	//window->onMaximized.add([](const maximizedEvent& event) {  });
 	//window->onMinimized.add([](const minimizedEvent& event) {  });
-	//window->onResized.add([](const resizedEvent& event) {  });
+	window->onResized.add([](const resizedEvent& event) { 
+		if (!inSizeMove)
+		{
+			onRendererResize(event.newRenderingResolutionX, event.newRenderingResolutionY);
+		}
+		});
 	//window->onEnterFullScreen.add([](const enterFullScreenEvent& event) {  });
 	//window->onExitFullScreen.add([](const exitFullScreenEvent& event) {  });
 	window->onInput.add([](const inputEvent& event) {
@@ -178,25 +199,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// Render
 		gameInstance->render();
 	}
-
-	// Destroy the game instance
-	//gameInstance.reset();
-
-	// Shutdown and destroy the renderer
-	//gameRenderDevice->destroySwapChain(windowSwapChain);
-	//LOG("Destroyed swap chain.");
-	//gameRenderDevice->destroyRenderContext(graphicsRenderContext);
-	//LOG("Destroyed graphics render context.");
-	//gameRenderDevice->shutdown();
-	//gameRenderDevice.reset();
-	//LOG("Destroyed render device.");
-
-	// Destroy the window
-	//window.reset();
-	//LOG("Destroyed win32 window.");
-
-	//LOG_SHUTDOWN();
-	//window->shutdown();
 
 	return 0;
 }
