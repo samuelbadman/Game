@@ -487,6 +487,45 @@ bool d3d12SwapChain::updateDSV(ID3D12Device8* const device, const UINT64 width, 
 	return true;
 }
 
+bool d3d12SwapChain::getSwapChainDesc(DXGI_SWAP_CHAIN_DESC& outSwapChainDesc) const
+{
+	return SUCCEEDED(dxgiSwapChain->GetDesc(&outSwapChainDesc));
+}
+
+bool d3d12SwapChain::resize(ID3D12Device8* const device, const UINT rtvDescriptorSize, const UINT64 width, const UINT height,
+	const DXGI_SWAP_CHAIN_DESC& swapChainDesc)
+{
+	const UINT backBufferCount = static_cast<size_t>(rtvs.size());
+
+	// Release back buffer resources
+	rtvs.clear();
+	dsv.Reset();
+
+	// Resize swap chain back buffers
+	if (FAILED(dxgiSwapChain->ResizeBuffers(backBufferCount,
+		static_cast<UINT>(width),
+		height,
+		swapChainDesc.BufferDesc.Format,
+		swapChainDesc.Flags)))
+	{
+		return false;
+	}
+
+	// Recreate rtv descriptors for the swap chain back buffers
+	if (!updateBackBufferRTVs(device, rtvDescriptorSize))
+	{
+		return false;
+	}
+
+	// Recreate depth stencil buffer
+	if (!updateDSV(device, width, height))
+	{
+		return false;
+	}
+
+	return true;
+}
+
 // ---------------------------------------------
 // Render context
 // ---------------------------------------------
@@ -559,6 +598,46 @@ bool d3d12RenderContext::shutdown()
 
 void d3d12RenderContext::submitRenderCommand(const renderCommand& command)
 {
+	switch (command.getType())
+	{
+	case renderCommand::commandType::beginFrame: renderCommand_beginContext_implementation(static_cast<const renderCommand_beginContext&>(command)); break;
+	}
+}
+
+void d3d12RenderContext::renderCommand_beginContext_implementation(const renderCommand_beginContext& command)
+{
+	// Get the command allocator for this back buffer
+	ID3D12CommandAllocator* commandAllocator = commandAllocators[static_cast<size_t>(command.frameIndex)].Get();
+
+	// Reset command allocator and list to record new commands
+	if (FAILED(commandAllocator->Reset()))
+	{
+		assert(false);
+	}
+	if (FAILED(commandList->Reset(commandAllocator, nullptr)))
+	{
+		assert(false);
+	}
+
+	// Need to wait before we can start recording this context. 
+	// Wait outside the command?
+	// Waiting is something the render device does, not the context
+
+	// New render call
+	// Wait for the current frame index to be ready
+	// Submit commands to the contexts <- context
+	// Submit contexts to the device <- device
+	// Present swap chain <- swap chain
+	// Update synchronization resources <- device
+}
+
+void d3d12RenderContext::renderCommand_endContext_implementation(const renderCommand_endContext& command)
+{
+	// Stop recording commands
+	if (FAILED(commandList->Close()))
+	{
+		assert(false);
+	}
 }
 
 // ---------------------------------------------
@@ -812,5 +891,46 @@ bool d3d12RenderDevice::destroySwapChain(std::unique_ptr<swapChain>& outSwapChai
 		return false;
 	}
 	outSwapChain.reset();
+	return true;
+}
+
+bool d3d12RenderDevice::resizeSwapChain(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight)
+{
+	d3d12SwapChain* inD3d12SwapChain = static_cast<d3d12SwapChain*>(inSwapChain);
+
+	// Get swap chain description
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+	const bool getSwapChainDescResult = inD3d12SwapChain->getSwapChainDesc(swapChainDesc);
+	if (!getSwapChainDescResult)
+	{
+		return false;
+	}
+
+	// Check if the new dimensions are the same as the current swap chain dimensions
+	if ((swapChainDesc.BufferDesc.Width == static_cast<UINT>(newWidth)) &&
+		(swapChainDesc.BufferDesc.Height == static_cast<UINT>(newHeight)))
+	{
+		// Return without resizing the swap chain back buffers
+		return false;
+	}
+
+	// Flush command queues
+	const bool flushResult = flush();
+	if (!flushResult)
+	{
+		return false;
+	}
+
+	// Reset in flight fence value to current fence value
+	std::fill(inFlightFenceValues.begin(), inFlightFenceValues.end(), currentFenceValue);
+
+	// Resize swap chain
+	const bool swapChainResizeResult = inD3d12SwapChain->resize(mainDevice.Get(),
+		descriptorSizes.rtv, static_cast<UINT64>(newWidth), static_cast<UINT>(newHeight), swapChainDesc);
+	if (!swapChainResizeResult)
+	{
+		return false;
+	}
+
 	return true;
 }

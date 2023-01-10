@@ -75,6 +75,9 @@ public:
 	bool shutdown();
 	bool updateBackBufferRTVs(ID3D12Device8* const device, const UINT rtvDescriptorSize);
 	bool updateDSV(ID3D12Device8* const device, const UINT64 width, const UINT height);
+	bool getSwapChainDesc(DXGI_SWAP_CHAIN_DESC& outSwapChainDesc) const;
+	bool resize(ID3D12Device8* const device, const UINT rtDescriptorSize, const UINT64 width, const UINT height,
+		const DXGI_SWAP_CHAIN_DESC& swapChainDesc);
 };
 
 // ---------------------------------------------
@@ -96,6 +99,11 @@ public:
 		const renderCommand::commandContext commandContext);
 	bool shutdown();
 	ID3D12GraphicsCommandList6* getCommandList() { return commandList.Get(); }
+
+private:
+	// Command implementations
+	void renderCommand_beginContext_implementation(const renderCommand_beginContext& command);
+	void renderCommand_endContext_implementation(const renderCommand_endContext& command);
 };
 
 // ---------------------------------------------
@@ -120,6 +128,7 @@ private:
 	std::vector<uint64_t> inFlightFenceValues;
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 	HANDLE fenceEvent = nullptr;
+	uint32_t currentFrameIndex = 0;
 
 public:
 	// Render device interface
@@ -135,4 +144,5 @@ public:
 	virtual bool createSwapChain(const swapChainInitSettings& settings, 
 		std::unique_ptr<swapChain>& outSwapChain) final;
 	virtual bool destroySwapChain(std::unique_ptr<swapChain>& outSwapChain) final;
+	virtual bool resizeSwapChain(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight) final;
 };

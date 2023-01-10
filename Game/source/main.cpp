@@ -40,8 +40,6 @@ static std::unique_ptr<swapChain> windowSwapChain = nullptr;
 
 static void onRendererResize(const uint32_t newX, const uint32_t newY)
 {
-	// TODO Check current renderer size is different to new size before resizing render objects
-
 	LOG(stringHelper::printf("Resized to %dx%d", newX, newY));
 }
 
