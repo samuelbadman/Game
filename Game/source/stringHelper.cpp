@@ -9,7 +9,7 @@ std::string stringHelper::printf(const char* format, ...)
 	// Convert to formatted string to a string. Requires heap allocation
 	size_t size = vsnprintf(nullptr, 0, format, args) + 1;
 	std::string buf;
-	buf.resizeSwapChain(size);
+	buf.resize(size);
 	vsnprintf(buf.data(), size, format, args);
 	buf[size - 1] = '\0';
 

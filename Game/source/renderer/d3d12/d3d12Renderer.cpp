@@ -492,10 +492,11 @@ bool d3d12SwapChain::getSwapChainDesc(DXGI_SWAP_CHAIN_DESC& outSwapChainDesc) co
 	return SUCCEEDED(dxgiSwapChain->GetDesc(&outSwapChainDesc));
 }
 
-bool d3d12SwapChain::resize(ID3D12Device8* const device, const UINT rtvDescriptorSize, const UINT64 width, const UINT height,
+bool d3d12SwapChain::resizeDimensions(ID3D12Device8* const device, const UINT rtvDescriptorSize, 
+	const UINT64 width, const UINT height,
 	const DXGI_SWAP_CHAIN_DESC& swapChainDesc)
 {
-	const UINT backBufferCount = static_cast<size_t>(rtvs.size());
+	const UINT backBufferCount = static_cast<UINT>(rtvs.size());
 
 	// Release back buffer resources
 	rtvs.clear();
@@ -894,7 +895,7 @@ bool d3d12RenderDevice::destroySwapChain(std::unique_ptr<swapChain>& outSwapChai
 	return true;
 }
 
-bool d3d12RenderDevice::resizeSwapChain(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight)
+bool d3d12RenderDevice::resizeSwapChainDimensions(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight)
 {
 	d3d12SwapChain* inD3d12SwapChain = static_cast<d3d12SwapChain*>(inSwapChain);
 
@@ -911,7 +912,7 @@ bool d3d12RenderDevice::resizeSwapChain(swapChain* inSwapChain, const uint32_t n
 		(swapChainDesc.BufferDesc.Height == static_cast<UINT>(newHeight)))
 	{
 		// Return without resizing the swap chain back buffers
-		return false;
+		return true;
 	}
 
 	// Flush command queues
@@ -925,12 +926,13 @@ bool d3d12RenderDevice::resizeSwapChain(swapChain* inSwapChain, const uint32_t n
 	std::fill(inFlightFenceValues.begin(), inFlightFenceValues.end(), currentFenceValue);
 
 	// Resize swap chain
-	const bool swapChainResizeResult = inD3d12SwapChain->resize(mainDevice.Get(),
+	const bool swapChainResizeResult = inD3d12SwapChain->resizeDimensions(mainDevice.Get(),
 		descriptorSizes.rtv, static_cast<UINT64>(newWidth), static_cast<UINT>(newHeight), swapChainDesc);
 	if (!swapChainResizeResult)
 	{
 		return false;
 	}
 
+	LOG(stringHelper::printf("Resized swap chain with new dimensions %dx%d.", newWidth, newHeight));
 	return true;
 }

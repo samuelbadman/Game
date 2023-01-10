@@ -92,5 +92,6 @@ public:
 	virtual bool createSwapChain(const swapChainInitSettings& settings,
 		std::unique_ptr<swapChain>& outSwapChain) = 0;
 	virtual bool destroySwapChain(std::unique_ptr<swapChain>& outSwapChain) = 0;
-	virtual bool resizeSwapChain(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight) = 0;
+	virtual bool resizeSwapChainDimensions(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight) = 0;
+
 };

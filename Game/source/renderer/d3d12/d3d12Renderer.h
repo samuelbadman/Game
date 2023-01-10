@@ -76,7 +76,8 @@ public:
 	bool updateBackBufferRTVs(ID3D12Device8* const device, const UINT rtvDescriptorSize);
 	bool updateDSV(ID3D12Device8* const device, const UINT64 width, const UINT height);
 	bool getSwapChainDesc(DXGI_SWAP_CHAIN_DESC& outSwapChainDesc) const;
-	bool resize(ID3D12Device8* const device, const UINT rtDescriptorSize, const UINT64 width, const UINT height,
+	bool resizeDimensions(ID3D12Device8* const device, const UINT rtDescriptorSize, 
+		const UINT64 width, const UINT height,
 		const DXGI_SWAP_CHAIN_DESC& swapChainDesc);
 };
 
@@ -144,5 +145,5 @@ public:
 	virtual bool createSwapChain(const swapChainInitSettings& settings, 
 		std::unique_ptr<swapChain>& outSwapChain) final;
 	virtual bool destroySwapChain(std::unique_ptr<swapChain>& outSwapChain) final;
-	virtual bool resizeSwapChain(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight) final;
+	virtual bool resizeSwapChainDimensions(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight) final;
 };

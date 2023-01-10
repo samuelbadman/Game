@@ -510,10 +510,10 @@ LRESULT win32Window::onWM_Size(HWND hwnd, UINT msg,
 			maximizedEvent maximize = {};
 			onMaximized.broadcast(maximize);
 
-			resizedEvent resizeSwapChain = {};
-			resizeSwapChain.newRenderingResolutionX = LOWORD(lparam);
-			resizeSwapChain.newRenderingResolutionY = HIWORD(lparam);
-			onResized.broadcast(resizeSwapChain);
+			resizedEvent resizeSwapChainDimensions = {};
+			resizeSwapChainDimensions.newRenderingResolutionX = LOWORD(lparam);
+			resizeSwapChainDimensions.newRenderingResolutionY = HIWORD(lparam);
+			onResized.broadcast(resizeSwapChainDimensions);
 
 			return 0;
 		}
@@ -535,10 +535,10 @@ LRESULT win32Window::onWM_Size(HWND hwnd, UINT msg,
 		case SIZE_RESTORED:
 		{
 			// Window restored
-			resizedEvent resizeSwapChain = {};
-			resizeSwapChain.newRenderingResolutionX = LOWORD(lparam);
-			resizeSwapChain.newRenderingResolutionY = HIWORD(lparam);
-			onResized.broadcast(resizeSwapChain);
+			resizedEvent resizeSwapChainDimensions = {};
+			resizeSwapChainDimensions.newRenderingResolutionX = LOWORD(lparam);
+			resizeSwapChainDimensions.newRenderingResolutionY = HIWORD(lparam);
+			onResized.broadcast(resizeSwapChainDimensions);
 
 			return 0;
 		}

@@ -40,7 +40,11 @@ static std::unique_ptr<swapChain> windowSwapChain = nullptr;
 
 static void onRendererResize(const uint32_t newX, const uint32_t newY)
 {
-	LOG(stringHelper::printf("Resized to %dx%d", newX, newY));
+	const bool resizeSwapChainResult = gameRenderDevice->resizeSwapChainDimensions(windowSwapChain.get(), newX, newY);
+	if (!resizeSwapChainResult)
+	{
+		MessageBoxA(0, "Failed to resize window swap chain dimesions.", "Error", MB_OK | MB_ICONERROR);
+	}
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
