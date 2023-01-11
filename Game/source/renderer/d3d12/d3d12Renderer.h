@@ -42,7 +42,7 @@ private:
 
 public:
 	bool init(ID3D12Device8* const device, const D3D12_COMMAND_LIST_TYPE type, 
-		const size_t graphicsContextSubmissionsPerFrameCount);
+		const size_t contextSubmissionsPerFrameCount);
 
 	void shutdown();
 

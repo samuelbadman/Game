@@ -316,17 +316,23 @@ void d3d12HardwareQueue::shutdown()
 
 void d3d12HardwareQueue::submitRenderContexts(const uint32_t numContexts, renderContext*const* contexts)
 {
+	// Assert that the number of contexts being submitted is the same as the pre allocated amount for the hardware queue
 	assert(static_cast<size_t>(numContexts) == commandListSubmissions.size());
 
+	// For each submitted context
 	for (uint32_t i = 0; i < numContexts; ++i)
 	{
+		// Cast to renderer platform context type
 		d3d12RenderContext* const d3d12Context = static_cast<d3d12RenderContext* const>(contexts[static_cast<size_t>(i)]);
 
+		// Assert the submitted context command context matches the hardware queue it is being submitted to
 		assert(d3d12Context->getCommandContext() == queueContext);
 
+		// Set the pre allocated command list pointer to the submitted context's command list
 		commandListSubmissions[static_cast<size_t>(i)] = d3d12Context->getCommandList();
 	}
 
+	// Execute the submitted commands on the hardware queue
 	queue->ExecuteCommandLists(numContexts, commandListSubmissions.data());
 }
 

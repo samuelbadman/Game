@@ -21,7 +21,7 @@ struct gameSettings
 	static constexpr rendererPlatform renderingPlatform = rendererPlatform::direct3d12;
 	static constexpr bufferingType buffering = bufferingType::tripleBuffering;
 	static constexpr bool useVSync = false;
-	//Vector4D ClearColor = Vector4D(0.0f, 0.0f, 0.0f, 1.0f);
+	static constexpr float clearColor[4] = {1.0f, 0.0f, 0.0f, 1.0f};
 
 	// Tick settings
 	// The time taken in between fixed updates in seconds
@@ -53,16 +53,23 @@ static void render()
 	// Begin a frame
 	gameRenderDevice->beginFrame();
 	{
+		// Start recording render contexts across threads here
+
 		// Begin the main thread graphics render context
 		renderCommand_beginContext beginContext = {};
 		beginContext.frameIndex = gameRenderDevice->getCurrentFrameIndex();
 		graphicsRenderContext->submitRenderCommand(beginContext);
-
-		//gameInstance->render();
-
+		{
+			// Transition back buffer resource from present to render target - resource transition barrier
+			// Get rtv, dsv, clear render/depth targets, set render/depth targets
+			//gameInstance->render();
+			// Transition back buffer resource from render target to present - resource transition barrier
+		}
 		// End the main thread graphics render context
 		renderCommand_endContext endContext = {};
 		graphicsRenderContext->submitRenderCommand(endContext);
+
+		// Wait here for render contexts being recorded across multiple threads before submitting all of them
 
 		// Submit render contexts to render device
 		renderContext* graphicsContexts[1] = { graphicsRenderContext.get() };
