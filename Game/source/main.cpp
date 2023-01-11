@@ -20,8 +20,8 @@ struct gameSettings
 	// Rendering settings
 	static constexpr rendererPlatform renderingPlatform = rendererPlatform::direct3d12;
 	static constexpr bufferingType buffering = bufferingType::tripleBuffering;
+	static constexpr bool useVSync = false;
 	//Vector4D ClearColor = Vector4D(0.0f, 0.0f, 0.0f, 1.0f);
-	//bool VSyncEnabled = true;
 
 	// Tick settings
 	// The time taken in between fixed updates in seconds
@@ -45,6 +45,31 @@ static void onRendererResize(const uint32_t newX, const uint32_t newY)
 	{
 		MessageBoxA(0, "Failed to resize window swap chain dimesions.", "Error", MB_OK | MB_ICONERROR);
 	}
+}
+
+// Main thread render
+static void render()
+{
+	// Begin a frame
+	gameRenderDevice->beginFrame();
+	{
+		// Begin the main thread graphics render context
+		renderCommand_beginContext beginContext = {};
+		beginContext.frameIndex = gameRenderDevice->getCurrentFrameIndex();
+		graphicsRenderContext->submitRenderCommand(beginContext);
+
+		//gameInstance->render();
+
+		// End the main thread graphics render context
+		renderCommand_endContext endContext = {};
+		graphicsRenderContext->submitRenderCommand(endContext);
+
+		// Submit render contexts to render device
+		renderContext* graphicsContexts[1] = { graphicsRenderContext.get() };
+		gameRenderDevice->submitRenderContexts(renderCommand::commandContext::graphics, 1, graphicsContexts);
+	}
+	// End the frame
+	gameRenderDevice->endFrame(windowSwapChain.get(), gameSettings::useVSync);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
@@ -199,7 +224,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		gameInstance->tick(static_cast<float>(deltaTime));
 
 		// Render
-		gameInstance->render();
+		render();
 	}
 
 	return 0;

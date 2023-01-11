@@ -24,7 +24,9 @@ private:
 public:
 	bool init(ID3D12Device8* const device, const UINT descriptorCount,
 		const D3D12_DESCRIPTOR_HEAP_TYPE type, const bool shaderVisible);
+
 	void shutdown();
+
 	D3D12_CPU_DESCRIPTOR_HANDLE getCPUHandleForDescriptorAtHeapStart() const;
 };
 
@@ -41,8 +43,11 @@ private:
 public:
 	bool init(ID3D12Device8* const device, const D3D12_COMMAND_LIST_TYPE type, 
 		const size_t graphicsContextSubmissionsPerFrameCount);
+
 	void shutdown();
+
 	void submitRenderContexts(const uint32_t numContexts, renderContext*const* contexts);
+
 	ID3D12CommandQueue* GetCommandQueue() const { return queue.Get(); }
 };
 
@@ -71,14 +76,23 @@ public:
 	bool init(IDXGIFactory7* const factory, ID3D12CommandQueue* const directCommandQueue,
 		ID3D12Device8* const device,
 		const uint32_t width, const uint32_t height,
-		const uint32_t backBufferCount, HWND hwnd);
+		const uint32_t backBufferCount, HWND hwnd, const bool tearingSupported);
+
 	bool shutdown();
+
 	bool updateBackBufferRTVs(ID3D12Device8* const device, const UINT rtvDescriptorSize);
+
 	bool updateDSV(ID3D12Device8* const device, const UINT64 width, const UINT height);
+
 	bool getSwapChainDesc(DXGI_SWAP_CHAIN_DESC& outSwapChainDesc) const;
+
 	bool resizeDimensions(ID3D12Device8* const device, const UINT rtDescriptorSize, 
 		const UINT64 width, const UINT height,
 		const DXGI_SWAP_CHAIN_DESC& swapChainDesc);
+
+	bool present(const bool vsyncEnabled, const bool tearingSupported);
+
+	uint32_t getCurrentBackBufferIndex() const;
 };
 
 // ---------------------------------------------
@@ -93,17 +107,21 @@ private:
 public:
 	// Render context interface
 	virtual rendererPlatform getPlatform() const { return rendererPlatform::direct3d12; }
+
 	virtual void submitRenderCommand(const renderCommand& command) final;
 
 public:
 	bool init(ID3D12Device8* const device, const uint8_t inFlightFrameCount, 
 		const renderCommand::commandContext commandContext);
+
 	bool shutdown();
+
 	ID3D12GraphicsCommandList6* getCommandList() { return commandList.Get(); }
 
 private:
 	// Command implementations
 	void renderCommand_beginContext_implementation(const renderCommand_beginContext& command);
+
 	void renderCommand_endContext_implementation(const renderCommand_endContext& command);
 };
 
@@ -121,6 +139,7 @@ private:
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> mainAdapter = nullptr;
 
 	d3d12DescriptorIncrementSizes descriptorSizes = {};
+	bool tearingSupported = false;
 
 	d3d12HardwareQueue graphicsQueue = {};
 
@@ -134,16 +153,33 @@ private:
 public:
 	// Render device interface
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
+
 	virtual bool init(const renderDeviceInitSettings& settings) final;
+
 	virtual void shutdown() final;
+
 	virtual bool flush() final;
+
 	virtual void submitRenderContexts(const renderCommand::commandContext commandContext, 
 		const uint32_t numContexts, renderContext*const* contexts) final;
+
 	virtual bool createRenderContext(const renderCommand::commandContext commandContext,
 		std::unique_ptr<renderContext>& outRenderContext) const final;
+
 	virtual bool destroyRenderContext(std::unique_ptr<renderContext>& outRenderContext) final;
+
 	virtual bool createSwapChain(const swapChainInitSettings& settings, 
 		std::unique_ptr<swapChain>& outSwapChain) final;
+
 	virtual bool destroySwapChain(std::unique_ptr<swapChain>& outSwapChain) final;
+
 	virtual bool resizeSwapChainDimensions(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight) final;
+
+	virtual bool presentSwapChain(swapChain* const inSwapChain, const bool vsyncEnabled) final;
+
+	virtual bool beginFrame() final;
+
+	virtual bool endFrame(swapChain* const inSwapChain, const bool vsyncEnabled) final;
+
+	virtual uint32_t getCurrentFrameIndex() final { return currentFrameIndex; }
 };

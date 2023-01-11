@@ -10,8 +10,8 @@ struct renderCommand
 
 	enum class commandType : uint8_t
 	{
-		beginFrame = 0,
-		endFrame = 1
+		beginContext = 0,
+		endContext = 1
 	};
 
 	virtual ~renderCommand() = default;
@@ -29,15 +29,15 @@ private:
 struct renderCommand_beginContext : public renderCommand
 {
 	virtual ~renderCommand_beginContext() final = default;
-	renderCommand_beginContext() : renderCommand(renderCommand::commandContext::graphics, renderCommand::commandType::beginFrame)
+	renderCommand_beginContext() : renderCommand(renderCommand::commandContext::graphics, renderCommand::commandType::beginContext)
 	{}
 
-	uint8_t frameIndex = 0;
+	uint32_t frameIndex = 0;
 };
 
 struct renderCommand_endContext : public renderCommand
 {
 	virtual ~renderCommand_endContext() final = default;
-	renderCommand_endContext() : renderCommand(renderCommand::commandContext::graphics, renderCommand::commandType::endFrame)
+	renderCommand_endContext() : renderCommand(renderCommand::commandContext::graphics, renderCommand::commandType::endContext)
 	{}
 };
