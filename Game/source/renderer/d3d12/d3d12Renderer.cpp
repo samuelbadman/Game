@@ -525,7 +525,10 @@ bool d3d12SwapChain::resizeDimensions(ID3D12Device8* const device, const UINT rt
 	const UINT backBufferCount = static_cast<UINT>(rtvs.size());
 
 	// Release back buffer resources
-	rtvs.clear();
+	for (Microsoft::WRL::ComPtr<ID3D12Resource>& rtv : rtvs)
+	{
+		rtv.Reset();
+	}
 	dsv.Reset();
 
 	// Resize swap chain back buffers
