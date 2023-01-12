@@ -1,5 +1,6 @@
 #pragma once
 
+// Render command base
 struct renderCommand
 {
 	enum class commandContext : uint8_t
@@ -11,7 +12,9 @@ struct renderCommand
 	enum class commandType : uint8_t
 	{
 		beginContext = 0,
-		endContext = 1
+		endContext = 1,
+		beginFrame = 2,
+		endFrame = 3
 	};
 
 	virtual ~renderCommand() = default;
@@ -26,9 +29,11 @@ private:
 	commandType type;
 };
 
+// ---------------------------------------------
+// Render commands
+// ---------------------------------------------
 struct renderCommand_beginContext : public renderCommand
 {
-	virtual ~renderCommand_beginContext() final = default;
 	renderCommand_beginContext() : renderCommand(renderCommand::commandContext::graphics, renderCommand::commandType::beginContext)
 	{}
 
@@ -37,7 +42,18 @@ struct renderCommand_beginContext : public renderCommand
 
 struct renderCommand_endContext : public renderCommand
 {
-	virtual ~renderCommand_endContext() final = default;
 	renderCommand_endContext() : renderCommand(renderCommand::commandContext::graphics, renderCommand::commandType::endContext)
+	{}
+};
+
+struct renderCommand_beginFrame : public renderCommand
+{
+	renderCommand_beginFrame() : renderCommand(renderCommand::commandContext::graphics, renderCommand::commandType::beginFrame)
+	{}
+};
+
+struct renderCommand_endFrame : public renderCommand
+{
+	renderCommand_endFrame() : renderCommand(renderCommand::commandContext::graphics, renderCommand::commandType::endFrame)
 	{}
 };

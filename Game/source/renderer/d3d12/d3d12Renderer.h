@@ -57,6 +57,8 @@ public:
 class d3d12SwapChain : public swapChain
 {
 private:
+	bool tearingSupported = false;
+
 	// Swap chain
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> dxgiSwapChain = nullptr;
 
@@ -71,13 +73,16 @@ private:
 public:
 	// Swap chain interface
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
-	virtual uint32_t GetCurrentBackBufferIndex() const final;
+
+	virtual uint32_t getCurrentBackBufferIndex() const final;
+
+	virtual bool present(const bool vsyncEnabled) const final;
 
 public:
 	bool init(IDXGIFactory7* const factory, ID3D12CommandQueue* const directCommandQueue,
 		ID3D12Device8* const device,
 		const uint32_t width, const uint32_t height,
-		const uint32_t backBufferCount, HWND hwnd, const bool tearingSupported);
+		const uint32_t backBufferCount, HWND hwnd);
 
 	bool shutdown();
 
@@ -90,8 +95,6 @@ public:
 	bool resizeDimensions(ID3D12Device8* const device, const UINT rtDescriptorSize, 
 		const UINT64 width, const UINT height,
 		const DXGI_SWAP_CHAIN_DESC& swapChainDesc);
-
-	bool present(const bool vsyncEnabled, const bool tearingSupported);
 };
 
 // ---------------------------------------------
@@ -122,6 +125,10 @@ private:
 	void renderCommand_beginContext_implementation(const renderCommand_beginContext& command);
 
 	void renderCommand_endContext_implementation(const renderCommand_endContext& command);
+
+	void renderCommand_beginFrame_implementation(const renderCommand_beginFrame& command);
+
+	void renderCommand_endFrame_implementation(const renderCommand_endFrame& command);
 };
 
 // ---------------------------------------------
@@ -138,7 +145,6 @@ private:
 	Microsoft::WRL::ComPtr<IDXGIAdapter4> mainAdapter = nullptr;
 
 	d3d12DescriptorIncrementSizes descriptorSizes = {};
-	bool tearingSupported = false;
 
 	d3d12HardwareQueue graphicsQueue = {};
 
@@ -173,9 +179,7 @@ public:
 
 	virtual bool resizeSwapChainDimensions(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight) final;
 
-	virtual bool presentSwapChain(swapChain* const inSwapChain, const bool vsyncEnabled) final;
+	virtual bool synchronizeBeginFrame(uint32_t inCurrentFrameIndex) final;
 
-	virtual bool SynchronizeBeginFrame(uint32_t inCurrentFrameIndex) final;
-
-	virtual bool SynchronizeEndFrame(uint32_t inCurrentFrameIndex) final;
+	virtual bool synchronizeEndFrame(uint32_t inCurrentFrameIndex) final;
 };

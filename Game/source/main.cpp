@@ -52,22 +52,21 @@ static void render()
 {
 	// Render into game window
 	// Begin a frame
-	const uint32_t frameIndex = windowSwapChain->GetCurrentBackBufferIndex();
-	gameRenderDevice->SynchronizeBeginFrame(frameIndex);
+	const uint32_t frameIndex = windowSwapChain->getCurrentBackBufferIndex();
+	gameRenderDevice->synchronizeBeginFrame(frameIndex);
 	
 	// Start recording render contexts across threads here
 
-	// Begin the main thread graphics render context
 	renderCommand_beginContext beginContext = {};
 	beginContext.frameIndex = frameIndex;
 	graphicsRenderContext->submitRenderCommand(beginContext);
-	{
-		// Transition back buffer resource from present to render target - resource transition barrier
-		// Get rtv, dsv, clear render/depth targets, set render/depth targets
-		//gameInstance->render();
-		// Transition back buffer resource from render target to present - resource transition barrier
-	}
-	// End the main thread graphics render context
+
+	renderCommand_beginFrame beginFrame = {};
+	graphicsRenderContext->submitRenderCommand(beginFrame);
+
+	renderCommand_endFrame endFrame = {};
+	graphicsRenderContext->submitRenderCommand(endFrame);
+
 	renderCommand_endContext endContext = {};
 	graphicsRenderContext->submitRenderCommand(endContext);
 
@@ -78,10 +77,10 @@ static void render()
 	gameRenderDevice->submitRenderContexts(renderCommand::commandContext::graphics, 1, graphicsContexts);
 
 	// Present the main window swap chain's back buffer
-	gameRenderDevice->presentSwapChain(windowSwapChain.get(), gameSettings::useVSync);
+	windowSwapChain->present(gameSettings::useVSync);
 	
 	// End the frame
-	gameRenderDevice->SynchronizeEndFrame(frameIndex);
+	gameRenderDevice->synchronizeEndFrame(frameIndex);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 

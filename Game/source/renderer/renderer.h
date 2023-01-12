@@ -44,7 +44,10 @@ public:
 
 public:
 	virtual rendererPlatform getPlatform() const = 0;
-	virtual uint32_t GetCurrentBackBufferIndex() const = 0;
+
+	virtual uint32_t getCurrentBackBufferIndex() const = 0;
+
+	virtual bool present(const bool vsyncEnabled) const = 0;
 };
 
 // ---------------------------------------------
@@ -105,9 +108,7 @@ public:
 
 	virtual bool resizeSwapChainDimensions(swapChain* const inSwapChain, const uint32_t newWidth, const uint32_t newHeight) = 0;
 
-	virtual bool presentSwapChain(swapChain* const inSwapChain, const bool vsyncEnabled) = 0;
+	virtual bool synchronizeBeginFrame(uint32_t inCurrentFrameIndex) = 0;
 
-	virtual bool SynchronizeBeginFrame(uint32_t inCurrentFrameIndex) = 0;
-
-	virtual bool SynchronizeEndFrame(uint32_t inCurrentFrameIndex) = 0;
+	virtual bool synchronizeEndFrame(uint32_t inCurrentFrameIndex) = 0;
 };

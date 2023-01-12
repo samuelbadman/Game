@@ -342,7 +342,7 @@ void d3d12HardwareQueue::submitRenderContexts(const uint32_t numContexts, render
 bool d3d12SwapChain::init(IDXGIFactory7* const factory, ID3D12CommandQueue* const directCommandQueue, 
 	ID3D12Device8* const device,
 	const uint32_t width, const uint32_t height,
-	const uint32_t backBufferCount, HWND hwnd, const bool tearingSupported)
+	const uint32_t backBufferCount, HWND hwnd)
 {
 	LOG(stringHelper::printf("Initializing d3d12 swap chain at %dx%d with %d back buffers.", width, height, backBufferCount));
 
@@ -358,7 +358,7 @@ bool d3d12SwapChain::init(IDXGIFactory7* const factory, ID3D12CommandQueue* cons
 	swapChainDesc.Scaling = DXGI_SCALING_STRETCH;
 	swapChainDesc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
 	swapChainDesc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
-	swapChainDesc.Flags = tearingSupported ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+	swapChainDesc.Flags = (tearingSupported = getTearingSupport(factory)) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
 
 	Microsoft::WRL::ComPtr<IDXGISwapChain1> swapChain1;
 	if (FAILED(factory->CreateSwapChainForHwnd(directCommandQueue,
@@ -420,9 +420,15 @@ bool d3d12SwapChain::shutdown()
 	return true;
 }
 
-uint32_t d3d12SwapChain::GetCurrentBackBufferIndex() const
+uint32_t d3d12SwapChain::getCurrentBackBufferIndex() const
 {
 	return dxgiSwapChain->GetCurrentBackBufferIndex();
+}
+
+bool d3d12SwapChain::present(const bool vsyncEnabled) const
+{
+	return SUCCEEDED(dxgiSwapChain->Present(vsyncEnabled ? 1 : 0,
+		(tearingSupported && (!vsyncEnabled)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
 }
 
 bool d3d12SwapChain::updateBackBufferRTVs(ID3D12Device8* const device, const UINT rtvDescriptorSize)
@@ -538,12 +544,6 @@ bool d3d12SwapChain::resizeDimensions(ID3D12Device8* const device, const UINT rt
 	return true;
 }
 
-bool d3d12SwapChain::present(const bool vsyncEnabled, const bool tearingSupported)
-{
-	return SUCCEEDED(dxgiSwapChain->Present(vsyncEnabled ? 1 : 0,
-		(tearingSupported && (!vsyncEnabled)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
-}
-
 // ---------------------------------------------
 // Render context
 // ---------------------------------------------
@@ -620,6 +620,8 @@ void d3d12RenderContext::submitRenderCommand(const renderCommand& command)
 	{
 	case renderCommand::commandType::beginContext: renderCommand_beginContext_implementation(static_cast<const renderCommand_beginContext&>(command)); break;
 	case renderCommand::commandType::endContext: renderCommand_endContext_implementation(static_cast<const renderCommand_endContext&>(command)); break;
+	case renderCommand::commandType::beginFrame: renderCommand_beginFrame_implementation(static_cast<const renderCommand_beginFrame&>(command)); break;
+	case renderCommand::commandType::endFrame: renderCommand_endFrame_implementation(static_cast<const renderCommand_endFrame&>(command)); break;
 	}
 }
 
@@ -646,6 +648,15 @@ void d3d12RenderContext::renderCommand_endContext_implementation(const renderCom
 	{
 		assert(false);
 	}
+}
+
+void d3d12RenderContext::renderCommand_beginFrame_implementation(const renderCommand_beginFrame& command)
+{
+
+}
+
+void d3d12RenderContext::renderCommand_endFrame_implementation(const renderCommand_endFrame& command)
+{
 }
 
 // ---------------------------------------------
@@ -688,9 +699,6 @@ bool d3d12RenderDevice::init(const renderDeviceInitSettings& settings)
 		return false;
 	}
 	LOG("Created dxgi factory.");
-
-	// Get tearing support
-	tearingSupported = getTearingSupport(dxgiFactory.Get());
 
 	// Determine adapter to use
 	mainAdapter.Attach(enumerateAdapters(dxgiFactory.Get()));
@@ -870,7 +878,7 @@ bool d3d12RenderDevice::createSwapChain(const swapChainInitSettings& settings,
 	const bool initResult = newSwapChain->init(dxgiFactory.Get(), graphicsQueue.GetCommandQueue(), 
 		mainDevice.Get(),
 		settings.width, settings.height, static_cast<uint32_t>(inFlightFenceValues.size()), 
-		static_cast<HWND>(settings.windowHandle), tearingSupported);
+		static_cast<HWND>(settings.windowHandle));
 
 	if (!initResult)
 	{
@@ -947,17 +955,12 @@ bool d3d12RenderDevice::resizeSwapChainDimensions(swapChain* inSwapChain, const 
 	return true;
 }
 
-bool d3d12RenderDevice::presentSwapChain(swapChain* inSwapChain, const bool vsyncEnabled)
-{
-	return static_cast<d3d12SwapChain*>(inSwapChain)->present(vsyncEnabled, tearingSupported);
-}
-
-bool d3d12RenderDevice::SynchronizeBeginFrame(uint32_t inCurrentFrameIndex)
+bool d3d12RenderDevice::synchronizeBeginFrame(uint32_t inCurrentFrameIndex)
 {
 	return waitForValueOnCallingCPUThread(fenceEvent, fence.Get(), inFlightFenceValues[static_cast<size_t>(inCurrentFrameIndex)]);
 }
 
-bool d3d12RenderDevice::SynchronizeEndFrame(uint32_t inCurrentFrameIndex)
+bool d3d12RenderDevice::synchronizeEndFrame(uint32_t inCurrentFrameIndex)
 {
 	// Increment the fence value and set the current back buffer's fence value to this
 	inFlightFenceValues[static_cast<size_t>(inCurrentFrameIndex)] = ++currentFenceValue;
