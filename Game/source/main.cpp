@@ -2,6 +2,7 @@
 #include "platform/win32/win32Window.h"
 #include "platform/win32/win32Gamepads.h"
 #include "platform/win32/win32Display.h"
+#include "platform/win32/win32InputKeyCode.h"
 #include "log.h"
 #include "stringHelper.h"
 #include "game.h"
@@ -32,11 +33,38 @@ struct gameSettings
 
 static bool running = true;
 static bool inSizeMove = false;
+static bool altDown = false;
 static std::unique_ptr<win32Window> window = nullptr;
 static std::unique_ptr<game> gameInstance = nullptr;
 static std::unique_ptr<renderDevice> gameRenderDevice = nullptr;
 static std::unique_ptr<renderContext> graphicsRenderContext = nullptr;
 static std::unique_ptr<swapChain> windowSwapChain = nullptr;
+
+static void handleAltF4Shortcut(const inputEvent& event)
+{
+	// Handle alt+f4 shortcut to exit game
+	if (!event.repeatedKey)
+	{
+		if (event.input == win32InputKeyCode::Alt)
+		{
+			if (event.data == 1.0f)
+			{
+				altDown = true;
+			}
+			else
+			{
+				altDown = false;
+			}
+		}
+
+		if (event.input == win32InputKeyCode::F4 &&
+			event.data == 1.0f &&
+			altDown)
+		{
+			running = false;
+		}
+	}
+}
 
 static void onRendererResize(const uint32_t newX, const uint32_t newY)
 {
@@ -159,6 +187,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//window->onEnterFullScreen.add([](const enterFullScreenEvent& event) {  });
 	//window->onExitFullScreen.add([](const exitFullScreenEvent& event) {  });
 	window->onInput.add([](const inputEvent& event) {
+		handleAltF4Shortcut(event);
 		gameInstance->onMouseKeyboardInput(event);
 		});
 	win32Gamepads::onInput.add([](const inputEvent& event) {
