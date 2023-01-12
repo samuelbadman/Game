@@ -50,33 +50,38 @@ static void onRendererResize(const uint32_t newX, const uint32_t newY)
 // Main thread render
 static void render()
 {
+	// Render into game window
 	// Begin a frame
-	gameRenderDevice->beginFrame();
+	const uint32_t frameIndex = windowSwapChain->GetCurrentBackBufferIndex();
+	gameRenderDevice->SynchronizeBeginFrame(frameIndex);
+	
+	// Start recording render contexts across threads here
+
+	// Begin the main thread graphics render context
+	renderCommand_beginContext beginContext = {};
+	beginContext.frameIndex = frameIndex;
+	graphicsRenderContext->submitRenderCommand(beginContext);
 	{
-		// Start recording render contexts across threads here
-
-		// Begin the main thread graphics render context
-		renderCommand_beginContext beginContext = {};
-		beginContext.frameIndex = gameRenderDevice->getCurrentFrameIndex();
-		graphicsRenderContext->submitRenderCommand(beginContext);
-		{
-			// Transition back buffer resource from present to render target - resource transition barrier
-			// Get rtv, dsv, clear render/depth targets, set render/depth targets
-			//gameInstance->render();
-			// Transition back buffer resource from render target to present - resource transition barrier
-		}
-		// End the main thread graphics render context
-		renderCommand_endContext endContext = {};
-		graphicsRenderContext->submitRenderCommand(endContext);
-
-		// Wait here for render contexts being recorded across multiple threads before submitting all of them
-
-		// Submit render contexts to render device
-		renderContext* graphicsContexts[1] = { graphicsRenderContext.get() };
-		gameRenderDevice->submitRenderContexts(renderCommand::commandContext::graphics, 1, graphicsContexts);
+		// Transition back buffer resource from present to render target - resource transition barrier
+		// Get rtv, dsv, clear render/depth targets, set render/depth targets
+		//gameInstance->render();
+		// Transition back buffer resource from render target to present - resource transition barrier
 	}
+	// End the main thread graphics render context
+	renderCommand_endContext endContext = {};
+	graphicsRenderContext->submitRenderCommand(endContext);
+
+	// Wait here for render contexts being recorded across multiple threads before submitting all of them
+
+	// Submit render contexts to render device
+	renderContext* graphicsContexts[1] = { graphicsRenderContext.get() };
+	gameRenderDevice->submitRenderContexts(renderCommand::commandContext::graphics, 1, graphicsContexts);
+
+	// Present the main window swap chain's back buffer
+	gameRenderDevice->presentSwapChain(windowSwapChain.get(), gameSettings::useVSync);
+	
 	// End the frame
-	gameRenderDevice->endFrame(windowSwapChain.get(), gameSettings::useVSync);
+	gameRenderDevice->SynchronizeEndFrame(frameIndex);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 

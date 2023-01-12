@@ -420,6 +420,11 @@ bool d3d12SwapChain::shutdown()
 	return true;
 }
 
+uint32_t d3d12SwapChain::GetCurrentBackBufferIndex() const
+{
+	return dxgiSwapChain->GetCurrentBackBufferIndex();
+}
+
 bool d3d12SwapChain::updateBackBufferRTVs(ID3D12Device8* const device, const UINT rtvDescriptorSize)
 {
 	// Get a cpu handle to the first rtv descriptor in the rtv heap
@@ -537,11 +542,6 @@ bool d3d12SwapChain::present(const bool vsyncEnabled, const bool tearingSupporte
 {
 	return SUCCEEDED(dxgiSwapChain->Present(vsyncEnabled ? 1 : 0,
 		(tearingSupported && (!vsyncEnabled)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
-}
-
-uint32_t d3d12SwapChain::getCurrentBackBufferIndex() const
-{
-	return dxgiSwapChain->GetCurrentBackBufferIndex();
 }
 
 // ---------------------------------------------
@@ -952,24 +952,15 @@ bool d3d12RenderDevice::presentSwapChain(swapChain* inSwapChain, const bool vsyn
 	return static_cast<d3d12SwapChain*>(inSwapChain)->present(vsyncEnabled, tearingSupported);
 }
 
-bool d3d12RenderDevice::beginFrame()
+bool d3d12RenderDevice::SynchronizeBeginFrame(uint32_t inCurrentFrameIndex)
 {
-	return waitForValueOnCallingCPUThread(fenceEvent, fence.Get(), inFlightFenceValues[static_cast<size_t>(currentFrameIndex)]);
+	return waitForValueOnCallingCPUThread(fenceEvent, fence.Get(), inFlightFenceValues[static_cast<size_t>(inCurrentFrameIndex)]);
 }
 
-bool d3d12RenderDevice::endFrame(swapChain* const inSwapChain, const bool vsyncEnabled)
+bool d3d12RenderDevice::SynchronizeEndFrame(uint32_t inCurrentFrameIndex)
 {
-	d3d12SwapChain* const inD3d12SwapChain = static_cast<d3d12SwapChain*>(inSwapChain);
-
-	// Present the swap chain back buffer
-	const bool presentResult = inD3d12SwapChain->present(vsyncEnabled, tearingSupported);
-	if (!presentResult)
-	{
-		return false;
-	}
-
 	// Increment the fence value and set the current back buffer's fence value to this
-	inFlightFenceValues[static_cast<size_t>(currentFrameIndex)] = ++currentFenceValue;
+	inFlightFenceValues[static_cast<size_t>(inCurrentFrameIndex)] = ++currentFenceValue;
 
 	// Insert command at the end of queues to signal the fence with the current context fence value to indicate 
 	// that the GPU has finished executing the commands submitted during render context submission
@@ -977,9 +968,6 @@ bool d3d12RenderDevice::endFrame(swapChain* const inSwapChain, const bool vsyncE
 	{
 		return false;
 	}
-
-	// Update current back buffer index
-	currentFrameIndex = inD3d12SwapChain->getCurrentBackBufferIndex();
 
 	return true;
 }

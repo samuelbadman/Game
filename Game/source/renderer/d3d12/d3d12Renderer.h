@@ -71,6 +71,7 @@ private:
 public:
 	// Swap chain interface
 	virtual rendererPlatform getPlatform() const final { return rendererPlatform::direct3d12; }
+	virtual uint32_t GetCurrentBackBufferIndex() const final;
 
 public:
 	bool init(IDXGIFactory7* const factory, ID3D12CommandQueue* const directCommandQueue,
@@ -91,8 +92,6 @@ public:
 		const DXGI_SWAP_CHAIN_DESC& swapChainDesc);
 
 	bool present(const bool vsyncEnabled, const bool tearingSupported);
-
-	uint32_t getCurrentBackBufferIndex() const;
 };
 
 // ---------------------------------------------
@@ -148,7 +147,6 @@ private:
 	std::vector<uint64_t> inFlightFenceValues;
 	Microsoft::WRL::ComPtr<ID3D12Fence> fence = nullptr;
 	HANDLE fenceEvent = nullptr;
-	uint32_t currentFrameIndex = 0;
 
 public:
 	// Render device interface
@@ -177,9 +175,7 @@ public:
 
 	virtual bool presentSwapChain(swapChain* const inSwapChain, const bool vsyncEnabled) final;
 
-	virtual bool beginFrame() final;
+	virtual bool SynchronizeBeginFrame(uint32_t inCurrentFrameIndex) final;
 
-	virtual bool endFrame(swapChain* const inSwapChain, const bool vsyncEnabled) final;
-
-	virtual uint32_t getCurrentFrameIndex() final { return currentFrameIndex; }
+	virtual bool SynchronizeEndFrame(uint32_t inCurrentFrameIndex) final;
 };
