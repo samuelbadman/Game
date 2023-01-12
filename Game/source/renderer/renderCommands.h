@@ -50,10 +50,20 @@ struct renderCommand_beginFrame : public renderCommand
 {
 	renderCommand_beginFrame() : renderCommand(renderCommand::commandContext::graphics, renderCommand::commandType::beginFrame)
 	{}
+
+	class swapChain* inSwapChain = nullptr;
+	uint32_t frameIndex = 0;
+	const float* clearColorVal = nullptr;
+	float clearDepthVal = 1.0f;
+	uint8_t clearStencilVal = 0;
+	bool clearStencil = false;
 };
 
 struct renderCommand_endFrame : public renderCommand
 {
 	renderCommand_endFrame() : renderCommand(renderCommand::commandContext::graphics, renderCommand::commandType::endFrame)
 	{}
+
+	class swapChain* inSwapChain = nullptr;
+	uint32_t frameIndex = 0;
 };

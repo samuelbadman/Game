@@ -62,9 +62,16 @@ static void render()
 	graphicsRenderContext->submitRenderCommand(beginContext);
 
 	renderCommand_beginFrame beginFrame = {};
+	beginFrame.inSwapChain = windowSwapChain.get();
+	beginFrame.frameIndex = frameIndex;
+	beginFrame.clearColorVal = gameSettings::clearColor;
+	beginFrame.clearDepthVal = 1.0f;
+	beginFrame.clearStencil = false;
 	graphicsRenderContext->submitRenderCommand(beginFrame);
 
 	renderCommand_endFrame endFrame = {};
+	endFrame.inSwapChain = windowSwapChain.get();
+	endFrame.frameIndex = frameIndex;
 	graphicsRenderContext->submitRenderCommand(endFrame);
 
 	renderCommand_endContext endContext = {};
@@ -237,6 +244,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// Render
 		render();
 	}
+
+	gameRenderDevice->flush();
 
 	return 0;
 }

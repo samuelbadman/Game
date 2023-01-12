@@ -241,9 +241,11 @@ bool waitForValueOnCallingCPUThread(HANDLE fenceEvent, ID3D12Fence* const fence,
 // ---------------------------------------------
 // Descriptor heap
 // ---------------------------------------------
-bool d3d12DescriptorHeap::init(ID3D12Device8* const device, const UINT descriptorCount, 
+bool d3d12DescriptorHeap::init(ID3D12Device8* const device, const UINT descriptorCount, const UINT inDescriptorSize,
 	const D3D12_DESCRIPTOR_HEAP_TYPE type, const bool shaderVisible)
 {
+	descriptorSize = inDescriptorSize;
+
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.NumDescriptors = descriptorCount;
 	desc.Type = type;
@@ -268,6 +270,13 @@ void d3d12DescriptorHeap::shutdown()
 D3D12_CPU_DESCRIPTOR_HANDLE d3d12DescriptorHeap::getCPUHandleForDescriptorAtHeapStart() const
 {
 	return heap->GetCPUDescriptorHandleForHeapStart();
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE d3d12DescriptorHeap::getCPUHandleForDescriptorAtOffset(UINT offset) const
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE handle = {};
+	handle.ptr = getCPUHandleForDescriptorAtHeapStart().ptr + (offset * descriptorSize);
+	return handle;
 }
 
 // ---------------------------------------------
@@ -340,7 +349,7 @@ void d3d12HardwareQueue::submitRenderContexts(const uint32_t numContexts, render
 // Swap chain
 // ---------------------------------------------
 bool d3d12SwapChain::init(IDXGIFactory7* const factory, ID3D12CommandQueue* const directCommandQueue, 
-	ID3D12Device8* const device,
+	ID3D12Device8* const device, const d3d12DescriptorIncrementSizes& descriptorSizes,
 	const uint32_t width, const uint32_t height,
 	const uint32_t backBufferCount, HWND hwnd)
 {
@@ -385,8 +394,8 @@ bool d3d12SwapChain::init(IDXGIFactory7* const factory, ID3D12CommandQueue* cons
 	}
 
 	// Create render target descriptor heap
-	const bool rtDescriptorHeapInitResult = rtDescriptorHeap.init(device, static_cast<UINT>(backBufferCount),
-		D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
+	const bool rtDescriptorHeapInitResult = rtDescriptorHeap.init(device, static_cast<UINT>(backBufferCount), 
+		descriptorSizes.rtv, D3D12_DESCRIPTOR_HEAP_TYPE_RTV, false);
 
 	if (!rtDescriptorHeapInitResult)
 	{
@@ -394,7 +403,7 @@ bool d3d12SwapChain::init(IDXGIFactory7* const factory, ID3D12CommandQueue* cons
 	}
 
 	// Create depth stencil descriptor heap
-	const bool dsDescriptorHeapInitResult = dsDescriptorHeap.init(device, 1,
+	const bool dsDescriptorHeapInitResult = dsDescriptorHeap.init(device, 1, descriptorSizes.dsv,
 		D3D12_DESCRIPTOR_HEAP_TYPE_DSV, false);
 
 	if (!dsDescriptorHeapInitResult)
@@ -504,7 +513,7 @@ bool d3d12SwapChain::updateDSV(ID3D12Device8* const device, const UINT64 width, 
 	return true;
 }
 
-bool d3d12SwapChain::getSwapChainDesc(DXGI_SWAP_CHAIN_DESC& outSwapChainDesc) const
+bool d3d12SwapChain::getDesc(DXGI_SWAP_CHAIN_DESC& outSwapChainDesc) const
 {
 	return SUCCEEDED(dxgiSwapChain->GetDesc(&outSwapChainDesc));
 }
@@ -542,6 +551,16 @@ bool d3d12SwapChain::resizeDimensions(ID3D12Device8* const device, const UINT rt
 	}
 
 	return true;
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE d3d12SwapChain::getCPUBackBufferDescriptorHandle(const uint32_t frameIndex) const
+{
+	return rtDescriptorHeap.getCPUHandleForDescriptorAtOffset(static_cast<UINT>(frameIndex));
+}
+
+D3D12_CPU_DESCRIPTOR_HANDLE d3d12SwapChain::getCPUDepthStencilDescriptorHandle() const
+{
+	return dsDescriptorHeap.getCPUHandleForDescriptorAtHeapStart();
 }
 
 // ---------------------------------------------
@@ -652,11 +671,44 @@ void d3d12RenderContext::renderCommand_endContext_implementation(const renderCom
 
 void d3d12RenderContext::renderCommand_beginFrame_implementation(const renderCommand_beginFrame& command)
 {
+	assert(command.inSwapChain != nullptr);
+	d3d12SwapChain* inSwapChain = static_cast<d3d12SwapChain*>(command.inSwapChain);
 
+	// Transition the buffer resource from present state to render target state
+	CD3DX12_RESOURCE_BARRIER backBufferResourceTransitionBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+		inSwapChain->getBackBufferResource(static_cast<size_t>(command.frameIndex)),
+		D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET);
+	commandList->ResourceBarrier(1, &backBufferResourceTransitionBarrier);
+
+	// Get render target resource descriptor for the current back buffer from the heap
+	D3D12_CPU_DESCRIPTOR_HANDLE rtDescriptor = inSwapChain->getCPUBackBufferDescriptorHandle(command.frameIndex);
+
+	// Get depth stencil resource descriptor
+	D3D12_CPU_DESCRIPTOR_HANDLE dsDescriptor(inSwapChain->getCPUDepthStencilDescriptorHandle());
+
+	// Clear render target
+	commandList->ClearRenderTargetView(rtDescriptor, command.clearColorVal, 0, nullptr);
+
+	// Clear depth stencil buffer
+	commandList->ClearDepthStencilView(dsDescriptor, 
+		command.clearStencil ? D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL :
+		D3D12_CLEAR_FLAG_DEPTH,
+		command.clearDepthVal, static_cast<UINT8>(command.clearStencilVal), 0, nullptr);
+
+	// Bind render/depth stencil targets to the output merger stage
+	commandList->OMSetRenderTargets(1, &rtDescriptor, false, &dsDescriptor);
 }
 
 void d3d12RenderContext::renderCommand_endFrame_implementation(const renderCommand_endFrame& command)
 {
+	assert(command.inSwapChain != nullptr);
+	d3d12SwapChain* inSwapChain = static_cast<d3d12SwapChain*>(command.inSwapChain);
+
+	// Transition the buffer resource from render target state to present state
+	CD3DX12_RESOURCE_BARRIER backBufferResourceTransitionBarrier = CD3DX12_RESOURCE_BARRIER::Transition(
+		inSwapChain->getBackBufferResource(static_cast<size_t>(command.frameIndex)),
+		D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_PRESENT);
+	commandList->ResourceBarrier(1, &backBufferResourceTransitionBarrier);
 }
 
 // ---------------------------------------------
@@ -876,7 +928,7 @@ bool d3d12RenderDevice::createSwapChain(const swapChainInitSettings& settings,
 	d3d12SwapChain* newSwapChain = new d3d12SwapChain;
 
 	const bool initResult = newSwapChain->init(dxgiFactory.Get(), graphicsQueue.GetCommandQueue(), 
-		mainDevice.Get(),
+		mainDevice.Get(), descriptorSizes,
 		settings.width, settings.height, static_cast<uint32_t>(inFlightFenceValues.size()), 
 		static_cast<HWND>(settings.windowHandle));
 
@@ -903,6 +955,7 @@ bool d3d12RenderDevice::createSwapChain(const swapChainInitSettings& settings,
 
 bool d3d12RenderDevice::destroySwapChain(std::unique_ptr<swapChain>& outSwapChain)
 {
+	assert(outSwapChain != nullptr);
 	d3d12SwapChain* inD3d12SwapChain = static_cast<d3d12SwapChain*>(outSwapChain.get());
 	const bool shutdownResult = inD3d12SwapChain->shutdown();
 	if (!shutdownResult)
@@ -915,11 +968,12 @@ bool d3d12RenderDevice::destroySwapChain(std::unique_ptr<swapChain>& outSwapChai
 
 bool d3d12RenderDevice::resizeSwapChainDimensions(swapChain* inSwapChain, const uint32_t newWidth, const uint32_t newHeight)
 {
+	assert(inSwapChain != nullptr);
 	d3d12SwapChain* inD3d12SwapChain = static_cast<d3d12SwapChain*>(inSwapChain);
 
 	// Get swap chain description
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
-	const bool getSwapChainDescResult = inD3d12SwapChain->getSwapChainDesc(swapChainDesc);
+	const bool getSwapChainDescResult = inD3d12SwapChain->getDesc(swapChainDesc);
 	if (!getSwapChainDescResult)
 	{
 		return false;

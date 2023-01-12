@@ -20,14 +20,16 @@ class d3d12DescriptorHeap
 {
 private:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> heap = nullptr;
+	UINT descriptorSize = 0;
 
 public:
-	bool init(ID3D12Device8* const device, const UINT descriptorCount,
+	bool init(ID3D12Device8* const device, const UINT descriptorCount, const UINT inDescriptorSize,
 		const D3D12_DESCRIPTOR_HEAP_TYPE type, const bool shaderVisible);
 
 	void shutdown();
 
 	D3D12_CPU_DESCRIPTOR_HANDLE getCPUHandleForDescriptorAtHeapStart() const;
+	D3D12_CPU_DESCRIPTOR_HANDLE getCPUHandleForDescriptorAtOffset(UINT offset) const;
 };
 
 // ---------------------------------------------
@@ -80,7 +82,7 @@ public:
 
 public:
 	bool init(IDXGIFactory7* const factory, ID3D12CommandQueue* const directCommandQueue,
-		ID3D12Device8* const device,
+		ID3D12Device8* const device, const d3d12DescriptorIncrementSizes& descriptorSizes,
 		const uint32_t width, const uint32_t height,
 		const uint32_t backBufferCount, HWND hwnd);
 
@@ -90,11 +92,19 @@ public:
 
 	bool updateDSV(ID3D12Device8* const device, const UINT64 width, const UINT height);
 
-	bool getSwapChainDesc(DXGI_SWAP_CHAIN_DESC& outSwapChainDesc) const;
+	bool getDesc(DXGI_SWAP_CHAIN_DESC& outSwapChainDesc) const;
 
 	bool resizeDimensions(ID3D12Device8* const device, const UINT rtDescriptorSize, 
 		const UINT64 width, const UINT height,
 		const DXGI_SWAP_CHAIN_DESC& swapChainDesc);
+
+	ID3D12Resource* getBackBufferResource(const size_t index) const { return rtvs[index].Get(); }
+
+	ID3D12Resource* getDepthStencilBufferResource() const { return dsv.Get(); }
+
+	D3D12_CPU_DESCRIPTOR_HANDLE getCPUBackBufferDescriptorHandle(const uint32_t frameIndex) const;
+
+	D3D12_CPU_DESCRIPTOR_HANDLE getCPUDepthStencilDescriptorHandle() const;
 };
 
 // ---------------------------------------------
