@@ -91,7 +91,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\callback.cpp" />
-    <ClCompile Include="source\game.cpp" />
     <ClCompile Include="source\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
@@ -107,7 +106,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\callback.h" />
-    <ClInclude Include="source\game.h" />
     <ClInclude Include="source\log.h" />
     <ClInclude Include="source\pch.h" />
     <ClInclude Include="source\renderer\d3d12\d3d12Renderer.h" />

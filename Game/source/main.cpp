@@ -5,7 +5,6 @@
 #include "platform/win32/win32InputKeyCode.h"
 #include "log.h"
 #include "stringHelper.h"
-#include "game.h"
 #include "renderer/renderer.h"
 
 struct gameSettings
@@ -22,7 +21,6 @@ struct gameSettings
 	static constexpr rendererPlatform renderingPlatform = rendererPlatform::direct3d12;
 	static constexpr bufferingType buffering = bufferingType::tripleBuffering;
 	static constexpr bool useVSync = false;
-	static constexpr float clearColor[4] = {1.0f, 0.0f, 0.0f, 1.0f};
 
 	// Tick settings
 	// The time taken in between fixed updates in seconds
@@ -35,7 +33,6 @@ static bool running = true;
 static bool inSizeMove = false;
 static bool altDown = false;
 static std::unique_ptr<win32Window> window = nullptr;
-static std::unique_ptr<game> gameInstance = nullptr;
 static std::unique_ptr<renderDevice> gameRenderDevice = nullptr;
 static std::unique_ptr<renderContext> graphicsRenderContext = nullptr;
 static std::unique_ptr<swapChain> windowSwapChain = nullptr;
@@ -69,6 +66,7 @@ static void handleAltF4Shortcut(const inputEvent& event)
 static void onRendererResize(const uint32_t newX, const uint32_t newY)
 {
 	const bool resizeSwapChainResult = gameRenderDevice->resizeSwapChainDimensions(windowSwapChain.get(), newX, newY);
+
 	if (!resizeSwapChainResult)
 	{
 		MessageBoxA(0, "Failed to resize window swap chain dimesions.", "Error", MB_OK | MB_ICONERROR);
@@ -92,7 +90,8 @@ static void render()
 	renderCommand_beginFrame beginFrame = {};
 	beginFrame.inSwapChain = windowSwapChain.get();
 	beginFrame.frameIndex = frameIndex;
-	beginFrame.clearColorVal = gameSettings::clearColor;
+	static constexpr float clearColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	beginFrame.clearColorVal = clearColor;
 	beginFrame.clearDepthVal = 1.0f;
 	beginFrame.clearStencil = false;
 	graphicsRenderContext->submitRenderCommand(beginFrame);
@@ -127,10 +126,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	// Get the default display info
 	displayInfo defaultDisplayInfo = win32Display::infoForDisplayAtIndex(
 		gameSettings::defaultDisplayIndex);
-
-	// Create the game instance
-	gameInstance = std::make_unique<game>();
-	LOG("Created game instance.");
 
 	// Create and initialize window
 	window = std::make_unique<win32Window>();
@@ -188,10 +183,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//window->onExitFullScreen.add([](const exitFullScreenEvent& event) {  });
 	window->onInput.add([](const inputEvent& event) {
 		handleAltF4Shortcut(event);
-		gameInstance->onMouseKeyboardInput(event);
 		});
 	win32Gamepads::onInput.add([](const inputEvent& event) {
-		gameInstance->onGamepadInput(event);
 		});
 	LOG("Initialized win32 window.");
 
@@ -234,7 +227,17 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	// Initialize game loop
 	LOG("Entering game loop.");
-	gameInstance->beginPlay();
+	// Begin play
+
+	LARGE_INTEGER startCounter;
+	LARGE_INTEGER endCounter;
+	LARGE_INTEGER counts;
+	LARGE_INTEGER frequency;
+	int64_t fps = 0;
+	double ms = 0.0;
+
+	QueryPerformanceCounter(&startCounter);
+	QueryPerformanceFrequency(&frequency);
 
 	double fixedTimeSliceMs = gameSettings::fixedTimeSlice * 1000.0;
 	double accumulator = 0.0;
@@ -263,15 +266,25 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// Fixed Tick
 		while (accumulator > fixedTimeSliceMs)
 		{
-			gameInstance->fixedTick(gameSettings::fixedStep);
+			// Fixed tick(fixed step)
 			accumulator -= fixedTimeSliceMs;
 		}
 
-		// Tick
-		gameInstance->tick(static_cast<float>(deltaTime));
+		// Variable tick
+		// Tick(deltaSeconds)
 
 		// Render
 		render();
+
+		// Update frame timing
+		QueryPerformanceCounter(&endCounter);
+
+		counts.QuadPart = endCounter.QuadPart - startCounter.QuadPart;
+
+		startCounter = endCounter;
+
+		fps = static_cast<int64_t>(frequency.QuadPart / counts.QuadPart);
+		ms = ((1000.0 * static_cast<double>(counts.QuadPart)) / static_cast<double>(frequency.QuadPart));
 	}
 
 	gameRenderDevice->flush();

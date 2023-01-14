@@ -36,9 +36,6 @@
     <ClCompile Include="source\stringHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\game.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\renderer\renderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -105,9 +102,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\stringHelper.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\renderer\renderer.h">
