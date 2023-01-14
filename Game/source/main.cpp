@@ -31,7 +31,6 @@ struct gameSettings
 
 static bool running = true;
 static bool inSizeMove = false;
-static bool altDown = false;
 static std::unique_ptr<win32Window> window = nullptr;
 static std::unique_ptr<renderDevice> gameRenderDevice = nullptr;
 static std::unique_ptr<renderContext> graphicsRenderContext = nullptr;
@@ -40,6 +39,7 @@ static std::unique_ptr<swapChain> windowSwapChain = nullptr;
 static void handleAltF4Shortcut(const inputEvent& event)
 {
 	// Handle alt+f4 shortcut to exit game
+	static bool altDown = false;
 	if (!event.repeatedKey)
 	{
 		if (event.input == win32InputKeyCode::Alt)
