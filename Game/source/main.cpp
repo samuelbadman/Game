@@ -1,4 +1,5 @@
 #include "pch.h"
+#include "platform/win32/win32MessageBox.h"
 #include "platform/win32/win32Console.h"
 #include "platform/win32/win32Window.h"
 #include "platform/win32/win32Gamepad.h"
@@ -122,12 +123,12 @@ static void initializeGamepadInput()
 
 static bool initializeGraphics()
 {
-	return true;
+	return false;
 }
 
 static bool initializeAudio()
 {
-	return true;
+	return false;
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
@@ -136,33 +137,33 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//// Initialize console
 	//if (!win32Console::init())
 	//{
-	//	MessageBoxA(0, "Failed to init console.", "Error", MB_OK | MB_ICONERROR);
+	//	win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize console.");
 	//	return 1;
 	//}
 
 	// Initialize window
 	if (!initializeWindow())
 	{
-		MessageBoxA(0, "Failed to initialize window.", "Error", MB_OK | MB_ICONERROR);
+		win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize window.");
 		return 1;
 	}
 
 	// Initialize gamepad input
 	initializeGamepadInput();
 
-	// Initialize graphics
-	if (!initializeGraphics())
-	{
-		MessageBoxA(0, "Failed to initialize graphics.", "Error", MB_OK | MB_ICONERROR);
-		return 1;
-	}
+	//// Initialize graphics
+	//if (!initializeGraphics())
+	//{
+	//	win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize graphics.");
+	//	return 1;
+	//}
 
-	// Initialize audio
-	if (!initializeAudio())
-	{
-		MessageBoxA(0, "Failed to initialize audio.", "Error", MB_OK | MB_ICONERROR);
-		return 1;
-	}
+	//// Initialize audio
+	//if (!initializeAudio())
+	//{
+	//	win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize audio.");
+	//	return 1;
+	//}
 
 	// Initialize game loop
 	LARGE_INTEGER startCounter;

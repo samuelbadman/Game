@@ -95,6 +95,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="source\platform\win32\win32MessageBox.cpp" />
     <ClCompile Include="source\stringHelper.cpp" />
     <ClCompile Include="source\platform\win32\win32Console.cpp" />
     <ClCompile Include="source\platform\win32\win32Display.cpp" />
@@ -105,6 +106,7 @@
   <ItemGroup>
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\pch.h" />
+    <ClInclude Include="source\platform\win32\win32MessageBox.h" />
     <ClInclude Include="source\stringHelper.h" />
     <ClInclude Include="source\platform\win32\win32Console.h" />
     <ClInclude Include="source\platform\win32\win32Display.h" />
