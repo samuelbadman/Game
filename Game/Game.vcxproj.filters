@@ -36,12 +36,6 @@
     <ClCompile Include="source\stringHelper.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\renderer\renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\renderer\d3d12\d3d12Renderer.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -104,22 +98,10 @@
     <ClInclude Include="source\stringHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\renderer\renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\renderer\d3d12\d3d12Renderer.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\log.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\pch.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\renderer\renderCommands.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\renderer\d3d12\d3dx12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

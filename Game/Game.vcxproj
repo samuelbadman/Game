@@ -95,8 +95,6 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="source\renderer\d3d12\d3d12Renderer.cpp" />
-    <ClCompile Include="source\renderer\renderer.cpp" />
     <ClCompile Include="source\stringHelper.cpp" />
     <ClCompile Include="source\platform\win32\win32Console.cpp" />
     <ClCompile Include="source\platform\win32\win32Display.cpp" />
@@ -108,10 +106,6 @@
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\log.h" />
     <ClInclude Include="source\pch.h" />
-    <ClInclude Include="source\renderer\d3d12\d3d12Renderer.h" />
-    <ClInclude Include="source\renderer\d3d12\d3dx12.h" />
-    <ClInclude Include="source\renderer\renderCommands.h" />
-    <ClInclude Include="source\renderer\renderer.h" />
     <ClInclude Include="source\stringHelper.h" />
     <ClInclude Include="source\platform\win32\win32Console.h" />
     <ClInclude Include="source\platform\win32\win32Display.h" />

@@ -5,7 +5,6 @@
 #include "platform/win32/win32InputKeyCode.h"
 #include "log.h"
 #include "stringHelper.h"
-#include "renderer/renderer.h"
 
 struct gameSettings
 {
@@ -17,11 +16,6 @@ struct gameSettings
 	static constexpr bool startFullScreen = false;
 	static constexpr uint32_t defaultDisplayIndex = 0;
 
-	// Rendering settings
-	static constexpr rendererPlatform renderingPlatform = rendererPlatform::direct3d12;
-	static constexpr bufferingType buffering = bufferingType::tripleBuffering;
-	static constexpr bool useVSync = false;
-
 	// Tick settings
 	// The time taken in between fixed updates in seconds
 	static constexpr double fixedTimeSlice = 0.001;
@@ -32,9 +26,6 @@ struct gameSettings
 static bool running = true;
 static bool inSizeMove = false;
 static std::unique_ptr<win32Window> window = nullptr;
-static std::unique_ptr<renderDevice> gameRenderDevice = nullptr;
-static std::unique_ptr<renderContext> graphicsRenderContext = nullptr;
-static std::unique_ptr<swapChain> windowSwapChain = nullptr;
 
 static void handleAltF4Shortcut(const inputEvent& event)
 {
@@ -61,60 +52,6 @@ static void handleAltF4Shortcut(const inputEvent& event)
 			running = false;
 		}
 	}
-}
-
-static void onRendererResize(const uint32_t newX, const uint32_t newY)
-{
-	const bool resizeSwapChainResult = gameRenderDevice->resizeSwapChainDimensions(windowSwapChain.get(), newX, newY);
-
-	if (!resizeSwapChainResult)
-	{
-		MessageBoxA(0, "Failed to resize window swap chain dimesions.", "Error", MB_OK | MB_ICONERROR);
-	}
-}
-
-// Main thread render
-static void render()
-{
-	// Render into game window
-	// Begin a frame
-	const uint32_t frameIndex = windowSwapChain->getCurrentBackBufferIndex();
-	gameRenderDevice->synchronizeBeginFrame(frameIndex);
-	
-	// Start recording render contexts across threads here
-
-	renderCommand_beginContext beginContext = {};
-	beginContext.frameIndex = frameIndex;
-	graphicsRenderContext->submitRenderCommand(beginContext);
-
-	renderCommand_beginFrame beginFrame = {};
-	beginFrame.inSwapChain = windowSwapChain.get();
-	beginFrame.frameIndex = frameIndex;
-	static constexpr float clearColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
-	beginFrame.clearColorVal = clearColor;
-	beginFrame.clearDepthVal = 1.0f;
-	beginFrame.clearStencil = false;
-	graphicsRenderContext->submitRenderCommand(beginFrame);
-
-	renderCommand_endFrame endFrame = {};
-	endFrame.inSwapChain = windowSwapChain.get();
-	endFrame.frameIndex = frameIndex;
-	graphicsRenderContext->submitRenderCommand(endFrame);
-
-	renderCommand_endContext endContext = {};
-	graphicsRenderContext->submitRenderCommand(endContext);
-
-	// Wait here for render contexts being recorded across multiple threads before submitting all of them
-
-	// Submit render contexts to render device
-	renderContext* graphicsContexts[1] = { graphicsRenderContext.get() };
-	gameRenderDevice->submitRenderContexts(renderCommand::commandContext::graphics, 1, graphicsContexts);
-
-	// Present the main window swap chain's back buffer
-	windowSwapChain->present(gameSettings::useVSync);
-	
-	// End the frame
-	gameRenderDevice->synchronizeEndFrame(frameIndex);
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
@@ -167,7 +104,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		});
 	window->onExitSizeMove.add([](const exitSizeMoveEvent& event) {
 		inSizeMove = false;
-		onRendererResize(event.newRenderingResolutionX, event.newRenderingResolutionY);
+		// Todo: Resize renderer
 		});
 	//window->onGainedFocus.add([](const gainedFocusEvent& event) {  });
 	//window->onLostFocus.add([](const lostFocusEvent& event) {  });
@@ -176,7 +113,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	window->onResized.add([](const resizedEvent& event) { 
 		if (!inSizeMove)
 		{
-			onRendererResize(event.newRenderingResolutionX, event.newRenderingResolutionY);
+			// Todo: Resize renderer
 		}
 		});
 	//window->onEnterFullScreen.add([](const enterFullScreenEvent& event) {  });
@@ -188,42 +125,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		});
 	LOG("Initialized win32 window.");
 
-	// Create and initialize renderer
-	// Render device
-	gameRenderDevice = renderDevice::create(gameSettings::renderingPlatform);
-
-	renderDeviceInitSettings renderDeviceSettings = {};
-	renderDeviceSettings.displayConnectedAdapterName = defaultDisplayInfo.adapterName;
-	renderDeviceSettings.buffering = gameSettings::buffering;
-	renderDeviceSettings.graphicsContextSubmissionsPerFrameCount = 1;
-
-	const bool renderDeviceInitResult = gameRenderDevice->init(renderDeviceSettings);
-	if (!renderDeviceInitResult)
-	{
-		MessageBoxA(0, "Failed to initialize render device.", "Error", MB_OK | MB_ICONERROR);
-		return -1;
-	}
-
-	// Graphics render context
-	const bool createGraphicsContextResult = gameRenderDevice->createRenderContext(
-		renderCommand::commandContext::graphics, graphicsRenderContext);
-	if (!createGraphicsContextResult)
-	{
-		MessageBoxA(0, "Failed to create graphics render context.", "Error", MB_OK | MB_ICONERROR);
-		return -1;
-	}
-
-	// Swap chain
-	swapChainInitSettings swapChainSettings = {};
-	swapChainSettings.windowHandle = static_cast<void*>(window->getHwnd());
-	window->getRenderingResolution(swapChainSettings.width, swapChainSettings.height);
-
-	const bool swapChainInitResult = gameRenderDevice->createSwapChain(swapChainSettings, windowSwapChain);
-	if (!swapChainInitResult)
-	{
-		MessageBoxA(0, "Failed to create swap chain.", "Error", MB_OK | MB_ICONERROR);
-		return -1;
-	}
 
 	// Initialize game loop
 	LOG("Entering game loop.");
@@ -274,7 +175,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// Tick(deltaSeconds)
 
 		// Render
-		render();
 
 		// Update frame timing
 		QueryPerformanceCounter(&endCounter);
@@ -286,8 +186,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		fps = static_cast<int64_t>(frequency.QuadPart / counts.QuadPart);
 		ms = ((1000.0 * static_cast<double>(counts.QuadPart)) / static_cast<double>(frequency.QuadPart));
 	}
-
-	gameRenderDevice->flush();
 
 	return 0;
 }
