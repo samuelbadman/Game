@@ -25,36 +25,8 @@ static bool running = true;
 static bool inSizeMove = false;
 static std::unique_ptr<win32Window> window = nullptr;
 
-static bool handleAltF4Shortcut(const inputEvent& event)
+static bool initializeWindow()
 {
-	// Handle alt+f4 shortcut to exit game
-	static bool altDown = false;
-
-	if ((event.data == 1.0f) && (!event.repeatedKey))
-	{
-		if (event.input == win32InputKeyCode::Alt)
-		{
-			altDown = true;
-		}
-		else if ((event.input == win32InputKeyCode::F4) && altDown)
-		{
-			running = false;
-		}
-	}
-
-	return !running;
-}
-
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
-	PWSTR pCmdLine, int nCmdShow)
-{
-	//// Initialize console
-	//if (!win32Console::init())
-	//{
-	//	MessageBoxA(0, "Failed to init console.", "Error", MB_OK | MB_ICONERROR);
-	//	return -1;
-	//}
-
 	// Get the default display info
 	displayDesc defaultDisplayDesc = win32Display::infoForDisplayAtIndex(
 		gameSettings::defaultDisplayIndex);
@@ -74,13 +46,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	if (!window->init(windowDesc))
 	{
-		MessageBoxA(0, "Failed to init window.", "Error", MB_OK | MB_ICONERROR);
-		return -1;
+		return false;
 	}
 
 	// Register core event callbacks
-	window->onClosed.add([](const closedEvent& event) { 
-		running = false; 
+	window->onClosed.add([](const closedEvent& event) {
+		running = false;
 		});
 
 	window->onEnterSizeMove.add([](const enterSizeMoveEvent& event) {
@@ -89,10 +60,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	window->onExitSizeMove.add([](const exitSizeMoveEvent& event) {
 		inSizeMove = false;
-		// Todo: Resize renderer
+	// Todo: Resize renderer
 		});
 
-	window->onResized.add([](const resizedEvent& event) { 
+	window->onResized.add([](const resizedEvent& event) {
 		if (!inSizeMove)
 		{
 			// Todo: Resize renderer
@@ -113,15 +84,85 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 	//window->onExitFullScreen.add([](const exitFullScreenEvent& event) {  });
 
+	static auto handleAltF4Input = [](const inputEvent& event)
+	{
+		// Handle alt+f4 shortcut to exit game
+		static bool altDown = false;
+
+		if ((!event.repeatedKey) && (event.data == 1.0f))
+		{
+			if (event.input == win32InputKeyCode::Alt)
+			{
+				altDown = true;
+			}
+			else if ((event.input == win32InputKeyCode::F4) && altDown)
+			{
+				running = false;
+			}
+		}
+
+		return !running;
+	};
+
 	window->onInput.add([](const inputEvent& event) {
-		if (handleAltF4Shortcut(event))
+		if (handleAltF4Input(event))
 		{
 			return;
 		}
 		});
 
+	return true;
+}
+
+static void initializeGamepadInput()
+{
 	win32Gamepad::onInput.add([](const inputEvent& event) {
 		});
+}
+
+static bool initializeGraphics()
+{
+	return true;
+}
+
+static bool initializeAudio()
+{
+	return true;
+}
+
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
+	PWSTR pCmdLine, int nCmdShow)
+{
+	//// Initialize console
+	//if (!win32Console::init())
+	//{
+	//	MessageBoxA(0, "Failed to init console.", "Error", MB_OK | MB_ICONERROR);
+	//	return 1;
+	//}
+
+	// Initialize window
+	if (!initializeWindow())
+	{
+		MessageBoxA(0, "Failed to initialize window.", "Error", MB_OK | MB_ICONERROR);
+		return 1;
+	}
+
+	// Initialize gamepad input
+	initializeGamepadInput();
+
+	// Initialize graphics
+	if (!initializeGraphics())
+	{
+		MessageBoxA(0, "Failed to initialize graphics.", "Error", MB_OK | MB_ICONERROR);
+		return 1;
+	}
+
+	// Initialize audio
+	if (!initializeAudio())
+	{
+		MessageBoxA(0, "Failed to initialize audio.", "Error", MB_OK | MB_ICONERROR);
+		return 1;
+	}
 
 	// Initialize game loop
 	LARGE_INTEGER startCounter;
