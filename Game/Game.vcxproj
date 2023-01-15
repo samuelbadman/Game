@@ -104,7 +104,6 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\callback.h" />
-    <ClInclude Include="source\log.h" />
     <ClInclude Include="source\pch.h" />
     <ClInclude Include="source\stringHelper.h" />
     <ClInclude Include="source\platform\win32\win32Console.h" />

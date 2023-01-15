@@ -37,8 +37,6 @@ bool win32Console::init()
 	std::wcin.clear();
 	std::cin.clear();
 
-	print("Initialized win32 console.");
-
 	return true;
 }
 

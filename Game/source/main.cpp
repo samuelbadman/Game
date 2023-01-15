@@ -1,9 +1,9 @@
 #include "pch.h"
+#include "platform/win32/win32Console.h"
 #include "platform/win32/win32Window.h"
 #include "platform/win32/win32Gamepads.h"
 #include "platform/win32/win32Display.h"
 #include "platform/win32/win32InputKeyCode.h"
-#include "log.h"
 #include "stringHelper.h"
 
 struct gameSettings
@@ -27,10 +27,11 @@ static bool running = true;
 static bool inSizeMove = false;
 static std::unique_ptr<win32Window> window = nullptr;
 
-static void handleAltF4Shortcut(const inputEvent& event)
+static bool handleAltF4Shortcut(const inputEvent& event)
 {
 	// Handle alt+f4 shortcut to exit game
 	static bool altDown = false;
+
 	if (!event.repeatedKey)
 	{
 		if (event.input == win32InputKeyCode::Alt)
@@ -52,13 +53,21 @@ static void handleAltF4Shortcut(const inputEvent& event)
 			running = false;
 		}
 	}
+
+	return !running;
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
 {
-	// Initialize logging
-	LOG_INIT();
+	// Initialize console
+	const bool consoleInitResult = win32Console::init();
+
+	if (!consoleInitResult)
+	{
+		MessageBoxA(0, "Failed to init console.", "Error", MB_OK | MB_ICONERROR);
+		return -1;
+	}
 
 	// Get the default display info
 	displayInfo defaultDisplayInfo = win32Display::infoForDisplayAtIndex(
@@ -78,6 +87,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	windowSettings.height = gameSettings::windowDimensions[1];
 
 	const bool windowInitResult = window->init(windowSettings);
+
 	if (!windowInitResult)
 	{
 		MessageBoxA(0, "Failed to init window.", "Error", MB_OK | MB_ICONERROR);
@@ -87,6 +97,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	if (gameSettings::startFullScreen)
 	{
 		const bool enterFullScreenResult = window->enterFullScreen();
+
 		if (!enterFullScreenResult)
 		{
 			MessageBoxA(0, "Window failed to enter full screen.", "Error", MB_OK | MB_ICONERROR);
@@ -119,17 +130,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//window->onEnterFullScreen.add([](const enterFullScreenEvent& event) {  });
 	//window->onExitFullScreen.add([](const exitFullScreenEvent& event) {  });
 	window->onInput.add([](const inputEvent& event) {
-		handleAltF4Shortcut(event);
+		if (handleAltF4Shortcut(event))
+		{
+			return;
+		}
 		});
 	win32Gamepads::onInput.add([](const inputEvent& event) {
 		});
-	LOG("Initialized win32 window.");
-
 
 	// Initialize game loop
-	LOG("Entering game loop.");
-	// Begin play
-
 	LARGE_INTEGER startCounter;
 	LARGE_INTEGER endCounter;
 	LARGE_INTEGER counts;
@@ -164,6 +173,8 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		win32Gamepads::refresh();
 
+		// Todo: Variable tick
+
 		// Fixed Tick
 		while (accumulator > fixedTimeSliceMs)
 		{
@@ -171,10 +182,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			accumulator -= fixedTimeSliceMs;
 		}
 
-		// Variable tick
-		// Tick(deltaSeconds)
-
-		// Render
+		// Todo: Render
 
 		// Update frame timing
 		QueryPerformanceCounter(&endCounter);

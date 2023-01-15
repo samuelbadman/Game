@@ -252,7 +252,7 @@ bool win32Window::setStyle(windowStyle inStyle)
 	return ShowWindow(hwnd, SW_SHOW);
 }
 
-void win32Window::getRenderingResolution(uint32_t& x, uint32_t& y) const
+void win32Window::getClientAreaDimensions(uint32_t& x, uint32_t& y) const
 {
 	RECT clientRect = {};
 
@@ -472,7 +472,7 @@ LRESULT win32Window::onWM_ExitSizeMove(HWND hwnd, UINT msg,
 	WPARAM wparam, LPARAM lparam)
 {
 	exitSizeMoveEvent event = {};
-	getRenderingResolution(event.newRenderingResolutionX, event.newRenderingResolutionY);
+	getClientAreaDimensions(event.newRenderingResolutionX, event.newRenderingResolutionY);
 
 	onExitSizeMove.broadcast(event);
 	return 0;

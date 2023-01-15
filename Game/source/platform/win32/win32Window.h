@@ -92,7 +92,7 @@ public:
 	bool setPosition(uint32_t x, uint32_t y);
 	bool setStyle(windowStyle inStyle);
 
-	void getRenderingResolution(uint32_t& x, uint32_t& y) const;
+	void getClientAreaDimensions(uint32_t& x, uint32_t& y) const;
 	void getPosition(uint32_t& x, uint32_t& y) const;
 	bool isFullScreen() const { return inFullscreen; }
 	HWND getHwnd() const { return hwnd; }

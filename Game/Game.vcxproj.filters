@@ -98,9 +98,6 @@
     <ClInclude Include="source\stringHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\log.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
