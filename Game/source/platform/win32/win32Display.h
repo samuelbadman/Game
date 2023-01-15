@@ -1,6 +1,6 @@
 #pragma once
 
-struct displayInfo
+struct displayDesc
 {
 	std::wstring name = L"";
 	std::wstring adapterName = L"";
@@ -19,5 +19,5 @@ public:
 
 	// Creates a property structure for the monitor at the specified index. The primary display is at index 0.
 	// Index must be smaller than the number of monitors connected to the device
-	static displayInfo infoForDisplayAtIndex(const uint32_t displayIndex);
+	static displayDesc infoForDisplayAtIndex(const uint32_t displayIndex);
 };

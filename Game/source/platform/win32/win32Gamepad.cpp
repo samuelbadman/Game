@@ -1,29 +1,30 @@
 #include "pch.h"
-#include "win32Gamepads.h"
+#include "win32Gamepad.h"
 #include "win32InputKeyCode.h"
 
-XINPUT_STATE win32Gamepads::prevStates[XUSER_MAX_COUNT];
-callback<const inputEvent&> win32Gamepads::onInput;
+XINPUT_STATE win32Gamepad::prevStates[XUSER_MAX_COUNT];
+callback<const inputEvent&> win32Gamepad::onInput;
 
-void win32Gamepads::refresh()
+bool win32Gamepad::refresh(const uint32_t port)
 {
-	for (size_t i = 0; i < XUSER_MAX_COUNT; ++i)
+	assert(port < maxGamepadPort);
+
+	XINPUT_STATE state;
+	if (!XInputGetState(static_cast<DWORD>(port), &state) == ERROR_SUCCESS)
 	{
-		XINPUT_STATE state;
-		if (!XInputGetState(static_cast<DWORD>(i), &state) == ERROR_SUCCESS)
-		{
-			continue;
-		}
-
-		refreshButtons(state, prevStates[i], static_cast<uint32_t>(i));
-		refreshThumbsticks(state, prevStates[i], static_cast<uint32_t>(i));
-		refreshTriggers(state, prevStates[i], static_cast<uint32_t>(i));
-
-		prevStates[i] = state;
+		return false;
 	}
+
+	refreshButtons(state, prevStates[port], port);
+	refreshThumbsticks(state, prevStates[port], port);
+	refreshTriggers(state, prevStates[port], port);
+
+	prevStates[port] = state;
+
+	return true;
 }
 
-bool win32Gamepads::setVibration(const uint32_t port,
+bool win32Gamepad::setVibration(const uint32_t port,
 	const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
 {
 	XINPUT_VIBRATION vibration = {};
@@ -39,7 +40,7 @@ bool win32Gamepads::setVibration(const uint32_t port,
 	return setStateResult == ERROR_SUCCESS;
 }
 
-void win32Gamepads::applyCircularDeadzone(float& axisX, float& axisY, 
+void win32Gamepad::applyCircularDeadzone(float& axisX, float& axisY, 
 	float deadzoneRadius)
 {
 	float normX = 
@@ -61,7 +62,7 @@ void win32Gamepads::applyCircularDeadzone(float& axisX, float& axisY,
 	}
 }
 
-void win32Gamepads::refreshButton(const XINPUT_STATE& state, 
+void win32Gamepad::refreshButton(const XINPUT_STATE& state, 
 	const XINPUT_STATE& prevState, uint32_t port, int16_t button)
 {
 	// Get the current and previous states of the button
@@ -97,7 +98,7 @@ void win32Gamepads::refreshButton(const XINPUT_STATE& state,
 	}
 }
 
-void win32Gamepads::refreshButtons(const XINPUT_STATE& state, 
+void win32Gamepad::refreshButtons(const XINPUT_STATE& state, 
 	const XINPUT_STATE& prevState, uint32_t port)
 {
 	refreshButton(state, prevState, port, 
@@ -130,7 +131,7 @@ void win32Gamepads::refreshButtons(const XINPUT_STATE& state,
 		win32InputKeyCode::Gamepad_Right_Thumbstick_Button);
 }
 
-void win32Gamepads::refreshThumbsticks(const XINPUT_STATE& state,
+void win32Gamepad::refreshThumbsticks(const XINPUT_STATE& state,
 	const XINPUT_STATE& prevState, uint32_t port)
 {
 	// Left
@@ -320,7 +321,7 @@ void win32Gamepads::refreshThumbsticks(const XINPUT_STATE& state,
 	}
 }
 
-void win32Gamepads::refreshTriggers(const XINPUT_STATE& state, 
+void win32Gamepad::refreshTriggers(const XINPUT_STATE& state, 
 	const XINPUT_STATE& prevState, uint32_t port)
 {
 	// Action

@@ -3,21 +3,22 @@
 #include "events/core/inputEvent.h"
 #include "callback.h"
 
-class win32Gamepads
+class win32Gamepad
 {
 private:
 	static XINPUT_STATE prevStates[XUSER_MAX_COUNT];
 
-public:
 	static constexpr float gamepadLeftStickDeadzoneRadius = 0.24f;
 	static constexpr float gamepadRightStickDeadzoneRadius = 0.24f;
 	static constexpr int16_t gamepadMaxStickMagnitude = 32767;
 	static constexpr int16_t gamepadMaxTriggerMagnitude = 255;
 
+public:
+	static constexpr uint32_t maxGamepadPort = XUSER_MAX_COUNT;
 	static callback<const inputEvent&> onInput;
 
 public:
-	static void refresh();
+	static bool refresh(const uint32_t port);
 	static bool setVibration(const uint32_t port, 
 		const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed);
 

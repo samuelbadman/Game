@@ -98,7 +98,7 @@
     <ClCompile Include="source\stringHelper.cpp" />
     <ClCompile Include="source\platform\win32\win32Console.cpp" />
     <ClCompile Include="source\platform\win32\win32Display.cpp" />
-    <ClCompile Include="source\platform\win32\win32Gamepads.cpp" />
+    <ClCompile Include="source\platform\win32\win32Gamepad.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\platform\win32\win32Window.cpp" />
   </ItemGroup>
@@ -120,7 +120,7 @@
     <ClInclude Include="source\events\core\maximizedEvent.h" />
     <ClInclude Include="source\events\core\minimizedEvent.h" />
     <ClInclude Include="source\events\core\resizedEvent.h" />
-    <ClInclude Include="source\platform\win32\win32Gamepads.h" />
+    <ClInclude Include="source\platform\win32\win32Gamepad.h" />
     <ClInclude Include="source\platform\win32\win32InputKeyCode.h" />
     <ClInclude Include="source\platform\win32\win32Window.h" />
   </ItemGroup>

@@ -27,7 +27,7 @@
     <ClCompile Include="source\callback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\win32\win32Gamepads.cpp">
+    <ClCompile Include="source\platform\win32\win32Gamepad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\platform\win32\win32Console.cpp">
@@ -89,7 +89,7 @@
     <ClInclude Include="source\events\core\exitFullScreenEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\win32\win32Gamepads.h">
+    <ClInclude Include="source\platform\win32\win32Gamepad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\win32\win32Console.h">

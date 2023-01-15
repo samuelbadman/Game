@@ -25,7 +25,7 @@ enum class windowStyle : uint8_t
 };
 
 // Settings struct to initialize a win32 window
-struct win32WindowInitSettings
+struct win32WindowInitDesc
 {
 	std::wstring windowClassName = L"";
 	std::wstring windowTitle = L"New window";
@@ -55,6 +55,7 @@ private:
 	static constexpr DWORD NoDragSizeStyleDword = WS_OVERLAPPEDWINDOW ^ 
 		WS_THICKFRAME;
 
+private:
 	// The window class name
 	std::wstring windowClassName = L"";
 
@@ -85,7 +86,7 @@ public:
 	callback<const exitFullScreenEvent&> onExitFullScreen;
 
 public:
-	bool init(const win32WindowInitSettings& settings);
+	bool init(const win32WindowInitDesc& desc);
 	bool shutdown();
 	bool enterFullScreen();
 	bool exitFullScreen();

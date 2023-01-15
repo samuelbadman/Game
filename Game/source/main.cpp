@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "platform/win32/win32Console.h"
 #include "platform/win32/win32Window.h"
-#include "platform/win32/win32Gamepads.h"
+#include "platform/win32/win32Gamepad.h"
 #include "platform/win32/win32Display.h"
 #include "platform/win32/win32InputKeyCode.h"
 
@@ -56,23 +56,23 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//}
 
 	// Get the default display info
-	displayInfo defaultDisplayInfo = win32Display::infoForDisplayAtIndex(
+	displayDesc defaultDisplayDesc = win32Display::infoForDisplayAtIndex(
 		gameSettings::defaultDisplayIndex);
 
 	// Create and initialize window
 	window = std::make_unique<win32Window>();
 
-	win32WindowInitSettings windowSettings = {};
-	windowSettings.windowClassName = L"GameWindow";
-	windowSettings.parent = nullptr;
-	windowSettings.style = gameSettings::windowStyle;
-	windowSettings.windowTitle = gameSettings::windowTitle;
-	windowSettings.x = defaultDisplayInfo.topLeftX + gameSettings::windowPosition[0];
-	windowSettings.y = defaultDisplayInfo.topLeftY + gameSettings::windowPosition[1];
-	windowSettings.width = gameSettings::windowDimensions[0];
-	windowSettings.height = gameSettings::windowDimensions[1];
+	win32WindowInitDesc windowDesc = {};
+	windowDesc.windowClassName = L"GameWindow";
+	windowDesc.parent = nullptr;
+	windowDesc.style = gameSettings::windowStyle;
+	windowDesc.windowTitle = gameSettings::windowTitle;
+	windowDesc.x = defaultDisplayDesc.topLeftX + gameSettings::windowPosition[0];
+	windowDesc.y = defaultDisplayDesc.topLeftY + gameSettings::windowPosition[1];
+	windowDesc.width = gameSettings::windowDimensions[0];
+	windowDesc.height = gameSettings::windowDimensions[1];
 
-	if (!window->init(windowSettings))
+	if (!window->init(windowDesc))
 	{
 		MessageBoxA(0, "Failed to init window.", "Error", MB_OK | MB_ICONERROR);
 		return -1;
@@ -83,8 +83,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		running = false; 
 		});
 
-	//window->onDestroyed.add([](const destroyedEvent& event) {  });
-
 	window->onEnterSizeMove.add([](const enterSizeMoveEvent& event) {
 		inSizeMove = true;
 		});
@@ -94,6 +92,15 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		// Todo: Resize renderer
 		});
 
+	window->onResized.add([](const resizedEvent& event) { 
+		if (!inSizeMove)
+		{
+			// Todo: Resize renderer
+		}
+		});
+
+	//window->onDestroyed.add([](const destroyedEvent& event) {  });
+
 	//window->onGainedFocus.add([](const gainedFocusEvent& event) {  });
 
 	//window->onLostFocus.add([](const lostFocusEvent& event) {  });
@@ -101,13 +108,6 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//window->onMaximized.add([](const maximizedEvent& event) {  });
 
 	//window->onMinimized.add([](const minimizedEvent& event) {  });
-
-	window->onResized.add([](const resizedEvent& event) { 
-		if (!inSizeMove)
-		{
-			// Todo: Resize renderer
-		}
-		});
 
 	//window->onEnterFullScreen.add([](const enterFullScreenEvent& event) {  });
 
@@ -120,7 +120,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 		}
 		});
 
-	win32Gamepads::onInput.add([](const inputEvent& event) {
+	win32Gamepad::onInput.add([](const inputEvent& event) {
 		});
 
 	// Initialize game loop
@@ -156,7 +156,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			DispatchMessage(&msg);
 		}
 
-		win32Gamepads::refresh();
+		win32Gamepad::refresh(0);
 
 		// Todo: Variable tick
 

@@ -64,16 +64,16 @@ static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT msg,
 	return 0;
 }
 
-bool win32Window::init(const win32WindowInitSettings& settings)
+bool win32Window::init(const win32WindowInitDesc& desc)
 {
 	// Store window settings
-	windowClassName = settings.windowClassName;
-	style = settings.style;
+	windowClassName = desc.windowClassName;
+	style = desc.style;
 
 	// Get handle to the executable 
 	HINSTANCE hInstance = GetModuleHandle(nullptr);
 
-	const wchar_t* windowClassNameCStr = settings.windowClassName.c_str();
+	const wchar_t* windowClassNameCStr = desc.windowClassName.c_str();
 
 	// Register window class
 	WNDCLASSEX windowClass = {};
@@ -97,10 +97,10 @@ bool win32Window::init(const win32WindowInitSettings& settings)
 	}
 
 	// Create the window and store a handle to it
-	hwnd = CreateWindowExW(0, windowClassNameCStr, settings.windowTitle.c_str(),
-		styleToDword(settings.style),
-		settings.x, settings.y, settings.width, settings.height,
-		reinterpret_cast<HWND>(settings.parent), nullptr, hInstance, this);
+	hwnd = CreateWindowExW(0, windowClassNameCStr, desc.windowTitle.c_str(),
+		styleToDword(desc.style),
+		desc.x, desc.y, desc.width, desc.height,
+		reinterpret_cast<HWND>(desc.parent), nullptr, hInstance, this);
 
 	if (hwnd == nullptr)
 	{
