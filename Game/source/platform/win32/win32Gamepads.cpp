@@ -9,7 +9,7 @@ void win32Gamepads::refresh()
 {
 	for (size_t i = 0; i < XUSER_MAX_COUNT; ++i)
 	{
-		XINPUT_STATE state = {};
+		XINPUT_STATE state;
 		if (!XInputGetState(static_cast<DWORD>(i), &state) == ERROR_SUCCESS)
 		{
 			continue;

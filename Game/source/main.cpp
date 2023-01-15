@@ -4,7 +4,6 @@
 #include "platform/win32/win32Gamepads.h"
 #include "platform/win32/win32Display.h"
 #include "platform/win32/win32InputKeyCode.h"
-#include "stringHelper.h"
 
 struct gameSettings
 {
@@ -13,7 +12,6 @@ struct gameSettings
 	static constexpr const wchar_t* windowTitle = L"Game";
 	static constexpr uint32_t windowPosition[2] = { 0, 0 };
 	static constexpr uint32_t windowDimensions[2] = { 1280, 720 };
-	static constexpr bool startFullScreen = false;
 	static constexpr uint32_t defaultDisplayIndex = 0;
 
 	// Tick settings
@@ -32,23 +30,13 @@ static bool handleAltF4Shortcut(const inputEvent& event)
 	// Handle alt+f4 shortcut to exit game
 	static bool altDown = false;
 
-	if (!event.repeatedKey)
+	if ((event.data == 1.0f) && (!event.repeatedKey))
 	{
 		if (event.input == win32InputKeyCode::Alt)
 		{
-			if (event.data == 1.0f)
-			{
-				altDown = true;
-			}
-			else
-			{
-				altDown = false;
-			}
+			altDown = true;
 		}
-
-		if (event.input == win32InputKeyCode::F4 &&
-			event.data == 1.0f &&
-			altDown)
+		else if ((event.input == win32InputKeyCode::F4) && altDown)
 		{
 			running = false;
 		}
@@ -60,14 +48,12 @@ static bool handleAltF4Shortcut(const inputEvent& event)
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
 	PWSTR pCmdLine, int nCmdShow)
 {
-	// Initialize console
-	const bool consoleInitResult = win32Console::init();
-
-	if (!consoleInitResult)
-	{
-		MessageBoxA(0, "Failed to init console.", "Error", MB_OK | MB_ICONERROR);
-		return -1;
-	}
+	//// Initialize console
+	//if (!win32Console::init())
+	//{
+	//	MessageBoxA(0, "Failed to init console.", "Error", MB_OK | MB_ICONERROR);
+	//	return -1;
+	//}
 
 	// Get the default display info
 	displayInfo defaultDisplayInfo = win32Display::infoForDisplayAtIndex(
@@ -77,7 +63,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	window = std::make_unique<win32Window>();
 
 	win32WindowInitSettings windowSettings = {};
-	windowSettings.windowClassName = L"gameWindow";
+	windowSettings.windowClassName = L"GameWindow";
 	windowSettings.parent = nullptr;
 	windowSettings.style = gameSettings::windowStyle;
 	windowSettings.windowTitle = gameSettings::windowTitle;
@@ -86,55 +72,54 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	windowSettings.width = gameSettings::windowDimensions[0];
 	windowSettings.height = gameSettings::windowDimensions[1];
 
-	const bool windowInitResult = window->init(windowSettings);
-
-	if (!windowInitResult)
+	if (!window->init(windowSettings))
 	{
 		MessageBoxA(0, "Failed to init window.", "Error", MB_OK | MB_ICONERROR);
 		return -1;
-	}
-
-	if (gameSettings::startFullScreen)
-	{
-		const bool enterFullScreenResult = window->enterFullScreen();
-
-		if (!enterFullScreenResult)
-		{
-			MessageBoxA(0, "Window failed to enter full screen.", "Error", MB_OK | MB_ICONERROR);
-			return -1;
-		}
 	}
 
 	// Register core event callbacks
 	window->onClosed.add([](const closedEvent& event) { 
 		running = false; 
 		});
+
 	//window->onDestroyed.add([](const destroyedEvent& event) {  });
+
 	window->onEnterSizeMove.add([](const enterSizeMoveEvent& event) {
 		inSizeMove = true;
 		});
+
 	window->onExitSizeMove.add([](const exitSizeMoveEvent& event) {
 		inSizeMove = false;
 		// Todo: Resize renderer
 		});
+
 	//window->onGainedFocus.add([](const gainedFocusEvent& event) {  });
+
 	//window->onLostFocus.add([](const lostFocusEvent& event) {  });
+
 	//window->onMaximized.add([](const maximizedEvent& event) {  });
+
 	//window->onMinimized.add([](const minimizedEvent& event) {  });
+
 	window->onResized.add([](const resizedEvent& event) { 
 		if (!inSizeMove)
 		{
 			// Todo: Resize renderer
 		}
 		});
+
 	//window->onEnterFullScreen.add([](const enterFullScreenEvent& event) {  });
+
 	//window->onExitFullScreen.add([](const exitFullScreenEvent& event) {  });
+
 	window->onInput.add([](const inputEvent& event) {
 		if (handleAltF4Shortcut(event))
 		{
 			return;
 		}
 		});
+
 	win32Gamepads::onInput.add([](const inputEvent& event) {
 		});
 
