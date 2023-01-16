@@ -85,7 +85,7 @@ static bool initializeWindow()
 
 	//window->onExitFullScreen.add([](const exitFullScreenEvent& event) {  });
 
-	static auto handleAltF4Input = [](const inputEvent& event)
+	static auto altF4Down = [](const inputEvent& event)
 	{
 		// Handle alt+f4 shortcut to exit game
 		static bool altDown = false;
@@ -96,19 +96,19 @@ static bool initializeWindow()
 			{
 				altDown = true;
 			}
-			else if ((event.input == win32InputKeyCode::F4) && altDown)
+			else if (altDown && (event.input == win32InputKeyCode::F4))
 			{
-				running = false;
+				return true;
 			}
 		}
 
-		return !running;
+		return false;
 	};
 
 	window->onInput.add([](const inputEvent& event) {
-		if (handleAltF4Input(event))
+		if (altF4Down(event))
 		{
-			return;
+			running = false;
 		}
 		});
 
