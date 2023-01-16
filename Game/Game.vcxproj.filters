@@ -45,6 +45,9 @@
     <ClCompile Include="source\platform\audio\xAudio2\xAudio2Audio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\platform\graphics\direct3D12\direct3D12Graphics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\platform\framework\win32\win32Window.h">
@@ -111,6 +114,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\audio\xAudio2\xAudio2Audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\graphics\direct3D12\direct3D12Graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
