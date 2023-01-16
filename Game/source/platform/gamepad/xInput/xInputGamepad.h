@@ -6,7 +6,7 @@
 class xInputGamepad
 {
 public:
-	static constexpr uint32_t maxGamepadPort = XUSER_MAX_COUNT;
+	static constexpr uint32_t maxGamepadsSupported = XUSER_MAX_COUNT;
 	static callback<const inputEvent&> onInput;
 
 public:

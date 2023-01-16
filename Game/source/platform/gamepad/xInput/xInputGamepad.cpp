@@ -13,10 +13,8 @@ static constexpr int16_t gamepadMaxTriggerMagnitude = 255;
 
 bool xInputGamepad::refresh(const uint32_t port)
 {
-	assert(port < maxGamepadPort);
-
 	XINPUT_STATE state;
-	if (!XInputGetState(static_cast<DWORD>(port), &state) == ERROR_SUCCESS)
+	if (XInputGetState(static_cast<DWORD>(port), &state) != ERROR_SUCCESS)
 	{
 		return false;
 	}
@@ -30,8 +28,7 @@ bool xInputGamepad::refresh(const uint32_t port)
 	return true;
 }
 
-bool xInputGamepad::setVibration(const uint32_t port,
-	const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
+bool xInputGamepad::setVibration(const uint32_t port, const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
 {
 	XINPUT_VIBRATION vibration = {};
 	vibration.wLeftMotorSpeed = leftMotorSpeed;
@@ -46,20 +43,15 @@ bool xInputGamepad::setVibration(const uint32_t port,
 	return setStateResult == ERROR_SUCCESS;
 }
 
-void xInputGamepad::applyCircularDeadzone(float& axisX, float& axisY, 
-	float deadzoneRadius)
+void xInputGamepad::applyCircularDeadzone(float& axisX, float& axisY, float deadzoneRadius)
 {
-	float normX = 
-		std::max(-1.0f, axisX / static_cast<float>(gamepadMaxStickMagnitude));
-	float normY = 
-		std::max(-1.0f, axisY / static_cast<float>(gamepadMaxStickMagnitude));
+	float normX = std::max(-1.0f, axisX / static_cast<float>(gamepadMaxStickMagnitude));
+	float normY = std::max(-1.0f, axisY / static_cast<float>(gamepadMaxStickMagnitude));
 
 	float absNormX = std::abs(normX);
 	float absNormY = std::abs(normY);
-	axisX = (absNormX < deadzoneRadius ?
-		0.0f : (absNormX - deadzoneRadius) * (normX / absNormX));
-	axisY = (absNormY < deadzoneRadius ?
-		0.0f : (absNormY - deadzoneRadius) * (normY / absNormY));
+	axisX = (absNormX < deadzoneRadius ? 0.0f : (absNormX - deadzoneRadius) * (normX / absNormX));
+	axisY = (absNormY < deadzoneRadius ? 0.0f : (absNormY - deadzoneRadius) * (normY / absNormY));
 
 	if (deadzoneRadius > 0.0f)
 	{
@@ -90,6 +82,7 @@ void xInputGamepad::refreshButton(const XINPUT_STATE& state,
 		event.input = button;
 		event.port = port;
 		event.data = 1.0f;
+
 		onInput.broadcast(event);
 	}
 	else
@@ -100,6 +93,7 @@ void xInputGamepad::refreshButton(const XINPUT_STATE& state,
 		event.input = button;
 		event.port = port;
 		event.data = 0.0f;
+
 		onInput.broadcast(event);
 	}
 }
@@ -107,34 +101,20 @@ void xInputGamepad::refreshButton(const XINPUT_STATE& state,
 void xInputGamepad::refreshButtons(const XINPUT_STATE& state, 
 	const XINPUT_STATE& prevState, uint32_t port)
 {
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_Face_Button_Bottom);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_Face_Button_Top);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_Face_Button_Left);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_Face_Button_Right);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_D_Pad_Down);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_D_Pad_Up);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_D_Pad_Left);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_D_Pad_Right);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_Special_Left);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_Special_Right);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_Left_Shoulder);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_Right_Shoulder);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_Left_Thumbstick_Button);
-	refreshButton(state, prevState, port, 
-		win32InputKeyCode::Gamepad_Right_Thumbstick_Button);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Face_Button_Bottom);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Face_Button_Top);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Face_Button_Left);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Face_Button_Right);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_D_Pad_Down);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_D_Pad_Up);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_D_Pad_Left);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_D_Pad_Right);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Special_Left);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Special_Right);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Left_Shoulder);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Right_Shoulder);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Left_Thumbstick_Button);
+	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Right_Thumbstick_Button);
 }
 
 void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
@@ -157,6 +137,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 	leftXAxisEvent.input = win32InputKeyCode::Gamepad_Left_Thumbstick_X_Axis;
 	leftXAxisEvent.port = port;
 	leftXAxisEvent.data = thumbLX;
+
 	onInput.broadcast(leftXAxisEvent);
 
 	inputEvent leftYAxisEvent = {};
@@ -164,6 +145,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 	leftYAxisEvent.input = win32InputKeyCode::Gamepad_Left_Thumbstick_Y_Axis;
 	leftYAxisEvent.port = port;
 	leftYAxisEvent.data = thumbLY;
+
 	onInput.broadcast(leftYAxisEvent);
 
 	// Action
@@ -187,6 +169,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 				win32InputKeyCode::Gamepad_Left_Thumbstick_Right;
 			leftThumbstickRightEvent.port = port;
 			leftThumbstickRightEvent.data = 1.0f;
+
 			onInput.broadcast(leftThumbstickRightEvent);
 		}
 		// Check if the stick is pushed left
@@ -199,6 +182,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 				win32InputKeyCode::Gamepad_Left_Thumbstick_Left;
 			leftThumbstickLeftEvent.port = port;
 			leftThumbstickLeftEvent.data = 1.0f;
+
 			onInput.broadcast(leftThumbstickLeftEvent);
 		}
 	}
@@ -216,6 +200,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 				win32InputKeyCode::Gamepad_Left_Thumbstick_Up;
 			leftThumbstickUpEvent.port = port;
 			leftThumbstickUpEvent.data = 1.0f;
+
 			onInput.broadcast(leftThumbstickUpEvent);
 		}
 		// Check if the stick is pushed down
@@ -228,6 +213,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 				win32InputKeyCode::Gamepad_Left_Thumbstick_Down;
 			leftThumbstickDownEvent.port = port;
 			leftThumbstickDownEvent.data = 1.0f;
+
 			onInput.broadcast(leftThumbstickDownEvent);
 		}
 	}
@@ -246,18 +232,18 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 	// Submit inputs for the stick
 	inputEvent rightXAxisEvent = {};
 	rightXAxisEvent.repeatedKey = false;
-	rightXAxisEvent.input =
-		win32InputKeyCode::Gamepad_Right_Thumbstick_X_Axis;
+	rightXAxisEvent.input =	win32InputKeyCode::Gamepad_Right_Thumbstick_X_Axis;
 	rightXAxisEvent.port = port;
 	rightXAxisEvent.data = thumbRX;
+
 	onInput.broadcast(rightXAxisEvent);
 
 	inputEvent rightYAxisEvent = {};
 	rightYAxisEvent.repeatedKey = false;
-	rightYAxisEvent.input =
-		win32InputKeyCode::Gamepad_Right_Thumbstick_Y_Axis;
+	rightYAxisEvent.input = win32InputKeyCode::Gamepad_Right_Thumbstick_Y_Axis;
 	rightYAxisEvent.port = port;
 	rightYAxisEvent.data = thumbRY;
+
 	onInput.broadcast(rightYAxisEvent);
 
 	// Action
@@ -277,10 +263,10 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			// Submit input
 			inputEvent rightThumbstickRightEvent = {};
 			rightThumbstickRightEvent.repeatedKey = false;
-			rightThumbstickRightEvent.input =
-				win32InputKeyCode::Gamepad_Right_Thumbstick_Right;
+			rightThumbstickRightEvent.input = win32InputKeyCode::Gamepad_Right_Thumbstick_Right;
 			rightThumbstickRightEvent.port = port;
 			rightThumbstickRightEvent.data = 1.0f;
+
 			onInput.broadcast(rightThumbstickRightEvent);
 		}
 		// Check if the stick is pushed left
@@ -289,10 +275,10 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			// Submit input
 			inputEvent rightThumbstickLeftEvent = {};
 			rightThumbstickLeftEvent.repeatedKey = false;
-			rightThumbstickLeftEvent.input =
-				win32InputKeyCode::Gamepad_Right_Thumbstick_Left;
+			rightThumbstickLeftEvent.input = win32InputKeyCode::Gamepad_Right_Thumbstick_Left;
 			rightThumbstickLeftEvent.port = port;
 			rightThumbstickLeftEvent.data = 1.0f;
+
 			onInput.broadcast(rightThumbstickLeftEvent);
 		}
 	}
@@ -306,10 +292,10 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			// Submit input
 			inputEvent rightThumbstickUpEvent = {};
 			rightThumbstickUpEvent.repeatedKey = false;
-			rightThumbstickUpEvent.input =
-				win32InputKeyCode::Gamepad_Right_Thumbstick_Up;
+			rightThumbstickUpEvent.input = win32InputKeyCode::Gamepad_Right_Thumbstick_Up;
 			rightThumbstickUpEvent.port = port;
 			rightThumbstickUpEvent.data = 1.0f;
+
 			onInput.broadcast(rightThumbstickUpEvent);
 		}
 		// Check if the stick is pushed down
@@ -318,10 +304,10 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			// Submit input
 			inputEvent rightThumbstickDownEvent = {};
 			rightThumbstickDownEvent.repeatedKey = false;
-			rightThumbstickDownEvent.input =
-				win32InputKeyCode::Gamepad_Right_Thumbstick_Down;
+			rightThumbstickDownEvent.input = win32InputKeyCode::Gamepad_Right_Thumbstick_Down;
 			rightThumbstickDownEvent.port = port;
 			rightThumbstickDownEvent.data = 1.0f;
+
 			onInput.broadcast(rightThumbstickDownEvent);
 		}
 	}
@@ -338,10 +324,10 @@ void xInputGamepad::refreshTriggers(const XINPUT_STATE& state,
 	{
 		inputEvent leftActionEvent = {};
 		leftActionEvent.repeatedKey = false;
-		leftActionEvent.input =
-			win32InputKeyCode::Gamepad_Left_Trigger;
+		leftActionEvent.input = win32InputKeyCode::Gamepad_Left_Trigger;
 		leftActionEvent.port = port;
 		leftActionEvent.data = static_cast<float>(currL);
+
 		onInput.broadcast(leftActionEvent);
 	}
 
@@ -352,10 +338,10 @@ void xInputGamepad::refreshTriggers(const XINPUT_STATE& state,
 	{
 		inputEvent rightActionEvent = {};
 		rightActionEvent.repeatedKey = false;
-		rightActionEvent.input =
-			win32InputKeyCode::Gamepad_Right_Trigger;
+		rightActionEvent.input = win32InputKeyCode::Gamepad_Right_Trigger;
 		rightActionEvent.port = port;
 		rightActionEvent.data = static_cast<float>(currR);
+
 		onInput.broadcast(rightActionEvent);
 	}
 
@@ -365,8 +351,8 @@ void xInputGamepad::refreshTriggers(const XINPUT_STATE& state,
 	leftAxisEvent.repeatedKey = false;
 	leftAxisEvent.input = win32InputKeyCode::Gamepad_Left_Trigger_Axis;
 	leftAxisEvent.port = port;
-	leftAxisEvent.data = static_cast<float>(state.Gamepad.bLeftTrigger) / 
-		static_cast<float>(gamepadMaxTriggerMagnitude);
+	leftAxisEvent.data = static_cast<float>(state.Gamepad.bLeftTrigger) / static_cast<float>(gamepadMaxTriggerMagnitude);
+
 	onInput.broadcast(leftAxisEvent);
 
 	// Right
@@ -374,7 +360,7 @@ void xInputGamepad::refreshTriggers(const XINPUT_STATE& state,
 	rightAxisEvent.repeatedKey = false;
 	rightAxisEvent.input = win32InputKeyCode::Gamepad_Right_Trigger_Axis;
 	rightAxisEvent.port = port;
-	rightAxisEvent.data = static_cast<float>(state.Gamepad.bRightTrigger) /
-		static_cast<float>(gamepadMaxTriggerMagnitude);
+	rightAxisEvent.data = static_cast<float>(state.Gamepad.bRightTrigger) /	static_cast<float>(gamepadMaxTriggerMagnitude);
+
 	onInput.broadcast(rightAxisEvent);
 }
