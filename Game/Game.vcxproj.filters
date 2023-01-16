@@ -27,7 +27,7 @@
     <ClCompile Include="source\callback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\framework\win32\win32Gamepad.cpp">
+    <ClCompile Include="source\platform\gamepad\xInput\xInputGamepad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\platform\framework\win32\win32Console.cpp">
@@ -42,7 +42,7 @@
     <ClCompile Include="source\platform\framework\win32\win32MessageBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\audio\xaudio2\xAudio2Audio.cpp">
+    <ClCompile Include="source\platform\audio\xAudio2\xAudio2Audio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -95,7 +95,7 @@
     <ClInclude Include="source\events\core\exitFullScreenEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\framework\win32\win32Gamepad.h">
+    <ClInclude Include="source\platform\gamepad\xInput\xInputGamepad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\framework\win32\win32Console.h">
@@ -110,7 +110,7 @@
     <ClInclude Include="source\platform\framework\win32\win32MessageBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\audio\xaudio2\xAudio2Audio.h">
+    <ClInclude Include="source\platform\audio\xAudio2\xAudio2Audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

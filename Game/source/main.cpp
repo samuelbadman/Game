@@ -2,10 +2,10 @@
 #include "platform/framework/win32/win32MessageBox.h"
 #include "platform/framework/win32/win32Console.h"
 #include "platform/framework/win32/win32Window.h"
-#include "platform/framework/win32/win32Gamepad.h"
 #include "platform/framework/win32/win32Display.h"
 #include "platform/framework/win32/win32InputKeyCode.h"
-#include "platform/audio/xaudio2/xAudio2Audio.h"
+#include "platform/gamepad/xInput/xInputGamepad.h"
+#include "platform/audio/xAudio2/xAudio2Audio.h"
 
 struct gameSettings
 {
@@ -117,7 +117,7 @@ static bool initializeWindow()
 
 static void initializeGamepadInput()
 {
-	win32Gamepad::onInput.add([](const inputEvent& event) {
+	xInputGamepad::onInput.add([](const inputEvent& event) {
 		});
 }
 
@@ -198,7 +198,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			DispatchMessage(&msg);
 		}
 
-		win32Gamepad::refresh(0);
+		xInputGamepad::refresh(0);
 
 		// Todo: Variable tick
 

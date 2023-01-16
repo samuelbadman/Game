@@ -90,7 +90,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\platform\audio\xaudio2\xAudio2Audio.cpp" />
+    <ClCompile Include="source\platform\audio\xAudio2\xAudio2Audio.cpp" />
     <ClCompile Include="source\callback.cpp" />
     <ClCompile Include="source\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -100,12 +100,12 @@
     <ClCompile Include="source\stringHelper.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Console.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Display.cpp" />
-    <ClCompile Include="source\platform\framework\win32\win32Gamepad.cpp" />
+    <ClCompile Include="source\platform\gamepad\xInput\xInputGamepad.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\platform\audio\xaudio2\xAudio2Audio.h" />
+    <ClInclude Include="source\platform\audio\xAudio2\xAudio2Audio.h" />
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\pch.h" />
     <ClInclude Include="source\platform\framework\win32\win32MessageBox.h" />
@@ -124,7 +124,7 @@
     <ClInclude Include="source\events\core\maximizedEvent.h" />
     <ClInclude Include="source\events\core\minimizedEvent.h" />
     <ClInclude Include="source\events\core\resizedEvent.h" />
-    <ClInclude Include="source\platform\framework\win32\win32Gamepad.h" />
+    <ClInclude Include="source\platform\gamepad\xInput\xInputGamepad.h" />
     <ClInclude Include="source\platform\framework\win32\win32InputKeyCode.h" />
     <ClInclude Include="source\platform\framework\win32\win32Window.h" />
   </ItemGroup>
