@@ -90,6 +90,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\audio\xaudio2\xAudio2Audio.cpp" />
     <ClCompile Include="source\callback.cpp" />
     <ClCompile Include="source\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
@@ -104,6 +105,7 @@
     <ClCompile Include="source\platform\win32\win32Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\audio\xaudio2\xAudio2Audio.h" />
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\pch.h" />
     <ClInclude Include="source\platform\win32\win32MessageBox.h" />

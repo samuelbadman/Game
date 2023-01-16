@@ -5,6 +5,7 @@
 #include "platform/win32/win32Gamepad.h"
 #include "platform/win32/win32Display.h"
 #include "platform/win32/win32InputKeyCode.h"
+#include "audio/xaudio2/xAudio2Audio.h"
 
 struct gameSettings
 {
@@ -128,7 +129,7 @@ static bool initializeGraphics()
 
 static bool initializeAudio()
 {
-	return false;
+	return xAudio2Audio::init();
 }
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
@@ -158,12 +159,12 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	//	return 1;
 	//}
 
-	//// Initialize audio
-	//if (!initializeAudio())
-	//{
-	//	win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize audio.");
-	//	return 1;
-	//}
+	// Initialize audio
+	if (!initializeAudio())
+	{
+		win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize audio.");
+		return 1;
+	}
 
 	// Initialize game loop
 	LARGE_INTEGER startCounter;
@@ -202,10 +203,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 
 		// Todo: Variable tick
 
-		// Fixed Tick
 		while (accumulator > fixedTimeSliceMs)
 		{
-			// Fixed tick(fixed step)
+			// Todo: Fixed tick(fixed step)
 			accumulator -= fixedTimeSliceMs;
 		}
 

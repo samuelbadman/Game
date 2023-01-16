@@ -42,6 +42,9 @@
     <ClCompile Include="source\platform\win32\win32MessageBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\audio\xaudio2\xAudio2Audio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\platform\win32\win32Window.h">
@@ -105,6 +108,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\win32\win32MessageBox.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\audio\xaudio2\xAudio2Audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
