@@ -10,7 +10,7 @@
 struct gameSettings
 {
 	// Window settings
-	static constexpr windowStyle windowStyle = windowStyle::windowed;
+	static constexpr eWindowStyle windowStyle = eWindowStyle::windowed;
 	static constexpr const wchar_t* windowTitle = L"Game";
 	static constexpr uint32_t windowPosition[2] = { 0, 0 };
 	static constexpr uint32_t windowDimensions[2] = { 1280, 720 };
@@ -62,13 +62,12 @@ static bool initializeWindow()
 
 	window->onExitSizeMove.add([](const exitSizeMoveEvent& event) {
 		inSizeMove = false;
-	// Todo: Resize renderer
 		});
 
 	window->onResized.add([](const resizedEvent& event) {
 		if (!inSizeMove)
 		{
-			// Todo: Resize renderer
+			// Todo: Resize swap chain and render resources
 		}
 		});
 

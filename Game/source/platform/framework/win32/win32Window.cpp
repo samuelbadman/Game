@@ -2,35 +2,321 @@
 #include "win32Window.h"
 #include "win32InputKeyCode.h"
 
+DWORD styleToDword(const eWindowStyle inStyle)
+{
+	switch (inStyle)
+	{
+		// Fully featured windowed window
+	case eWindowStyle::windowed: return WS_OVERLAPPEDWINDOW;
+		// Borderless window
+	case eWindowStyle::borderless: return WS_POPUPWINDOW;
+		// Non resizable windowed window
+	case eWindowStyle::noResize: return  WS_OVERLAPPED | WS_CAPTION | WS_SYSMENU | WS_MINIMIZEBOX;
+		// Removes the sizing box restricting drag resizing but retaining the maximize button
+	case eWindowStyle::noDragSize: return WS_OVERLAPPEDWINDOW ^ WS_THICKFRAME;;
+	case eWindowStyle::unknown:
+	default: return 0;
+	}
+}
+
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	// Get the window pointer instance
-	win32Window* const window =
-		reinterpret_cast<win32Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA));
-
-	// Dispatch correct event for the message
-	switch (msg)
+	if (win32Window* const window = reinterpret_cast<win32Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))
 	{
-		case WM_MOUSEWHEEL: return window->onWM_MouseWheel(hwnd, msg, wparam, lparam);
-		case WM_INPUT: return window->onWM_Input(hwnd, msg, wparam, lparam);
-		case WM_LBUTTONDOWN: return window->onWM_LeftButtonDown(hwnd, msg, wparam, lparam);
-		case WM_RBUTTONDOWN: return window->onWM_RightButtonDown(hwnd, msg, wparam, lparam);
-		case WM_MBUTTONDOWN: return window->onWM_MiddleButtonDown(hwnd, msg, wparam, lparam);
-		case WM_LBUTTONUP: return window->onWM_LeftButtonUp(hwnd, msg, wparam, lparam);
-		case WM_RBUTTONUP: return window->onWM_RightButtonUp(hwnd, msg, wparam, lparam);
-		case WM_MBUTTONUP: return window->onWM_MiddleButtonUp(hwnd, msg, wparam, lparam);
+		// Handle message
+		switch (msg)
+		{
+		case WM_MOUSEWHEEL:
+		{
+			const auto delta = GET_WHEEL_DELTA_WPARAM(wparam);
+
+			if (delta > 0)
+			{
+				// Mouse wheel up
+				inputEvent event = {};
+				event.repeatedKey = false;
+				event.input = win32InputKeyCode::Mouse_Wheel_Up;
+				event.port = 0;
+				event.data = 1.f;
+
+				window->onInput.broadcast(event);
+			}
+			else if (delta < 0)
+			{
+				// Mouse wheel down
+				inputEvent event = {};
+				event.repeatedKey = false;
+				event.input = win32InputKeyCode::Mouse_Wheel_Down;
+				event.port = 0;
+				event.data = 1.f;
+
+				window->onInput.broadcast(event);
+			}
+
+			return 0;
+		}
+
+		case WM_INPUT:
+		{
+			// Initialize raw data size
+			UINT dataSize = 0;
+
+			// Retrieve the size of the raw data
+			GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT, NULL,
+				&dataSize, sizeof(RAWINPUTHEADER));
+
+			// Return if there was no raw data
+			if (dataSize == 0)
+			{
+				return 0;
+			}
+
+			// Initialize raw data storage
+			std::unique_ptr<BYTE[]> rawData{ std::make_unique<BYTE[]>(dataSize) };
+
+			// Retreive raw data and store it. Return if the retreived data is the not same size
+			if (::GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT,
+				rawData.get(), &dataSize, sizeof(RAWINPUTHEADER)) != dataSize)
+			{
+				return 0;
+			}
+
+			// Cast byte to raw input
+			RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(rawData.get());
+
+			// Return if the raw input is not from the mouse
+			if (raw->header.dwType != RIM_TYPEMOUSE)
+			{
+				return 0;
+			}
+
+			// Raw mouse delta
+			inputEvent eventX = {};
+			eventX.repeatedKey = false;
+			eventX.input = win32InputKeyCode::Mouse_X;
+			eventX.port = 0;
+			eventX.data = static_cast<float>(raw->data.mouse.lLastX);
+
+			window->onInput.broadcast(eventX);
+
+			inputEvent eventY = {};
+			eventY.repeatedKey = false;
+			eventY.input = win32InputKeyCode::Mouse_Y;
+			eventY.port = 0;
+			eventY.data = static_cast<float>(raw->data.mouse.lLastY);
+
+			window->onInput.broadcast(eventY);
+			return 0;
+		}
+
+		case WM_LBUTTONDOWN:
+		{
+			inputEvent event = {};
+			event.repeatedKey = false;
+			event.input = win32InputKeyCode::Left_Mouse_Button;
+			event.port = 0;
+			event.data = 1.f;
+
+			window->onInput.broadcast(event);
+			return 0;
+		}
+
+		case WM_RBUTTONDOWN:
+		{
+			inputEvent event = {};
+			event.repeatedKey = false;
+			event.input = win32InputKeyCode::Right_Mouse_Button;
+			event.port = 0;
+			event.data = 1.f;
+
+			window->onInput.broadcast(event);
+			return 0;
+		}
+
+		case WM_MBUTTONDOWN:
+		{
+			inputEvent event = {};
+			event.repeatedKey = false;
+			event.input = win32InputKeyCode::Middle_Mouse_Button;
+			event.port = 0;
+			event.data = 1.f;
+
+			window->onInput.broadcast(event);
+			return 0;
+		}
+
+		case WM_LBUTTONUP:
+		{
+			inputEvent event = {};
+			event.repeatedKey = false;
+			event.input = win32InputKeyCode::Left_Mouse_Button;
+			event.port = 0;
+			event.data = 0.f;
+
+			window->onInput.broadcast(event);
+			return 0;
+		}
+
+		case WM_RBUTTONUP:
+		{
+			inputEvent event = {};
+			event.repeatedKey = false;
+			event.input = win32InputKeyCode::Right_Mouse_Button;
+			event.port = 0;
+			event.data = 0.f;
+
+			window->onInput.broadcast(event);
+			return 0;
+		}
+
+		case WM_MBUTTONUP:
+		{
+			inputEvent event = {};
+			event.repeatedKey = false;
+			event.input = win32InputKeyCode::Middle_Mouse_Button;
+			event.port = 0;
+			event.data = 0.f;
+
+			window->onInput.broadcast(event);
+			return 0;
+		}
+
 		case WM_SYSKEYDOWN:
-		case WM_KEYDOWN: return window->onWM_KeyDown(hwnd, msg, wparam, lparam);
+		case WM_KEYDOWN:
+		{
+			inputEvent event = {};
+			event.repeatedKey = static_cast<bool>(lparam & 0x40000000);
+			event.input = static_cast<int16_t>(wparam);
+			event.port = 0;
+			event.data = 1.f;
+
+			window->onInput.broadcast(event);
+			return 0;
+		}
+
 		case WM_SYSKEYUP:
-		case WM_KEYUP: return window->onWM_KeyUp(hwnd, msg, wparam, lparam);
-		case WM_SIZE: return window->onWM_Size(hwnd, msg, wparam, lparam);
-		case WM_ENTERSIZEMOVE: return window->onWM_EnterSizeMove(hwnd, msg, wparam, lparam);
-		case WM_EXITSIZEMOVE: return window->onWM_ExitSizeMove(hwnd, msg, wparam, lparam);
-		case WM_ACTIVATEAPP: return window->onWM_ActivateApp(hwnd, msg, wparam, lparam);
-		case WM_CLOSE: return window->onWM_Close(hwnd, msg, wparam, lparam);
-		case WM_DESTROY: return window->onWM_Destroy(hwnd, msg, wparam, lparam);
-		default: return DefWindowProc(hwnd, msg, wparam, lparam);
+		case WM_KEYUP:
+		{
+			inputEvent event = {};
+			event.repeatedKey = false;
+			event.input = static_cast<int16_t>(wparam);
+			event.port = 0;
+			event.data = 0.f;
+
+			window->onInput.broadcast(event);
+			return 0;
+		}
+
+		case WM_SIZE:
+		{
+			switch (wparam)
+			{
+			case SIZE_MAXIMIZED:
+			{
+				// Window maximized
+				maximizedEvent maximize = {};
+
+				window->onMaximized.broadcast(maximize);
+
+				resizedEvent resize = {};
+				resize.newClientWidth = LOWORD(lparam);
+				resize.newClientHeight = HIWORD(lparam);
+
+				window->onResized.broadcast(resize);
+				return 0;
+			}
+
+			case SIZE_MINIMIZED:
+			{
+				// Window minimized
+				minimizedEvent minimize = {};
+
+				window->onMinimized.broadcast(minimize);
+				return 0;
+			}
+
+			case SIZE_RESTORED:
+			{
+				// Window restored
+				resizedEvent resize = {};
+				resize.newClientWidth = LOWORD(lparam);
+				resize.newClientHeight = HIWORD(lparam);
+
+				window->onResized.broadcast(resize);
+				return 0;
+			}
+			}
+
+			return 0;
+		}
+
+		case WM_ENTERSIZEMOVE:
+		{
+			enterSizeMoveEvent event = {};
+
+			window->onEnterSizeMove.broadcast(event);
+			return 0;
+		}
+
+		case WM_EXITSIZEMOVE:
+		{
+			exitSizeMoveEvent event = {};
+
+			window->onExitSizeMove.broadcast(event);
+
+			resizedEvent resize = {};
+			resize.newClientWidth = LOWORD(lparam);
+			resize.newClientHeight = HIWORD(lparam);
+
+			window->onResized.broadcast(resize);
+			return 0;
+		}
+
+		case WM_ACTIVATEAPP:
+		{
+			if (wparam == TRUE)
+			{
+				// Received focus
+				gainedFocusEvent event = {};
+
+				window->onGainedFocus.broadcast(event);
+				return 0;
+			}
+			else if (wparam == FALSE)
+			{
+				// Lost focus
+				lostFocusEvent event = {};
+
+				window->onLostFocus.broadcast(event);
+				return 0;
+			}
+
+			return 0;
+		}
+
+		case WM_CLOSE:
+		{
+			closedEvent event = {};
+
+			window->onClosed.broadcast(event);
+
+			DestroyWindow(hwnd);
+			return 0;
+		}
+
+		case WM_DESTROY:
+		{
+			destroyedEvent event = {};
+
+			window->onDestroyed.broadcast(event);
+
+			PostQuitMessage(0);
+			return 0;
+		}
+		}
 	}
+	return DefWindowProc(hwnd, msg, wparam, lparam);
 }
 
 static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT msg, 
@@ -235,7 +521,7 @@ bool win32Window::setPosition(uint32_t x, uint32_t y)
 	return SetWindowPos(hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
 }
 
-bool win32Window::setStyle(windowStyle inStyle)
+bool win32Window::setStyle(eWindowStyle inStyle)
 {
 	style = inStyle;
 
@@ -280,302 +566,4 @@ void win32Window::getPosition(uint32_t& x, uint32_t& y) const
 
 	x = windowRect.left;
 	y = windowRect.top;
-}
-
-LRESULT win32Window::onWM_MouseWheel(HWND hwnd, UINT msg,
-	WPARAM wparam, LPARAM lparam)
-{
-	const auto delta = GET_WHEEL_DELTA_WPARAM(wparam);
-
-	if (delta > 0)
-	{
-		// Mouse wheel up
-		inputEvent event = {};
-		event.repeatedKey = false;
-		event.input = win32InputKeyCode::Mouse_Wheel_Up;
-		event.port = 0;
-		event.data = 1.f;
-		onInput.broadcast(event);
-	}
-	else if (delta < 0)
-	{
-		// Mouse wheel down
-		inputEvent event = {};
-		event.repeatedKey = false;
-		event.input = win32InputKeyCode::Mouse_Wheel_Down;
-		event.port = 0;
-		event.data = 1.f;
-		onInput.broadcast(event);
-	}
-
-	return 0;
-}
-
-LRESULT win32Window::onWM_Input(HWND hwnd, UINT msg,
-	WPARAM wparam, LPARAM lparam)
-{
-	// Initialize raw data size
-	UINT dataSize =  0;
-
-	// Retrieve the size of the raw data
-	GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT, NULL,
-		&dataSize, sizeof(RAWINPUTHEADER));
-
-	// Return if there was no raw data
-	if (dataSize == 0)
-	{
-		return 0;
-	}
-
-	// Initialize raw data storage
-	std::unique_ptr<BYTE[]> rawData{ std::make_unique<BYTE[]>(dataSize) };
-
-	// Retreive raw data and store it. Return if the retreived data is the not same size
-	if (::GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT,
-		rawData.get(), &dataSize, sizeof(RAWINPUTHEADER)) != dataSize)
-	{
-		return 0;
-	}
-
-	// Cast byte to raw input
-	RAWINPUT* raw = reinterpret_cast<RAWINPUT*>(rawData.get());
-
-	// Return if the raw input is not from the mouse
-	if (raw->header.dwType != RIM_TYPEMOUSE)
-	{
-		return 0;
-	}
-
-	// Raw mouse delta
-	inputEvent eventX = {};
-	eventX.repeatedKey = false;
-	eventX.input = win32InputKeyCode::Mouse_X;
-	eventX.port = 0;
-	eventX.data = static_cast<float>(raw->data.mouse.lLastX);
-	onInput.broadcast(eventX);
-
-	inputEvent eventY = {};
-	eventY.repeatedKey = false;
-	eventY.input = win32InputKeyCode::Mouse_Y;
-	eventY.port = 0;
-	eventY.data = static_cast<float>(raw->data.mouse.lLastY);
-	onInput.broadcast(eventY);
-
-	return 0;
-}
-
-LRESULT win32Window::onWM_LeftButtonDown(HWND hwnd, UINT msg,
-	WPARAM wparam, LPARAM lparam)
-{
-	inputEvent event = {};
-	event.repeatedKey = false;
-	event.input = win32InputKeyCode::Left_Mouse_Button;
-	event.port = 0;
-	event.data = 1.f;
-	onInput.broadcast(event);
-	return 0;
-}
-
-LRESULT win32Window::onWM_RightButtonDown(HWND hwnd, UINT msg, 
-	WPARAM wparam, LPARAM lparam)
-{
-	inputEvent event = {};
-	event.repeatedKey = false;
-	event.input = win32InputKeyCode::Right_Mouse_Button;
-	event.port = 0;
-	event.data = 1.f;
-	onInput.broadcast(event);
-	return 0;
-}
-
-LRESULT win32Window::onWM_MiddleButtonDown(HWND hwnd, UINT msg,
-	WPARAM wparam, LPARAM lparam)
-{
-	inputEvent event = {};
-	event.repeatedKey = false;
-	event.input = win32InputKeyCode::Middle_Mouse_Button;
-	event.port = 0;
-	event.data = 1.f;
-	onInput.broadcast(event);
-	return 0;
-}
-
-LRESULT win32Window::onWM_LeftButtonUp(HWND hwnd, UINT msg,
-	WPARAM wparam, LPARAM lparam)
-{
-	inputEvent event = {};
-	event.repeatedKey = false;
-	event.input = win32InputKeyCode::Left_Mouse_Button;
-	event.port = 0;
-	event.data = 0.f;
-	onInput.broadcast(event);
-	return 0;
-}
-
-LRESULT win32Window::onWM_RightButtonUp(HWND hwnd, UINT msg, 
-	WPARAM wparam, LPARAM lparam)
-{
-	inputEvent event = {};
-	event.repeatedKey = false;
-	event.input = win32InputKeyCode::Right_Mouse_Button;
-	event.port = 0;
-	event.data = 0.f;
-	onInput.broadcast(event);
-	return 0;
-}
-
-LRESULT win32Window::onWM_MiddleButtonUp(HWND hwnd, UINT msg,
-	WPARAM wparam, LPARAM lparam)
-{
-	inputEvent event = {};
-	event.repeatedKey = false;
-	event.input = win32InputKeyCode::Middle_Mouse_Button;
-	event.port = 0;
-	event.data = 0.f;
-	onInput.broadcast(event);
-	return 0;
-}
-
-LRESULT win32Window::onWM_KeyDown(HWND hwnd, UINT msg, 
-	WPARAM wparam, LPARAM lparam)
-{
-	inputEvent event = {};
-	event.repeatedKey = static_cast<bool>(lparam & 0x40000000);
-	event.input = static_cast<int16_t>(wparam);
-	event.port = 0;
-	event.data = 1.f;
-	onInput.broadcast(event);
-	return 0;
-}
-
-LRESULT win32Window::onWM_KeyUp(HWND hwnd, UINT msg,
-	WPARAM wparam, LPARAM lparam)
-{
-	inputEvent event = {};
-	event.repeatedKey = false;
-	event.input = static_cast<int16_t>(wparam);
-	event.port = 0;
-	event.data = 0.f;
-	onInput.broadcast(event);
-	return 0;
-}
-
-LRESULT win32Window::onWM_EnterSizeMove(HWND hwnd, UINT msg, 
-	WPARAM wparam, LPARAM lparam)
-{
-	enterSizeMoveEvent event = {};
-	onEnterSizeMove.broadcast(event);
-	return 0;
-}
-
-LRESULT win32Window::onWM_ExitSizeMove(HWND hwnd, UINT msg, 
-	WPARAM wparam, LPARAM lparam)
-{
-	exitSizeMoveEvent event = {};
-	getClientAreaDimensions(event.newRenderingResolutionX, event.newRenderingResolutionY);
-
-	onExitSizeMove.broadcast(event);
-	return 0;
-}
-
-LRESULT win32Window::onWM_ActivateApp(HWND hwnd, UINT msg, 
-	WPARAM wparam, LPARAM lparam)
-{
-	if (wparam == TRUE)
-	{
-		// Received focus
-		gainedFocusEvent event = {};
-		onGainedFocus.broadcast(event);
-		return 0;
-	}
-	else if (wparam == FALSE)
-	{
-		// Lost focus
-		lostFocusEvent event = {};
-		onLostFocus.broadcast(event);
-		return 0;
-	}
-
-	return 0;
-}
-
-LRESULT win32Window::onWM_Size(HWND hwnd, UINT msg,
-	WPARAM wparam, LPARAM lparam)
-{
-	switch (wparam)
-	{
-		case SIZE_MAXIMIZED:
-		{
-			// Window maximized
-			maximizedEvent maximize = {};
-			onMaximized.broadcast(maximize);
-
-			resizedEvent resizeSwapChainDimensions = {};
-			resizeSwapChainDimensions.newRenderingResolutionX = LOWORD(lparam);
-			resizeSwapChainDimensions.newRenderingResolutionY = HIWORD(lparam);
-			onResized.broadcast(resizeSwapChainDimensions);
-
-			return 0;
-		}
-
-		case SIZE_MINIMIZED:
-		{
-			// Window minimized
-			minimizedEvent minimize = {};
-			onMinimized.broadcast(minimize);
-
-			//resizedEvent resize = {};
-			//resize.newRenderingResolutionX = LOWORD(lparam);
-			//resize.newRenderingResolutionY = HIWORD(lparam);
-			//onResized.broadcast(resize);
-
-			return 0;
-		}
-
-		case SIZE_RESTORED:
-		{
-			// Window restored
-			resizedEvent resizeSwapChainDimensions = {};
-			resizeSwapChainDimensions.newRenderingResolutionX = LOWORD(lparam);
-			resizeSwapChainDimensions.newRenderingResolutionY = HIWORD(lparam);
-			onResized.broadcast(resizeSwapChainDimensions);
-
-			return 0;
-		}
-	}
-
-	return 0;
-}
-
-LRESULT win32Window::onWM_Close(HWND hwnd, UINT msg,
-	WPARAM wparam, LPARAM lparam)
-{
-	closedEvent event = {};
-	onClosed.broadcast(event);
-	DestroyWindow(hwnd);
-	return 0;
-}
-
-LRESULT win32Window::onWM_Destroy(HWND hwnd, UINT msg, 
-	WPARAM wparam, LPARAM lparam)
-{
-	destroyedEvent event = {};
-	onDestroyed.broadcast(event);
-	PostQuitMessage(0);
-	return 0;
-}
-
-DWORD win32Window::styleToDword(const windowStyle inStyle) const
-{
-	assert(inStyle != windowStyle::unset);
-
-	switch (inStyle)
-	{
-		case windowStyle::windowed: return windowedStyleDword;
-		case windowStyle::borderless: return borderlessStyleDword;
-		case windowStyle::noResize: return noResizeStyleDword;
-		case windowStyle::noDragSize: return NoDragSizeStyleDword;
-		case windowStyle::unset: 
-		default: return 0;
-	}
 }
