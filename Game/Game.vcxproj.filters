@@ -18,19 +18,19 @@
     <ClCompile Include="source\main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\win32\win32Window.cpp">
+    <ClCompile Include="source\platform\framework\win32\win32Window.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\win32\win32Display.cpp">
+    <ClCompile Include="source\platform\framework\win32\win32Display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\callback.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\win32\win32Gamepad.cpp">
+    <ClCompile Include="source\platform\framework\win32\win32Gamepad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\win32\win32Console.cpp">
+    <ClCompile Include="source\platform\framework\win32\win32Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\stringHelper.cpp">
@@ -39,7 +39,7 @@
     <ClCompile Include="source\pch.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\win32\win32MessageBox.cpp">
+    <ClCompile Include="source\platform\framework\win32\win32MessageBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\platform\audio\xaudio2\xAudio2Audio.cpp">
@@ -47,10 +47,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\platform\win32\win32Window.h">
+    <ClInclude Include="source\platform\framework\win32\win32Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\win32\win32Display.h">
+    <ClInclude Include="source\platform\framework\win32\win32Display.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\callback.h">
@@ -59,7 +59,7 @@
     <ClInclude Include="source\events\core\inputEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\win32\win32InputKeyCode.h">
+    <ClInclude Include="source\platform\framework\win32\win32InputKeyCode.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\events\core\enterSizeMoveEvent.h">
@@ -95,10 +95,10 @@
     <ClInclude Include="source\events\core\exitFullScreenEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\win32\win32Gamepad.h">
+    <ClInclude Include="source\platform\framework\win32\win32Gamepad.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\win32\win32Console.h">
+    <ClInclude Include="source\platform\framework\win32\win32Console.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\stringHelper.h">
@@ -107,7 +107,7 @@
     <ClInclude Include="source\pch.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\win32\win32MessageBox.h">
+    <ClInclude Include="source\platform\framework\win32\win32MessageBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\audio\xaudio2\xAudio2Audio.h">

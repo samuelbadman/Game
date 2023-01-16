@@ -96,22 +96,22 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="source\platform\win32\win32MessageBox.cpp" />
+    <ClCompile Include="source\platform\framework\win32\win32MessageBox.cpp" />
     <ClCompile Include="source\stringHelper.cpp" />
-    <ClCompile Include="source\platform\win32\win32Console.cpp" />
-    <ClCompile Include="source\platform\win32\win32Display.cpp" />
-    <ClCompile Include="source\platform\win32\win32Gamepad.cpp" />
+    <ClCompile Include="source\platform\framework\win32\win32Console.cpp" />
+    <ClCompile Include="source\platform\framework\win32\win32Display.cpp" />
+    <ClCompile Include="source\platform\framework\win32\win32Gamepad.cpp" />
     <ClCompile Include="source\main.cpp" />
-    <ClCompile Include="source\platform\win32\win32Window.cpp" />
+    <ClCompile Include="source\platform\framework\win32\win32Window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\platform\audio\xaudio2\xAudio2Audio.h" />
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\pch.h" />
-    <ClInclude Include="source\platform\win32\win32MessageBox.h" />
+    <ClInclude Include="source\platform\framework\win32\win32MessageBox.h" />
     <ClInclude Include="source\stringHelper.h" />
-    <ClInclude Include="source\platform\win32\win32Console.h" />
-    <ClInclude Include="source\platform\win32\win32Display.h" />
+    <ClInclude Include="source\platform\framework\win32\win32Console.h" />
+    <ClInclude Include="source\platform\framework\win32\win32Display.h" />
     <ClInclude Include="source\events\core\closedEvent.h" />
     <ClInclude Include="source\events\core\destroyedEvent.h" />
     <ClInclude Include="source\events\core\enterFullScreenEvent.h" />
@@ -124,9 +124,9 @@
     <ClInclude Include="source\events\core\maximizedEvent.h" />
     <ClInclude Include="source\events\core\minimizedEvent.h" />
     <ClInclude Include="source\events\core\resizedEvent.h" />
-    <ClInclude Include="source\platform\win32\win32Gamepad.h" />
-    <ClInclude Include="source\platform\win32\win32InputKeyCode.h" />
-    <ClInclude Include="source\platform\win32\win32Window.h" />
+    <ClInclude Include="source\platform\framework\win32\win32Gamepad.h" />
+    <ClInclude Include="source\platform\framework\win32\win32InputKeyCode.h" />
+    <ClInclude Include="source\platform\framework\win32\win32Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
