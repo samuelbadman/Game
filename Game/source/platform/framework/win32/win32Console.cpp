@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "win32Console.h"
 
-bool win32Console::init()
+int8_t win32Console::init()
 {
 	CONSOLE_SCREEN_BUFFER_INFO console_info;
 	FILE* fp;
@@ -9,7 +9,7 @@ bool win32Console::init()
 	BOOL allocResult = AllocConsole();
 	if (!allocResult)
 	{
-		return false;
+		return 1;
 	}
 	// set the screen buffer to be big enough to let us scroll text
 	GetConsoleScreenBufferInfo(GetStdHandle(STD_OUTPUT_HANDLE), &console_info);
@@ -37,10 +37,10 @@ bool win32Console::init()
 	std::wcin.clear();
 	std::cin.clear();
 
-	return true;
+	return 0;
 }
 
-bool win32Console::shutdown()
+int8_t win32Console::shutdown()
 {
 	FILE* fp;
 	// Just to be safe, redirect standard IO to NULL before releasing.
@@ -54,7 +54,12 @@ bool win32Console::shutdown()
 	if (!(freopen_s(&fp, "NUL:", "w", stderr) != 0))
 		setvbuf(stderr, NULL, _IONBF, 0);
 	// Detach from console
-	return FreeConsole();
+	if (!FreeConsole())
+	{
+		return 1;
+	}
+
+	return 0;
 }
 
 void win32Console::print(const std::string& string)

@@ -3,7 +3,7 @@
 class win32Console
 {
 public:
-	static bool init();
-	static bool shutdown();
+	static int8_t init();
+	static int8_t shutdown();
 	static void print(const std::string& string);
 };

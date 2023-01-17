@@ -1,24 +1,23 @@
 #include "pch.h"
 #include "xaudio2Audio.h"
+#include "platform/framework/win32/win32MessageBox.h"
 
 static Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
 static IXAudio2MasteringVoice* masterVoice = nullptr;
 
-bool xAudio2Audio::init()
+void xAudio2Audio::init()
 {
 	HRESULT hr;
 
 	if (FAILED(hr = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
 	{
-		return false;
+		win32MessageBox::messageBoxFatal("xAudio2Audio::init failed to create xAudio2 instance.");
 	}
 
 	if (FAILED(hr = xAudio2->CreateMasteringVoice(&masterVoice)))
 	{
-		return false;
+		win32MessageBox::messageBoxFatal("xAudio2Audio::init failed to create mastering voice.");
 	}
-
-	return true;
 }
 
 void xAudio2Audio::destroyMasterVoice()

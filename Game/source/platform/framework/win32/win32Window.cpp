@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "win32Window.h"
 #include "win32InputKeyCode.h"
+#include "win32MessageBox.h"
 
 DWORD styleToDword(const eWindowStyle inStyle)
 {
@@ -350,7 +351,7 @@ static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT msg,
 	return 0;
 }
 
-bool win32Window::init(const win32WindowInitDesc& desc)
+void win32Window::init(const win32WindowInitDesc& desc)
 {
 	// Store window settings
 	windowClassName = desc.windowClassName;
@@ -379,63 +380,64 @@ bool win32Window::init(const win32WindowInitDesc& desc)
 	if (!(RegisterClassExW(&windowClass) > 0))
 	{
 		// Failed to register window class
-		return false;
+		win32MessageBox::messageBoxFatal("win32Window::init failed to register window class.");
 	}
 
 	// Create the window and store a handle to it
-	hwnd = CreateWindowExW(0, windowClassNameCStr, desc.windowTitle.c_str(),
+	if (hwnd = CreateWindowExW(0, windowClassNameCStr, desc.windowTitle.c_str(),
 		styleToDword(desc.style),
 		desc.x, desc.y, desc.width, desc.height,
-		reinterpret_cast<HWND>(desc.parent), nullptr, hInstance, this);
+		reinterpret_cast<HWND>(desc.parent), nullptr, hInstance, this))
+	{
+		// Register raw input devices
+		RAWINPUTDEVICE rid = {};
+		rid.usUsagePage = 0x01;
+		rid.usUsage = 0x02;
+		rid.dwFlags = 0;
+		rid.hwndTarget = nullptr;
 
-	if (hwnd == nullptr)
+		if (!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
+		{
+			// Failed to register raw input devices
+			win32MessageBox::messageBoxFatal("win32Window::init failed to register raw input devices.");
+		}
+
+		// Show the window
+		ShowWindow(hwnd, SW_SHOW);
+	}
+	else
 	{
 		// Failed to create window
-		return false;
+		win32MessageBox::messageBoxFatal("win32Window::init failed to create window.");
 	}
-
-	// Register raw input devices
-	RAWINPUTDEVICE rid = {};
-	rid.usUsagePage = 0x01;
-	rid.usUsage = 0x02;
-	rid.dwFlags = 0;
-	rid.hwndTarget = nullptr;
-
-	if (!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
-	{
-		// Failed to register raw input devices
-		return false;
-	}
-
-	// Show the window
-	ShowWindow(hwnd, SW_SHOW);
-
-	return true;
 }
 
-bool win32Window::shutdown()
+void win32Window::shutdown()
 {
 	// Get handle to the executable 
 	HINSTANCE hInstance = GetModuleHandleW(nullptr);
 
 	// Unregister the window class
-	return UnregisterClassW(windowClassName.c_str(), hInstance);
+	if (!UnregisterClassW(windowClassName.c_str(), hInstance))
+	{
+		win32MessageBox::messageBoxFatal("win32Window::shutdown failed to unregister class.");
+	}
 }
 
-bool win32Window::enterFullScreen()
+int8_t win32Window::enterFullScreen()
 {
 	// Do nothing if the window is currently in full screen
 	if (inFullscreen)
 	{
 		// The window is currently fullscreen
-		return false;
+		return 1;
 	}
 
 	// Store the current window area rect
 	if (!GetWindowRect(hwnd, &windowRectOnEnterFullScreen))
 	{
 		// Failed to get the current window rect
-		return false;
+		return 1;
 	}
 
 	// Retreive info about the monitor the window is on
@@ -444,7 +446,7 @@ bool win32Window::enterFullScreen()
 	if (!GetMonitorInfo(hMon, &monitorInfo))
 	{
 		// Failed to get current monitor info
-		return false;
+		return 1;
 	}
 
 	// Calculate width and height of the monitor
@@ -456,13 +458,14 @@ bool win32Window::enterFullScreen()
 		monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top, fWidth, fHeight,
 		SWP_FRAMECHANGED | SWP_NOACTIVATE) == 0)
 	{
-		return false;
+		return 1;
 	}
 
 	// Update window style
 	if (SetWindowLong(hwnd, GWL_STYLE, 0) == 0)
 	{
-		return false;
+		// SetWindowLong failed
+		return 1;
 	}
 
 	// Show the window maximized
@@ -473,18 +476,19 @@ bool win32Window::enterFullScreen()
 
 	// Send enter full screen system event 
 	enterFullScreenEvent event = {};
+
 	onEnterFullScreen.broadcast(event);
 
-	return true;
+	return 0;
 }
 
-bool win32Window::exitFullScreen()
+int8_t win32Window::exitFullScreen()
 {
 	// Do nothing if the window is currently not in full screen
 	if (!inFullscreen)
 	{
 		// The window is not currently fullscreen
-		return false;
+		return 1;
 	}
 
 	// Update position and size of the window
@@ -494,13 +498,15 @@ bool win32Window::exitFullScreen()
 		windowRectOnEnterFullScreen.bottom - windowRectOnEnterFullScreen.top, 
 		SWP_FRAMECHANGED | SWP_NOACTIVATE) == 0)
 	{
-		return false;
+		// SetWindowPos failed
+		return 1;
 	}
 
 	// Update window style
 	if (SetWindowLong(hwnd, GWL_STYLE, styleToDword(style)) == 0)
 	{
-		return false;
+		// SetWindowLong failed
+		return 1;
 	}
 
 	// Show the window
@@ -511,17 +517,23 @@ bool win32Window::exitFullScreen()
 
 	// Send exit full screen system event 
 	exitFullScreenEvent event = {};
+
 	onExitFullScreen.broadcast(event);
 
-	return true;
+	return 0;
 }
 
-bool win32Window::setPosition(uint32_t x, uint32_t y)
+int8_t win32Window::setPosition(uint32_t x, uint32_t y)
 {
-	return SetWindowPos(hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW);
+	if (SetWindowPos(hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW) == 0)
+	{
+		// SetWindowPos failed
+		return 1;
+	}
+	return 0;
 }
 
-bool win32Window::setStyle(eWindowStyle inStyle)
+int8_t win32Window::setStyle(eWindowStyle inStyle)
 {
 	style = inStyle;
 
@@ -531,39 +543,42 @@ bool win32Window::setStyle(eWindowStyle inStyle)
 	{
 		if (SetWindowLong(hwnd, GWL_STYLE, styleToDword(inStyle)) == 0)
 		{
-			return false;
+			// SetWindowLong failed
+			return 1;
 		}
 	}
 
-	return ShowWindow(hwnd, SW_SHOW);
+	ShowWindow(hwnd, SW_SHOW);
+
+	return 0;
 }
 
-void win32Window::getClientAreaDimensions(uint32_t& x, uint32_t& y) const
+int8_t win32Window::getClientAreaDimensions(uint32_t& x, uint32_t& y) const
 {
-	RECT clientRect = {};
-
-	if (!GetClientRect(hwnd, &clientRect))
+	RECT clientRect;
+	if (GetClientRect(hwnd, &clientRect) == 0)
 	{
-		x = 0;
-		y = 0;
-		return;
+		// GetClientRect failed
+		return 1;
 	}
 
 	x = clientRect.right - clientRect.left;
 	y = clientRect.bottom - clientRect.top;
+
+	return 0;
 }
 
-void win32Window::getPosition(uint32_t& x, uint32_t& y) const
+int8_t win32Window::getPosition(uint32_t& x, uint32_t& y) const
 {
-	RECT windowRect = {};
-
-	if (!GetWindowRect(hwnd, &windowRect))
+	RECT windowRect;
+	if (GetWindowRect(hwnd, &windowRect) == 0)
 	{
-		x = 0;
-		y = 0;
-		return;
+		// GetWindowRect failed
+		return 1;
 	}
 
 	x = windowRect.left;
 	y = windowRect.top;
+
+	return 0;
 }

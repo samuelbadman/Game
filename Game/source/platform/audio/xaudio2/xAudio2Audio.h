@@ -3,6 +3,6 @@
 class xAudio2Audio
 {
 public:
-	static bool init();
+	static void init();
 	static void destroyMasterVoice();
 };

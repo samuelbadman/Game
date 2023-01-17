@@ -55,7 +55,7 @@ static void processCommandLineArguments()
 	LocalFree(argv);
 }
 
-static bool initializeWindow()
+static void initializeWindow()
 {
 	// Get the default display info
 	displayDesc defaultDisplayDesc = win32Display::infoForDisplayAtIndex(
@@ -74,10 +74,7 @@ static bool initializeWindow()
 	windowDesc.width = gameSettings::windowDimensions[0];
 	windowDesc.height = gameSettings::windowDimensions[1];
 
-	if (!window->init(windowDesc))
-	{
-		return false;
-	}
+	window->init(windowDesc);
 
 	// Register core event callbacks
 	window->onClosed.add([](const closedEvent& event) {
@@ -139,8 +136,6 @@ static bool initializeWindow()
 			running = false;
 		}
 		});
-
-	return true;
 }
 
 static void initializeGamepadInput()
@@ -149,51 +144,23 @@ static void initializeGamepadInput()
 		});
 }
 
-static bool initializeGraphics()
+static void initializeGraphics()
 {
-	return direct3d12Graphics::init();
+	direct3d12Graphics::init();
 }
 
-static bool initializeAudio()
+static void initializeAudio()
 {
-	return xAudio2Audio::init();
+	xAudio2Audio::init();
 }
 
 int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
-	// Initialize console
-	if (!win32Console::init())
-	{
-		win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize console.");
-		return EXIT_FAILURE;
-	}
-
-	// Process command line arguments
 	processCommandLineArguments();
-
-	// Initialize window
-	if (!initializeWindow())
-	{
-		win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize window.");
-		return EXIT_FAILURE;
-	}
-
-	// Initialize gamepad input
+	initializeWindow();
 	initializeGamepadInput();
-
-	// Initialize graphics
-	if (!initializeGraphics())
-	{
-		win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize graphics.");
-		return EXIT_FAILURE;
-	}
-
-	// Initialize audio
-	if (!initializeAudio())
-	{
-		win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize audio.");
-		return EXIT_FAILURE;
-	}
+	initializeGraphics();
+	initializeAudio();
 
 	// Initialize game loop
 	LARGE_INTEGER startCounter;

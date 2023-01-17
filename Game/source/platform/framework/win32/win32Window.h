@@ -70,15 +70,15 @@ public:
 	callback<const exitFullScreenEvent&> onExitFullScreen;
 
 public:
-	bool init(const win32WindowInitDesc& desc);
-	bool shutdown();
-	bool enterFullScreen();
-	bool exitFullScreen();
-	bool setPosition(uint32_t x, uint32_t y);
-	bool setStyle(eWindowStyle inStyle);
+	void init(const win32WindowInitDesc& desc);
+	void shutdown();
+	int8_t enterFullScreen();
+	int8_t exitFullScreen();
+	int8_t setPosition(uint32_t x, uint32_t y);
+	int8_t setStyle(eWindowStyle inStyle);
 
-	void getClientAreaDimensions(uint32_t& x, uint32_t& y) const;
-	void getPosition(uint32_t& x, uint32_t& y) const;
+	int8_t getClientAreaDimensions(uint32_t& x, uint32_t& y) const;
+	int8_t getPosition(uint32_t& x, uint32_t& y) const;
 	bool isFullScreen() const { return inFullscreen; }
 	HWND getHwnd() const { return hwnd; }
 };

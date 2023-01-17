@@ -3,5 +3,5 @@
 class direct3d12Graphics
 {
 public:
-	static bool init();
+	static void init();
 };
