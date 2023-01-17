@@ -131,8 +131,7 @@ static bool initializeAudio()
 	return xAudio2Audio::init();
 }
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, 
-	PWSTR pCmdLine, int nCmdShow)
+int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
 {
 	//// Initialize console
 	//if (!win32Console::init())
@@ -183,12 +182,10 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 	while (running)
 	{
 		// Calculate and accumulate delta time in seconds
-		std::chrono::time_point currentTime = 
-			std::chrono::high_resolution_clock::now();
-		double deltaTime = 
-			std::chrono::duration<double>(currentTime - previousTime).count();
+		std::chrono::time_point currentTime = std::chrono::high_resolution_clock::now();
+		float deltaSeconds = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
 		previousTime = currentTime;
-		accumulator += deltaTime;
+		accumulator += deltaSeconds;
 
 		// Dispatch windows messages
 		MSG msg = {};
@@ -198,7 +195,7 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
 			DispatchMessage(&msg);
 		}
 
-		xInputGamepad::refresh(0);
+		xInputGamepad::refreshUsers();
 
 		// Todo: Variable tick
 

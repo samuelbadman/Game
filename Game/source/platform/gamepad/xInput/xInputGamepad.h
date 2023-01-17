@@ -6,11 +6,10 @@
 class xInputGamepad
 {
 public:
-	static constexpr uint32_t maxGamepadsSupported = XUSER_MAX_COUNT;
 	static callback<const inputEvent&> onInput;
 
 public:
-	static bool refresh(const uint32_t port);
+	static void refreshUsers();
 	static bool setVibration(const uint32_t port, const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed);
 
 private:

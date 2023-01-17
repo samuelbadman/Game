@@ -11,21 +11,22 @@ static constexpr float gamepadRightStickDeadzoneRadius = 0.24f;
 static constexpr int16_t gamepadMaxStickMagnitude = 32767;
 static constexpr int16_t gamepadMaxTriggerMagnitude = 255;
 
-bool xInputGamepad::refresh(const uint32_t port)
+void xInputGamepad::refreshUsers()
 {
-	XINPUT_STATE state;
-	if (XInputGetState(static_cast<DWORD>(port), &state) != ERROR_SUCCESS)
+	for (uint32_t i = 0; i < XUSER_MAX_COUNT; ++i)
 	{
-		return false;
+		XINPUT_STATE state;
+		if (XInputGetState(static_cast<DWORD>(i), &state) != ERROR_SUCCESS)
+		{
+			return;
+		}
+
+		refreshButtons(state, prevStates[i], i);
+		refreshThumbsticks(state, prevStates[i], i);
+		refreshTriggers(state, prevStates[i], i);
+
+		prevStates[i] = state;
 	}
-
-	refreshButtons(state, prevStates[port], port);
-	refreshThumbsticks(state, prevStates[port], port);
-	refreshTriggers(state, prevStates[port], port);
-
-	prevStates[port] = state;
-
-	return true;
 }
 
 bool xInputGamepad::setVibration(const uint32_t port, const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
