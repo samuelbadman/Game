@@ -45,7 +45,7 @@
     <ClCompile Include="source\platform\audio\xAudio2\xAudio2Audio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\graphics\direct3D12\direct3D12Graphics.cpp">
+    <ClCompile Include="source\platform\graphics\direct3D12\direct3d12Graphics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -116,7 +116,7 @@
     <ClInclude Include="source\platform\audio\xAudio2\xAudio2Audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\graphics\direct3D12\direct3D12Graphics.h">
+    <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

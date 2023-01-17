@@ -5,6 +5,7 @@
 #include "platform/framework/win32/win32Display.h"
 #include "platform/framework/win32/win32InputKeyCode.h"
 #include "platform/gamepad/xInput/xInputGamepad.h"
+#include "platform/graphics/direct3D12/direct3d12Graphics.h"
 #include "platform/audio/xAudio2/xAudio2Audio.h"
 
 struct gameSettings
@@ -150,7 +151,7 @@ static void initializeGamepadInput()
 
 static bool initializeGraphics()
 {
-	return false;
+	return direct3d12Graphics::init();
 }
 
 static bool initializeAudio()
@@ -158,14 +159,14 @@ static bool initializeAudio()
 	return xAudio2Audio::init();
 }
 
-int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
 {
-	//// Initialize console
-	//if (!win32Console::init())
-	//{
-	//	win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize console.");
-	//	return 1;
-	//}
+	// Initialize console
+	if (!win32Console::init())
+	{
+		win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize console.");
+		return EXIT_FAILURE;
+	}
 
 	// Process command line arguments
 	processCommandLineArguments();
@@ -174,24 +175,24 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	if (!initializeWindow())
 	{
 		win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize window.");
-		return 1;
+		return EXIT_FAILURE;
 	}
 
 	// Initialize gamepad input
 	initializeGamepadInput();
 
-	//// Initialize graphics
-	//if (!initializeGraphics())
-	//{
-	//	win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize graphics.");
-	//	return 1;
-	//}
+	// Initialize graphics
+	if (!initializeGraphics())
+	{
+		win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize graphics.");
+		return EXIT_FAILURE;
+	}
 
 	// Initialize audio
 	if (!initializeAudio())
 	{
 		win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize audio.");
-		return 1;
+		return EXIT_FAILURE;
 	}
 
 	// Initialize game loop
@@ -248,5 +249,5 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 		ms = ((1000.0 * static_cast<double>(counts.QuadPart)) / static_cast<double>(frequency.QuadPart));
 	}
 
-	return 0;
+	return EXIT_SUCCESS;
 }

@@ -9,6 +9,8 @@
 #include <cassert>
 #include <algorithm>
 #include <iostream>
+#include <exception>
+#include <stdlib.h>
 
 // Windows libraries
 #define NOMINMAX

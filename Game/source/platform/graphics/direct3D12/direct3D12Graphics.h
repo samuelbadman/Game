@@ -1,6 +1,7 @@
 #pragma once
 
-class direct3D12Graphics
+class direct3d12Graphics
 {
-
+public:
+	static bool init();
 };

@@ -28,6 +28,14 @@ void win32MessageBox::messageBox(const eMessageLevel level, const std::string& m
 		type |= MB_ICONERROR;
 	}
 	break;
+
+	case eMessageLevel::fatal:
+	{
+		caption = "Fatal";
+		type |= MB_ICONERROR;
+		MessageBoxA(0, message.c_str(), caption, type);
+		exit(EXIT_FAILURE);
+	}
 	}
 
 	MessageBoxA(0, message.c_str(), caption, type);

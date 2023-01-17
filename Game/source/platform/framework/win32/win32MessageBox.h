@@ -4,7 +4,8 @@ enum class eMessageLevel : uint8_t
 {
 	message = 0,
 	warning = 1,
-	error = 2
+	error   = 2,
+	fatal   = 3
 };
 
 class win32MessageBox

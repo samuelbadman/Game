@@ -97,7 +97,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="source\platform\framework\win32\win32MessageBox.cpp" />
-    <ClCompile Include="source\platform\graphics\direct3D12\direct3D12Graphics.cpp" />
+    <ClCompile Include="source\platform\graphics\direct3D12\direct3d12Graphics.cpp" />
     <ClCompile Include="source\stringHelper.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Console.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Display.cpp" />
@@ -110,7 +110,7 @@
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\pch.h" />
     <ClInclude Include="source\platform\framework\win32\win32MessageBox.h" />
-    <ClInclude Include="source\platform\graphics\direct3D12\direct3D12Graphics.h" />
+    <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Graphics.h" />
     <ClInclude Include="source\stringHelper.h" />
     <ClInclude Include="source\platform\framework\win32\win32Console.h" />
     <ClInclude Include="source\platform\framework\win32\win32Display.h" />
