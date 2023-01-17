@@ -15,6 +15,7 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 #include <wrl.h>
+#include <shellapi.h>
 
 #include <Xinput.h>
 #pragma comment(lib, "xinput.lib")

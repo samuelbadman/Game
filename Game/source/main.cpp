@@ -27,6 +27,33 @@ static bool running = true;
 static bool inSizeMove = false;
 static std::unique_ptr<win32Window> window = nullptr;
 
+static void processCommandLineArguments()
+{
+	int argc;
+	wchar_t** argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+	for (size_t i = 0; i < argc; ++i)
+	{
+		if (wcscmp(argv[i], L"") == 0)
+		{
+		}
+
+		//if (::wcscmp(argv[i], L"-w") == 0 || ::wcscmp(argv[i], L"--width") == 0)
+		//{
+		//	g_ClientWidth = ::wcstol(argv[++i], nullptr, 10);
+		//}
+		//if (::wcscmp(argv[i], L"-h") == 0 || ::wcscmp(argv[i], L"--height") == 0)
+		//{
+		//	g_ClientHeight = ::wcstol(argv[++i], nullptr, 10);
+		//}
+		//if (::wcscmp(argv[i], L"-warp") == 0 || ::wcscmp(argv[i], L"--warp") == 0)
+		//{
+		//	g_UseWarp = true;
+		//}
+	}
+
+	LocalFree(argv);
+}
+
 static bool initializeWindow()
 {
 	// Get the default display info
@@ -139,6 +166,9 @@ int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine
 	//	win32MessageBox::messageBox(eMessageLevel::error, "Failed to initialize console.");
 	//	return 1;
 	//}
+
+	// Process command line arguments
+	processCommandLineArguments();
 
 	// Initialize window
 	if (!initializeWindow())
