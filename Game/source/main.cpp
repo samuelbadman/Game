@@ -76,6 +76,7 @@ static void initializeWindow()
 
 	window->init(windowDesc);
 
+	// Todo: remove callbacks by having the code go directly to the system rather than via a callback
 	// Register core event callbacks
 	window->onClosed.add([](const closedEvent& event) {
 		running = false;
