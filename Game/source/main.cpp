@@ -146,7 +146,7 @@ static void initializeGamepadInput()
 
 static void initializeGraphics()
 {
-	direct3d12Graphics::init();
+	direct3d12Graphics::init(false);
 }
 
 static void initializeAudio()

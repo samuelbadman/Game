@@ -3,5 +3,5 @@
 class direct3d12Graphics
 {
 public:
-	static void init();
+	static void init(bool useWarp);
 };
