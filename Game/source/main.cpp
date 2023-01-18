@@ -146,7 +146,14 @@ static void initializeGamepadInput()
 
 static void initializeGraphics()
 {
-	direct3d12Graphics::init(false);
+	uint32_t width;
+	uint32_t height;
+	if (window->getClientAreaDimensions(width, height) != 0)
+	{
+		win32MessageBox::messageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
+	}
+
+	direct3d12Graphics::init(false, window->getHwnd(), width, height, 3);
 }
 
 static void initializeAudio()

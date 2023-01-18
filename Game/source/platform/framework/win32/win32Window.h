@@ -72,12 +72,18 @@ public:
 public:
 	void init(const win32WindowInitDesc& desc);
 	void shutdown();
+	// Returns non-zero if the function fails
 	int8_t enterFullScreen();
+	// Returns non-zero if the function fails
 	int8_t exitFullScreen();
+	// Returns non-zero if the function fails
 	int8_t setPosition(uint32_t x, uint32_t y);
+	// Returns non-zero if the function fails
 	int8_t setStyle(eWindowStyle inStyle);
 
+	// Returns non-zero if the function fails
 	int8_t getClientAreaDimensions(uint32_t& x, uint32_t& y) const;
+	// Returns non-zero if the function fails
 	int8_t getPosition(uint32_t& x, uint32_t& y) const;
 	bool isFullScreen() const { return inFullscreen; }
 	HWND getHwnd() const { return hwnd; }

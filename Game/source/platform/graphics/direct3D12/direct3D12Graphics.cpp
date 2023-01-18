@@ -119,14 +119,63 @@ static bool checkTearingSupport(IDXGIFactory7* dxgiFactory)
 	return (allowTearing == TRUE);
 }
 
+static void createSwapChain(IDXGIFactory7* dxgiFactory, 
+	ID3D12CommandQueue* directCommandQueue, 
+	HWND hwnd, 
+	UINT width, 
+	UINT height, 
+	UINT bufferCount,
+	ComPtr<IDXGISwapChain4> outSwapChain)
+{
+	// Create swap chain
+	DXGI_SWAP_CHAIN_DESC1 desc = {};
+	desc.Width = width;
+	desc.Height = height;
+	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.Stereo = false;
+	desc.SampleDesc = { 1, 0 };
+	desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
+	desc.BufferCount = bufferCount;
+	desc.Scaling = DXGI_SCALING_STRETCH;
+	desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+	desc.AlphaMode = DXGI_ALPHA_MODE_UNSPECIFIED;
+	desc.Flags = checkTearingSupport(dxgiFactory) ? DXGI_SWAP_CHAIN_FLAG_ALLOW_TEARING : 0;
+
+	ComPtr<IDXGISwapChain1> swapChain1;
+	fatalIfFailed(dxgiFactory->CreateSwapChainForHwnd(directCommandQueue, hwnd, &desc, nullptr, nullptr, &swapChain1));
+
+	// Disable alt + enter fullscreen shortcut
+	fatalIfFailed(dxgiFactory->MakeWindowAssociation(hwnd, DXGI_MWA_NO_ALT_ENTER));
+
+	// Convert swap chain 1 interface to swap chain 4 interface
+	fatalIfFailed(swapChain1.As(&outSwapChain));
+}
+
+static void createDescriptorHeap(ID3D12Device8* device, 
+	D3D12_DESCRIPTOR_HEAP_TYPE type, 
+	UINT descriptorCount, 
+	bool shaderVisible, 
+	ComPtr<ID3D12DescriptorHeap> outDescriptorHeap)
+{
+	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
+	desc.Type = type;
+	desc.NumDescriptors = descriptorCount;
+	desc.Flags = shaderVisible ? D3D12_DESCRIPTOR_HEAP_FLAG_SHADER_VISIBLE : D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
+	desc.NodeMask = 0;
+
+	fatalIfFailed(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&outDescriptorHeap)));
+}
+
 static ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 static ComPtr<IDXGIAdapter4> adapter = nullptr;
 static ComPtr<ID3D12Device8> device = nullptr;
 static ComPtr<ID3D12CommandQueue> graphicsQueue = nullptr;
 static ComPtr<ID3D12CommandQueue> computeQueue = nullptr;
 static ComPtr<ID3D12CommandQueue> copyQueue = nullptr;
+static ComPtr<IDXGISwapChain4> swapChain = nullptr;
+static ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
 
-void direct3d12Graphics::init(bool useWarp)
+void direct3d12Graphics::init(bool useWarp, HWND hwnd, uint32_t width, uint32_t height, uint32_t backBufferCount)
 {
 	enableDebugLayer();
 	createDxgiFactory(dxgiFactory);
@@ -135,5 +184,6 @@ void direct3d12Graphics::init(bool useWarp)
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT, graphicsQueue);
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_COMPUTE, computeQueue);
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_COPY, copyQueue);
-
+	createSwapChain(dxgiFactory.Get(), graphicsQueue.Get(), hwnd, width, height, backBufferCount, swapChain);
+	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, backBufferCount, false, rtvDescriptorHeap);
 }
