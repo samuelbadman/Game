@@ -77,7 +77,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			std::unique_ptr<BYTE[]> rawData{ std::make_unique<BYTE[]>(dataSize) };
 
 			// Retreive raw data and store it. Return if the retreived data is the not same size
-			if (::GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT,
+			if (GetRawInputData(reinterpret_cast<HRAWINPUT>(lparam), RID_INPUT,
 				rawData.get(), &dataSize, sizeof(RAWINPUTHEADER)) != dataSize)
 			{
 				return 0;
