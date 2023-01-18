@@ -96,9 +96,23 @@ static void createDevice(IDXGIAdapter4* adapter, ComPtr<ID3D12Device8>& outDevic
 #endif //_DEBUG
 }
 
+static void createCommandQueue(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, ComPtr<ID3D12CommandQueue>& outCommandQueue)
+{
+	D3D12_COMMAND_QUEUE_DESC desc = {};
+	desc.Type = type;
+	desc.Priority = D3D12_COMMAND_QUEUE_PRIORITY_NORMAL;
+	desc.Flags = D3D12_COMMAND_QUEUE_FLAG_NONE;
+	desc.NodeMask = 0;
+
+	fatalIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&outCommandQueue)));
+}
+
 static ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 static ComPtr<IDXGIAdapter4> adapter = nullptr;
 static ComPtr<ID3D12Device8> device = nullptr;
+static ComPtr<ID3D12CommandQueue> graphicsQueue = nullptr;
+static ComPtr<ID3D12CommandQueue> computeQueue = nullptr;
+static ComPtr<ID3D12CommandQueue> copyQueue = nullptr;
 
 void direct3d12Graphics::init(bool useWarp)
 {
@@ -106,5 +120,8 @@ void direct3d12Graphics::init(bool useWarp)
 	createDxgiFactory(dxgiFactory);
 	getAdapter(dxgiFactory.Get(), false, adapter);
 	createDevice(adapter.Get(), device);
+	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT, graphicsQueue);
+	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_COMPUTE, computeQueue);
+	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_COPY, copyQueue);
 
 }
