@@ -1,12 +1,12 @@
 #include "pch.h"
 #include "win32Display.h"
 
-displayDesc win32Display::infoForDisplayAtIndex(const uint32_t displayIndex)
+sDisplayDesc win32Display::infoForDisplayAtIndex(const uint32_t displayIndex)
 {
 	assert(displayIndex < displayCount());
 
 	// Initialize property structure
-	displayDesc info = {};
+	sDisplayDesc info = {};
 
 	// Initialize the DISPLAY_DEVICE structure
 	DISPLAY_DEVICE displayDevice = {};

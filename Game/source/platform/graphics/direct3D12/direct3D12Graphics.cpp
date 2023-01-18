@@ -6,6 +6,14 @@ using namespace Microsoft::WRL;
 
 #define fatalIfFailed(x) if(FAILED(x)) win32MessageBox::messageBoxFatal("hresult failed.");
 
+struct sDescriptorSizes
+{
+	UINT rtvDescriptorSize;
+	UINT dsvDescriptorSize;
+	UINT cbv_srv_uavDescriptorSize;
+	UINT samplerDescriptorSize;
+};
+
 static void enableDebugLayer()
 {
 #if defined(_DEBUG)
@@ -96,6 +104,17 @@ static void createDevice(IDXGIAdapter4* adapter, ComPtr<ID3D12Device8>& outDevic
 #endif //_DEBUG
 }
 
+static sDescriptorSizes getDescriptorSizes(ID3D12Device8* device)
+{
+	sDescriptorSizes sizes;
+	sizes.rtvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_RTV);
+	sizes.dsvDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_DSV);
+	sizes.cbv_srv_uavDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+	sizes.samplerDescriptorSize = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_SAMPLER);
+
+	return sizes;
+}
+
 static void createCommandQueue(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, ComPtr<ID3D12CommandQueue>& outCommandQueue)
 {
 	D3D12_COMMAND_QUEUE_DESC desc = {};
@@ -166,6 +185,23 @@ static void createDescriptorHeap(ID3D12Device8* device,
 	fatalIfFailed(device->CreateDescriptorHeap(&desc, IID_PPV_ARGS(&outDescriptorHeap)));
 }
 
+static void updateRenderTargetViews(ID3D12Device8* device,
+	IDXGISwapChain4* swapChain,
+	UINT rtvDescriptorSize,
+	std::vector<ComPtr<ID3D12Resource>>& renderTargetViews,
+	ID3D12DescriptorHeap* rtvDescriptorHeap,
+	UINT backBufferCount)
+{
+	D3D12_CPU_DESCRIPTOR_HANDLE rtvHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+
+	for (UINT i = 0; i < backBufferCount; ++i)
+	{
+		fatalIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargetViews[i])));
+		device->CreateRenderTargetView(renderTargetViews[i].Get(), nullptr, rtvHandle);
+		rtvHandle.ptr += rtvDescriptorSize;
+	}
+}
+
 static ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 static ComPtr<IDXGIAdapter4> adapter = nullptr;
 static ComPtr<ID3D12Device8> device = nullptr;
@@ -173,6 +209,8 @@ static ComPtr<ID3D12CommandQueue> graphicsQueue = nullptr;
 static ComPtr<ID3D12CommandQueue> computeQueue = nullptr;
 static ComPtr<ID3D12CommandQueue> copyQueue = nullptr;
 static ComPtr<IDXGISwapChain4> swapChain = nullptr;
+static sDescriptorSizes descriptorSizes = {};
+static std::vector<ComPtr<ID3D12Resource>> renderTargetViews;
 static ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
 
 void direct3d12Graphics::init(bool useWarp, HWND hwnd, uint32_t width, uint32_t height, uint32_t backBufferCount)
@@ -181,9 +219,13 @@ void direct3d12Graphics::init(bool useWarp, HWND hwnd, uint32_t width, uint32_t 
 	createDxgiFactory(dxgiFactory);
 	getAdapter(dxgiFactory.Get(), false, adapter);
 	createDevice(adapter.Get(), device);
+	descriptorSizes = getDescriptorSizes(device.Get());
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT, graphicsQueue);
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_COMPUTE, computeQueue);
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_COPY, copyQueue);
 	createSwapChain(dxgiFactory.Get(), graphicsQueue.Get(), hwnd, width, height, backBufferCount, swapChain);
 	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, backBufferCount, false, rtvDescriptorHeap);
+	renderTargetViews.resize(static_cast<size_t>(backBufferCount), nullptr);
+	updateRenderTargetViews(device.Get(), swapChain.Get(), descriptorSizes.rtvDescriptorSize, renderTargetViews, rtvDescriptorHeap.Get(), backBufferCount);
+
 }

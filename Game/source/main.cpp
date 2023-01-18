@@ -8,7 +8,7 @@
 #include "platform/graphics/direct3D12/direct3d12Graphics.h"
 #include "platform/audio/xAudio2/xAudio2Audio.h"
 
-struct gameSettings
+struct sGameSettings
 {
 	// Window settings
 	static constexpr eWindowStyle windowStyle = eWindowStyle::windowed;
@@ -58,21 +58,21 @@ static void processCommandLineArguments()
 static void initializeWindow()
 {
 	// Get the default display info
-	displayDesc defaultDisplayDesc = win32Display::infoForDisplayAtIndex(
-		gameSettings::defaultDisplayIndex);
+	sDisplayDesc defaultDisplayDesc = win32Display::infoForDisplayAtIndex(
+		sGameSettings::defaultDisplayIndex);
 
 	// Create and initialize window
 	window = std::make_unique<win32Window>();
 
-	win32WindowInitDesc windowDesc = {};
+	sWin32WindowInitDesc windowDesc = {};
 	windowDesc.windowClassName = L"GameWindow";
 	windowDesc.parent = nullptr;
-	windowDesc.style = gameSettings::windowStyle;
-	windowDesc.windowTitle = gameSettings::windowTitle;
-	windowDesc.x = defaultDisplayDesc.topLeftX + gameSettings::windowPosition[0];
-	windowDesc.y = defaultDisplayDesc.topLeftY + gameSettings::windowPosition[1];
-	windowDesc.width = gameSettings::windowDimensions[0];
-	windowDesc.height = gameSettings::windowDimensions[1];
+	windowDesc.style = sGameSettings::windowStyle;
+	windowDesc.windowTitle = sGameSettings::windowTitle;
+	windowDesc.x = defaultDisplayDesc.topLeftX + sGameSettings::windowPosition[0];
+	windowDesc.y = defaultDisplayDesc.topLeftY + sGameSettings::windowPosition[1];
+	windowDesc.width = sGameSettings::windowDimensions[0];
+	windowDesc.height = sGameSettings::windowDimensions[1];
 
 	window->init(windowDesc);
 
@@ -180,7 +180,7 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	QueryPerformanceCounter(&startCounter);
 	QueryPerformanceFrequency(&frequency);
 
-	double fixedTimeSliceMs = gameSettings::fixedTimeSlice * 1000.0;
+	double fixedTimeSliceMs = sGameSettings::fixedTimeSlice * 1000.0;
 	double accumulator = 0.0;
 	std::chrono::time_point previousTime = std::chrono::high_resolution_clock::now();
 

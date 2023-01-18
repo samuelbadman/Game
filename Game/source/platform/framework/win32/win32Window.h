@@ -25,7 +25,7 @@ enum class eWindowStyle : uint8_t
 };
 
 // Settings struct to initialize a win32 window
-struct win32WindowInitDesc
+struct sWin32WindowInitDesc
 {
 	std::wstring windowClassName = L"";
 	std::wstring windowTitle = L"New window";
@@ -70,7 +70,7 @@ public:
 	callback<const exitFullScreenEvent&> onExitFullScreen;
 
 public:
-	void init(const win32WindowInitDesc& desc);
+	void init(const sWin32WindowInitDesc& desc);
 	void shutdown();
 	// Returns non-zero if the function fails
 	int8_t enterFullScreen();

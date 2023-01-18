@@ -351,7 +351,7 @@ static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT msg,
 	return 0;
 }
 
-void win32Window::init(const win32WindowInitDesc& desc)
+void win32Window::init(const sWin32WindowInitDesc& desc)
 {
 	// Store window settings
 	windowClassName = desc.windowClassName;
