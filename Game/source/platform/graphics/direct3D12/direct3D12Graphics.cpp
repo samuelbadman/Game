@@ -107,6 +107,18 @@ static void createCommandQueue(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE ty
 	fatalIfFailed(device->CreateCommandQueue(&desc, IID_PPV_ARGS(&outCommandQueue)));
 }
 
+static bool checkTearingSupport(IDXGIFactory7* dxgiFactory)
+{
+	BOOL allowTearing = FALSE;
+
+	if (FAILED(dxgiFactory->CheckFeatureSupport(DXGI_FEATURE_PRESENT_ALLOW_TEARING, &allowTearing, sizeof(allowTearing))))
+	{
+		allowTearing = FALSE;
+	}
+
+	return (allowTearing == TRUE);
+}
+
 static ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
 static ComPtr<IDXGIAdapter4> adapter = nullptr;
 static ComPtr<ID3D12Device8> device = nullptr;
