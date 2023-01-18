@@ -144,7 +144,7 @@ static void createSwapChain(IDXGIFactory7* dxgiFactory,
 	UINT width, 
 	UINT height, 
 	UINT bufferCount,
-	ComPtr<IDXGISwapChain4> outSwapChain)
+	ComPtr<IDXGISwapChain4>& outSwapChain)
 {
 	// Create swap chain
 	DXGI_SWAP_CHAIN_DESC1 desc = {};
@@ -174,7 +174,7 @@ static void createDescriptorHeap(ID3D12Device8* device,
 	D3D12_DESCRIPTOR_HEAP_TYPE type, 
 	UINT descriptorCount, 
 	bool shaderVisible, 
-	ComPtr<ID3D12DescriptorHeap> outDescriptorHeap)
+	ComPtr<ID3D12DescriptorHeap>& outDescriptorHeap)
 {
 	D3D12_DESCRIPTOR_HEAP_DESC desc = {};
 	desc.Type = type;
