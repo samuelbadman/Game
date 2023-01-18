@@ -55,6 +55,45 @@ static void getAdapter(IDXGIFactory7* dxgiFactory, bool useWarp, ComPtr<IDXGIAda
 static void createDevice(IDXGIAdapter4* adapter, ComPtr<ID3D12Device8>& outDevice)
 {
 	fatalIfFailed(D3D12CreateDevice(adapter, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&outDevice)));
+
+#if defined(_DEBUG)
+	// Enable device debug info
+	Microsoft::WRL::ComPtr<ID3D12InfoQueue> InfoQueue;
+	if (FAILED(outDevice.As(&InfoQueue)))
+	{
+		win32MessageBox::messageBoxFatal("direct3d12Graphics::createDevice: failed to cast device to info queue.Could not enable device debug info.");
+	}
+
+	InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
+	InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_ERROR, TRUE);
+	InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_WARNING, TRUE);
+
+	D3D12_MESSAGE_SEVERITY Severities[] =
+	{
+		D3D12_MESSAGE_SEVERITY_INFO
+	};
+
+	D3D12_MESSAGE_ID DenyIDs[] =
+	{
+		D3D12_MESSAGE_ID_CLEARRENDERTARGETVIEW_MISMATCHINGCLEARVALUE,
+		D3D12_MESSAGE_ID_MAP_INVALID_NULLRANGE,
+		D3D12_MESSAGE_ID_UNMAP_INVALID_NULLRANGE,
+		// Workarounds for debug layer errors on hybrid-graphics systems
+		D3D12_MESSAGE_ID_EXECUTECOMMANDLISTS_WRONGSWAPCHAINBUFFERREFERENCE,
+		D3D12_MESSAGE_ID_RESOURCE_BARRIER_MISMATCHING_COMMAND_LIST_TYPE
+	};
+
+	D3D12_INFO_QUEUE_FILTER QueueFilter = {};
+	QueueFilter.DenyList.NumSeverities = _countof(Severities);
+	QueueFilter.DenyList.pSeverityList = Severities;
+	QueueFilter.DenyList.NumIDs = _countof(DenyIDs);
+	QueueFilter.DenyList.pIDList = DenyIDs;
+
+	if (FAILED(InfoQueue->PushStorageFilter(&QueueFilter)))
+	{
+		win32MessageBox::messageBoxFatal("direct3d12Graphics::createDevice: failed to push queue filter. Could not enable device debug info.");
+	}
+#endif //_DEBUG
 }
 
 static ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
