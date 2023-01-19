@@ -1,4 +1,7 @@
 #include "pch.h"
+
+#if defined(PLATFORM_WIN32)
+
 #include "win32MessageBox.h"
 
 void win32MessageBox::messageBox(const eMessageLevel level, const std::string& message)
@@ -40,3 +43,5 @@ void win32MessageBox::messageBoxFatal(const std::string& message)
 	MessageBoxA(0, message.c_str(), caption, type);
 	exit(EXIT_FAILURE);
 }
+
+#endif // PLATFORM_WIN32

@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(PLATFORM_WIN32)
+
 class win32InputKeyCode
 {
 public:
@@ -141,3 +143,5 @@ public:
 	static constexpr int16_t Gamepad_Left_Trigger_Axis{ 418 };
 	static constexpr int16_t Gamepad_Right_Trigger_Axis{ 419 };
 };
+
+#endif // PLATFORM_WIN32

@@ -1,12 +1,11 @@
 #include "pch.h"
-#include "platform/framework/win32/win32MessageBox.h"
-#include "platform/framework/win32/win32Console.h"
-#include "platform/framework/win32/win32Window.h"
-#include "platform/framework/win32/win32Display.h"
-#include "platform/framework/win32/win32InputKeyCode.h"
-#include "platform/gamepad/xInput/xInputGamepad.h"
-#include "platform/graphics/direct3D12/direct3d12Graphics.h"
-#include "platform/audio/xAudio2/xAudio2Audio.h"
+#include "platform/framework/platformCommandLine.h"
+#include "platform/framework/platformWindow.h"
+#include "platform/framework/platformDisplay.h"
+#include "platform/framework/platformMessages.h"
+#include "platform/framework/platformGamepad.h"
+#include "platform/framework/PlatformAudio.h"
+#include "platform/framework/platformTiming.h"
 
 struct sGameSettings
 {
@@ -26,12 +25,12 @@ struct sGameSettings
 
 static bool running = true;
 static bool inSizeMove = false;
-static std::unique_ptr<win32Window> window = nullptr;
+static platformWindow* window = nullptr;
 
 static void processCommandLineArguments()
 {
 	int argc;
-	wchar_t** argv = CommandLineToArgvW(GetCommandLineW(), &argc);
+	wchar_t** argv = platformGetCommandLineArguments(argc);
 	for (size_t i = 0; i < argc; ++i)
 	{
 		if (wcscmp(argv[i], L"") == 0)
@@ -52,19 +51,16 @@ static void processCommandLineArguments()
 		//}
 	}
 
-	LocalFree(argv);
+	platformFreeCommandLineArguments(argv);
 }
 
 static void initializeWindow()
 {
 	// Get the default display info
-	sDisplayDesc defaultDisplayDesc = win32Display::infoForDisplayAtIndex(
-		sGameSettings::defaultDisplayIndex);
+	sDisplayDesc defaultDisplayDesc = platformGetInfoForDisplayAtIndex(sGameSettings::defaultDisplayIndex);
 
 	// Create and initialize window
-	window = std::make_unique<win32Window>();
-
-	sWin32WindowInitDesc windowDesc = {};
+	sPlatformWindowDesc windowDesc = {};
 	windowDesc.windowClassName = L"GameWindow";
 	windowDesc.parent = nullptr;
 	windowDesc.style = sGameSettings::windowStyle;
@@ -74,112 +70,36 @@ static void initializeWindow()
 	windowDesc.width = sGameSettings::windowDimensions[0];
 	windowDesc.height = sGameSettings::windowDimensions[1];
 
-	window->init(windowDesc);
-
-	// Todo: remove callbacks by having the code go directly to the system rather than via a callback
-	// Register core event callbacks
-	window->onClosed.add([](const closedEvent& event) {
-		running = false;
-		});
-
-	window->onEnterSizeMove.add([](const enterSizeMoveEvent& event) {
-		inSizeMove = true;
-		});
-
-	window->onExitSizeMove.add([](const exitSizeMoveEvent& event) {
-		inSizeMove = false;
-		});
-
-	window->onResized.add([](const resizedEvent& event) {
-		if (!inSizeMove)
-		{
-			// Todo: Resize swap chain and render resources
-		}
-		});
-
-	//window->onDestroyed.add([](const destroyedEvent& event) {  });
-
-	//window->onGainedFocus.add([](const gainedFocusEvent& event) {  });
-
-	//window->onLostFocus.add([](const lostFocusEvent& event) {  });
-
-	//window->onMaximized.add([](const maximizedEvent& event) {  });
-
-	//window->onMinimized.add([](const minimizedEvent& event) {  });
-
-	//window->onEnterFullScreen.add([](const enterFullScreenEvent& event) {  });
-
-	//window->onExitFullScreen.add([](const exitFullScreenEvent& event) {  });
-
-	static auto altF4Down = [](const inputEvent& event)
-	{
-		// Handle alt+f4 shortcut to exit game
-		static bool altDown = false;
-
-		if ((!event.repeatedKey) && (event.data == 1.0f))
-		{
-			if (event.input == win32InputKeyCode::Alt)
-			{
-				altDown = true;
-			}
-			else if (altDown && (event.input == win32InputKeyCode::F4))
-			{
-				return true;
-			}
-		}
-
-		return false;
-	};
-
-	window->onInput.add([](const inputEvent& event) {
-		if (altF4Down(event))
-		{
-			running = false;
-		}
-		});
-}
-
-static void initializeGamepadInput()
-{
-	xInputGamepad::onInput.add([](const inputEvent& event) {
-		});
+	platformOpenWindow(windowDesc, window);
 }
 
 static void initializeGraphics()
 {
-	uint32_t width;
-	uint32_t height;
-	if (window->getClientAreaDimensions(width, height) != 0)
-	{
-		win32MessageBox::messageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
-	}
+	//uint32_t width;
+	//uint32_t height;
+	//if (window->getClientAreaDimensions(width, height) != 0)
+	//{
+	//	win32MessageBox::messageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
+	//}
 
-	direct3d12Graphics::init(false, window->getHwnd(), width, height, 3);
+	//direct3d12Graphics::init(false, window->getHwnd(), width, height, 3);
 }
 
 static void initializeAudio()
 {
-	xAudio2Audio::init();
+	platformInitAudio();
 }
 
-int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
+static int gameMain()
 {
 	processCommandLineArguments();
 	initializeWindow();
-	initializeGamepadInput();
 	initializeGraphics();
 	initializeAudio();
 
 	// Initialize game loop
-	LARGE_INTEGER startCounter;
-	LARGE_INTEGER endCounter;
-	LARGE_INTEGER counts;
-	LARGE_INTEGER frequency;
 	int64_t fps = 0;
 	double ms = 0.0;
-
-	QueryPerformanceCounter(&startCounter);
-	QueryPerformanceFrequency(&frequency);
 
 	double fixedTimeSliceMs = sGameSettings::fixedTimeSlice * 1000.0;
 	double accumulator = 0.0;
@@ -193,15 +113,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		previousTime = currentTime;
 		accumulator += deltaSeconds;
 
-		// Dispatch windows messages
-		MSG msg = {};
-		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
-		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
-		}
-
-		xInputGamepad::refreshUsers();
+		platformDispatchMessages();
+		platformRefreshGamepads();
 
 		// Todo: Variable tick
 
@@ -214,15 +127,16 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 		// Todo: Render
 
 		// Update frame timing
-		QueryPerformanceCounter(&endCounter);
-
-		counts.QuadPart = endCounter.QuadPart - startCounter.QuadPart;
-
-		startCounter = endCounter;
-
-		fps = static_cast<int64_t>(frequency.QuadPart / counts.QuadPart);
-		ms = ((1000.0 * static_cast<double>(counts.QuadPart)) / static_cast<double>(frequency.QuadPart));
+		platformUpdateTiming(fps, ms);
 	}
 
 	return EXIT_SUCCESS;
 }
+
+#if defined(PLATFORM_WIN32)
+int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, _In_ PWSTR pCmdLine, _In_ int nCmdShow)
+{
+	return gameMain();
+}
+ #elif defined(0)
+#endif // PLATFORM_WIN32

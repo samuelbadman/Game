@@ -1,8 +1,10 @@
 #include "pch.h"
-#include "xInputGamepad.h"
-#include "platform/framework/win32/win32InputKeyCode.h"
 
-callback<const inputEvent&> xInputGamepad::onInput;
+#if defined(PLATFORM_WIN32)
+
+#include "platform/framework/platformGamepad.h"
+#include "platform/framework/win32/win32InputKeyCode.h"
+#include "events/core/inputEvent.h"
 
 static XINPUT_STATE prevStates[XUSER_MAX_COUNT];
 
@@ -11,40 +13,7 @@ static constexpr float gamepadRightStickDeadzoneRadius = 0.24f;
 static constexpr int16_t gamepadMaxStickMagnitude = 32767;
 static constexpr int16_t gamepadMaxTriggerMagnitude = 255;
 
-void xInputGamepad::refreshUsers()
-{
-	for (uint32_t i = 0; i < XUSER_MAX_COUNT; ++i)
-	{
-		XINPUT_STATE state;
-		if (XInputGetState(static_cast<DWORD>(i), &state) != ERROR_SUCCESS)
-		{
-			continue;
-		}
-
-		refreshButtons(state, prevStates[i], i);
-		refreshThumbsticks(state, prevStates[i], i);
-		refreshTriggers(state, prevStates[i], i);
-
-		prevStates[i] = state;
-	}
-}
-
-bool xInputGamepad::setVibration(const uint32_t port, const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
-{
-	XINPUT_VIBRATION vibration = {};
-	vibration.wLeftMotorSpeed = leftMotorSpeed;
-	vibration.wRightMotorSpeed = rightMotorSpeed;
-	const DWORD setStateResult = XInputSetState(static_cast<DWORD>(port), &vibration);
-
-	if (setStateResult == ERROR_DEVICE_NOT_CONNECTED)
-	{
-		return false;
-	}
-
-	return setStateResult == ERROR_SUCCESS;
-}
-
-void xInputGamepad::applyCircularDeadzone(float& axisX, float& axisY, float deadzoneRadius)
+static void applyCircularDeadzone(float& axisX, float& axisY, float deadzoneRadius)
 {
 	float normX = std::max(-1.0f, axisX / static_cast<float>(gamepadMaxStickMagnitude));
 	float normY = std::max(-1.0f, axisY / static_cast<float>(gamepadMaxStickMagnitude));
@@ -61,8 +30,7 @@ void xInputGamepad::applyCircularDeadzone(float& axisX, float& axisY, float dead
 	}
 }
 
-void xInputGamepad::refreshButton(const XINPUT_STATE& state, 
-	const XINPUT_STATE& prevState, uint32_t port, int16_t button)
+static void refreshButton(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port, int16_t button)
 {
 	// Get the current and previous states of the button
 	auto currentButtonState = state.Gamepad.wButtons & static_cast<WORD>(button);
@@ -84,7 +52,7 @@ void xInputGamepad::refreshButton(const XINPUT_STATE& state,
 		event.port = port;
 		event.data = 1.0f;
 
-		onInput.broadcast(event);
+		// Todo: onInput.broadcast(event);
 	}
 	else
 	{
@@ -95,12 +63,11 @@ void xInputGamepad::refreshButton(const XINPUT_STATE& state,
 		event.port = port;
 		event.data = 0.0f;
 
-		onInput.broadcast(event);
+		// Todo: onInput.broadcast(event);
 	}
 }
 
-void xInputGamepad::refreshButtons(const XINPUT_STATE& state, 
-	const XINPUT_STATE& prevState, uint32_t port)
+static void refreshButtons(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
 {
 	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Face_Button_Bottom);
 	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Face_Button_Top);
@@ -118,8 +85,7 @@ void xInputGamepad::refreshButtons(const XINPUT_STATE& state,
 	refreshButton(state, prevState, port, win32InputKeyCode::Gamepad_Right_Thumbstick_Button);
 }
 
-void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
-	const XINPUT_STATE& prevState, uint32_t port)
+static void refreshThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
 {
 	// Left
 	// Axis
@@ -139,7 +105,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 	leftXAxisEvent.port = port;
 	leftXAxisEvent.data = thumbLX;
 
-	onInput.broadcast(leftXAxisEvent);
+	// Todo: onInput.broadcast(leftXAxisEvent);
 
 	inputEvent leftYAxisEvent = {};
 	leftYAxisEvent.repeatedKey = false;
@@ -147,7 +113,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 	leftYAxisEvent.port = port;
 	leftYAxisEvent.data = thumbLY;
 
-	onInput.broadcast(leftYAxisEvent);
+	// Todo: onInput.broadcast(leftYAxisEvent);
 
 	// Action
 	// Get the current and previous states of the stick
@@ -171,7 +137,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			leftThumbstickRightEvent.port = port;
 			leftThumbstickRightEvent.data = 1.0f;
 
-			onInput.broadcast(leftThumbstickRightEvent);
+			// Todo: onInput.broadcast(leftThumbstickRightEvent);
 		}
 		// Check if the stick is pushed left
 		else if (currLX < 0)
@@ -184,7 +150,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			leftThumbstickLeftEvent.port = port;
 			leftThumbstickLeftEvent.data = 1.0f;
 
-			onInput.broadcast(leftThumbstickLeftEvent);
+			// Todo: onInput.broadcast(leftThumbstickLeftEvent);
 		}
 	}
 
@@ -202,7 +168,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			leftThumbstickUpEvent.port = port;
 			leftThumbstickUpEvent.data = 1.0f;
 
-			onInput.broadcast(leftThumbstickUpEvent);
+			// Todo: onInput.broadcast(leftThumbstickUpEvent);
 		}
 		// Check if the stick is pushed down
 		else if (currLY < 0)
@@ -215,7 +181,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			leftThumbstickDownEvent.port = port;
 			leftThumbstickDownEvent.data = 1.0f;
 
-			onInput.broadcast(leftThumbstickDownEvent);
+			// Todo: onInput.broadcast(leftThumbstickDownEvent);
 		}
 	}
 
@@ -237,7 +203,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 	rightXAxisEvent.port = port;
 	rightXAxisEvent.data = thumbRX;
 
-	onInput.broadcast(rightXAxisEvent);
+	// Todo: onInput.broadcast(rightXAxisEvent);
 
 	inputEvent rightYAxisEvent = {};
 	rightYAxisEvent.repeatedKey = false;
@@ -245,7 +211,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 	rightYAxisEvent.port = port;
 	rightYAxisEvent.data = thumbRY;
 
-	onInput.broadcast(rightYAxisEvent);
+	// Todo: onInput.broadcast(rightYAxisEvent);
 
 	// Action
 	// Get the current and previous states of the stick
@@ -268,7 +234,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			rightThumbstickRightEvent.port = port;
 			rightThumbstickRightEvent.data = 1.0f;
 
-			onInput.broadcast(rightThumbstickRightEvent);
+			// Todo: onInput.broadcast(rightThumbstickRightEvent);
 		}
 		// Check if the stick is pushed left
 		else if (currRX < 0)
@@ -280,7 +246,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			rightThumbstickLeftEvent.port = port;
 			rightThumbstickLeftEvent.data = 1.0f;
 
-			onInput.broadcast(rightThumbstickLeftEvent);
+			// Todo: onInput.broadcast(rightThumbstickLeftEvent);
 		}
 	}
 
@@ -297,7 +263,7 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			rightThumbstickUpEvent.port = port;
 			rightThumbstickUpEvent.data = 1.0f;
 
-			onInput.broadcast(rightThumbstickUpEvent);
+			// Todo: onInput.broadcast(rightThumbstickUpEvent);
 		}
 		// Check if the stick is pushed down
 		else if (currRY < 0)
@@ -309,13 +275,12 @@ void xInputGamepad::refreshThumbsticks(const XINPUT_STATE& state,
 			rightThumbstickDownEvent.port = port;
 			rightThumbstickDownEvent.data = 1.0f;
 
-			onInput.broadcast(rightThumbstickDownEvent);
+			// Todo: onInput.broadcast(rightThumbstickDownEvent);
 		}
 	}
 }
 
-void xInputGamepad::refreshTriggers(const XINPUT_STATE& state, 
-	const XINPUT_STATE& prevState, uint32_t port)
+static void refreshTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
 {
 	// Action
 	// Left
@@ -329,7 +294,7 @@ void xInputGamepad::refreshTriggers(const XINPUT_STATE& state,
 		leftActionEvent.port = port;
 		leftActionEvent.data = static_cast<float>(currL);
 
-		onInput.broadcast(leftActionEvent);
+		// Todo: onInput.broadcast(leftActionEvent);
 	}
 
 	// Right
@@ -343,7 +308,7 @@ void xInputGamepad::refreshTriggers(const XINPUT_STATE& state,
 		rightActionEvent.port = port;
 		rightActionEvent.data = static_cast<float>(currR);
 
-		onInput.broadcast(rightActionEvent);
+		// Todo: onInput.broadcast(rightActionEvent);
 	}
 
 	// Axis
@@ -354,7 +319,7 @@ void xInputGamepad::refreshTriggers(const XINPUT_STATE& state,
 	leftAxisEvent.port = port;
 	leftAxisEvent.data = static_cast<float>(state.Gamepad.bLeftTrigger) / static_cast<float>(gamepadMaxTriggerMagnitude);
 
-	onInput.broadcast(leftAxisEvent);
+	// Todo: onInput.broadcast(leftAxisEvent);
 
 	// Right
 	inputEvent rightAxisEvent = {};
@@ -363,5 +328,40 @@ void xInputGamepad::refreshTriggers(const XINPUT_STATE& state,
 	rightAxisEvent.port = port;
 	rightAxisEvent.data = static_cast<float>(state.Gamepad.bRightTrigger) /	static_cast<float>(gamepadMaxTriggerMagnitude);
 
-	onInput.broadcast(rightAxisEvent);
+	// Todo: onInput.broadcast(rightAxisEvent);
 }
+
+void platformRefreshGamepads()
+{
+	for (uint32_t i = 0; i < XUSER_MAX_COUNT; ++i)
+	{
+		XINPUT_STATE state;
+		if (XInputGetState(static_cast<DWORD>(i), &state) != ERROR_SUCCESS)
+		{
+			continue;
+		}
+
+		refreshButtons(state, prevStates[i], i);
+		refreshThumbsticks(state, prevStates[i], i);
+		refreshTriggers(state, prevStates[i], i);
+
+		prevStates[i] = state;
+	}
+}
+
+int8_t platformSetGamepadVibration(const uint32_t port, const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
+{
+	XINPUT_VIBRATION vibration = {};
+	vibration.wLeftMotorSpeed = leftMotorSpeed;
+	vibration.wRightMotorSpeed = rightMotorSpeed;
+	const DWORD setStateResult = XInputSetState(static_cast<DWORD>(port), &vibration);
+
+	if (setStateResult == ERROR_DEVICE_NOT_CONNECTED)
+	{
+		return 1;
+	}
+
+	return (setStateResult == ERROR_SUCCESS) ? 0 : 2;
+}
+
+#endif // PLATFORM_WIN32

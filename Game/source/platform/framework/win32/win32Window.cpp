@@ -1,9 +1,76 @@
 #include "pch.h"
+
+#if defined(PLATFORM_WIN32)
+
 #include "win32Window.h"
 #include "win32InputKeyCode.h"
 #include "win32MessageBox.h"
+#include "events/core/closedEvent.h"
+#include "events/core/destroyedEvent.h"
+#include "events/core/inputEvent.h"
+#include "events/core/enterSizeMoveEvent.h"
+#include "events/core/exitSizeMoveEvent.h"
+#include "events/core/gainedFocusEvent.h"
+#include "events/core/lostFocusEvent.h"
+#include "events/core/maximizedEvent.h"
+#include "events/core/minimizedEvent.h"
+#include "events/core/resizedEvent.h"
+#include "events/core/enterFullScreenEvent.h"
+#include "events/core/exitFullScreenEvent.h"
 
-DWORD styleToDword(const eWindowStyle inStyle)
+void platformOpenWindow(const sPlatformWindowDesc& desc, platformWindow*& outPlatformWindow)
+{
+	outPlatformWindow = new platformWindow;
+	outPlatformWindow->init(desc);
+}
+
+void platformShutdownWindow(platformWindow* inPlatformWindow)
+{
+	inPlatformWindow->shutdown();
+}
+
+void platformFreeWindow(platformWindow*& outPlatformWindow)
+{
+	delete outPlatformWindow;
+	outPlatformWindow = nullptr;
+}
+
+int8_t platformMakeWindowFullscreen(platformWindow* inPlatformWindow)
+{
+	return inPlatformWindow->enterFullScreen();
+}
+
+int8_t platformExitWindowFullscreen(platformWindow* inPlatformWindow)
+{
+	return inPlatformWindow->exitFullScreen();
+}
+
+int8_t platformSetWindowPosition(platformWindow* inPlatformWindow, uint32_t x, uint32_t y)
+{
+	return inPlatformWindow->setPosition(x, y);
+}
+
+int8_t platformSetWindowStyle(platformWindow* inPlatformWindow, eWindowStyle inStyle)
+{
+	return inPlatformWindow->setStyle(inStyle);
+}
+
+int8_t platformGetWindowClientAreaDimensions(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
+{
+	return inPlatformWindow->getClientAreaDimensions(x, y);
+}
+
+int8_t platformGetWindowPosition(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
+{
+	return inPlatformWindow->getPosition(x, y);
+}
+
+bool platformIsWindowFullscreen(platformWindow* inPlatformWindow)
+{
+	return inPlatformWindow->isFullScreen();
+}
+
+static DWORD styleToDword(const eWindowStyle inStyle)
 {
 	switch (inStyle)
 	{
@@ -23,7 +90,7 @@ DWORD styleToDword(const eWindowStyle inStyle)
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	// Get the window pointer instance
-	if (win32Window* const window = reinterpret_cast<win32Window*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))
+	if (platformWindow* const window = reinterpret_cast<platformWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))
 	{
 		// Handle message
 		switch (msg)
@@ -41,7 +108,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				event.port = 0;
 				event.data = 1.f;
 
-				window->onInput.broadcast(event);
+				//Todo: window->onInput.broadcast(event);
 			}
 			else if (delta < 0)
 			{
@@ -52,7 +119,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				event.port = 0;
 				event.data = 1.f;
 
-				window->onInput.broadcast(event);
+				// Todo: window->onInput.broadcast(event);
 			}
 
 			return 0;
@@ -99,7 +166,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			eventX.port = 0;
 			eventX.data = static_cast<float>(raw->data.mouse.lLastX);
 
-			window->onInput.broadcast(eventX);
+			// Todo: window->onInput.broadcast(eventX);
 
 			inputEvent eventY = {};
 			eventY.repeatedKey = false;
@@ -107,7 +174,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			eventY.port = 0;
 			eventY.data = static_cast<float>(raw->data.mouse.lLastY);
 
-			window->onInput.broadcast(eventY);
+			// Todo: window->onInput.broadcast(eventY);
 			return 0;
 		}
 
@@ -119,7 +186,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			event.port = 0;
 			event.data = 1.f;
 
-			window->onInput.broadcast(event);
+			// Todo: window->onInput.broadcast(event);
 			return 0;
 		}
 
@@ -131,7 +198,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			event.port = 0;
 			event.data = 1.f;
 
-			window->onInput.broadcast(event);
+			// Todo: window->onInput.broadcast(event);
 			return 0;
 		}
 
@@ -143,7 +210,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			event.port = 0;
 			event.data = 1.f;
 
-			window->onInput.broadcast(event);
+			// Todo: window->onInput.broadcast(event);
 			return 0;
 		}
 
@@ -155,7 +222,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			event.port = 0;
 			event.data = 0.f;
 
-			window->onInput.broadcast(event);
+			// Todo: window->onInput.broadcast(event);
 			return 0;
 		}
 
@@ -167,7 +234,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			event.port = 0;
 			event.data = 0.f;
 
-			window->onInput.broadcast(event);
+			// Todo: window->onInput.broadcast(event);
 			return 0;
 		}
 
@@ -179,7 +246,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			event.port = 0;
 			event.data = 0.f;
 
-			window->onInput.broadcast(event);
+			// Todo: window->onInput.broadcast(event);
 			return 0;
 		}
 
@@ -192,7 +259,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			event.port = 0;
 			event.data = 1.f;
 
-			window->onInput.broadcast(event);
+			// Todo: window->onInput.broadcast(event);
 			return 0;
 		}
 
@@ -205,7 +272,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			event.port = 0;
 			event.data = 0.f;
 
-			window->onInput.broadcast(event);
+			// Todo: window->onInput.broadcast(event);
 			return 0;
 		}
 
@@ -218,13 +285,13 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Window maximized
 				maximizedEvent maximize = {};
 
-				window->onMaximized.broadcast(maximize);
+				// Todo: window->onMaximized.broadcast(maximize);
 
 				resizedEvent resize = {};
 				resize.newClientWidth = LOWORD(lparam);
 				resize.newClientHeight = HIWORD(lparam);
 
-				window->onResized.broadcast(resize);
+				// Todo: window->onResized.broadcast(resize);
 				return 0;
 			}
 
@@ -233,7 +300,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Window minimized
 				minimizedEvent minimize = {};
 
-				window->onMinimized.broadcast(minimize);
+				// Todo: window->onMinimized.broadcast(minimize);
 				return 0;
 			}
 
@@ -244,7 +311,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				resize.newClientWidth = LOWORD(lparam);
 				resize.newClientHeight = HIWORD(lparam);
 
-				window->onResized.broadcast(resize);
+				// Todo: window->onResized.broadcast(resize);
 				return 0;
 			}
 			}
@@ -256,7 +323,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			enterSizeMoveEvent event = {};
 
-			window->onEnterSizeMove.broadcast(event);
+			// Todo: window->onEnterSizeMove.broadcast(event);
 			return 0;
 		}
 
@@ -264,13 +331,13 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			exitSizeMoveEvent event = {};
 
-			window->onExitSizeMove.broadcast(event);
+			// Todo: window->onExitSizeMove.broadcast(event);
 
 			resizedEvent resize = {};
 			resize.newClientWidth = LOWORD(lparam);
 			resize.newClientHeight = HIWORD(lparam);
 
-			window->onResized.broadcast(resize);
+			// Todo: window->onResized.broadcast(resize);
 			return 0;
 		}
 
@@ -281,7 +348,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Received focus
 				gainedFocusEvent event = {};
 
-				window->onGainedFocus.broadcast(event);
+				// Todo: window->onGainedFocus.broadcast(event);
 				return 0;
 			}
 			else if (wparam == FALSE)
@@ -289,7 +356,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Lost focus
 				lostFocusEvent event = {};
 
-				window->onLostFocus.broadcast(event);
+				// Todo: window->onLostFocus.broadcast(event);
 				return 0;
 			}
 
@@ -300,7 +367,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			closedEvent event = {};
 
-			window->onClosed.broadcast(event);
+			// Todo: window->onClosed.broadcast(event);
 
 			DestroyWindow(hwnd);
 			return 0;
@@ -310,7 +377,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			destroyedEvent event = {};
 
-			window->onDestroyed.broadcast(event);
+			// Todo: window->onDestroyed.broadcast(event);
 
 			PostQuitMessage(0);
 			return 0;
@@ -332,7 +399,7 @@ static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT msg,
 				reinterpret_cast<CREATESTRUCTW*>(lparam);
 
 			// Get the window instance pointer from the create parameters
-			win32Window* const window = reinterpret_cast<win32Window*>(
+			platformWindow* const window = reinterpret_cast<platformWindow*>(
 				create->lpCreateParams);
 
 			// Set the window instance pointer
@@ -351,7 +418,7 @@ static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT msg,
 	return 0;
 }
 
-void win32Window::init(const sWin32WindowInitDesc& desc)
+void platformWindow::init(const sPlatformWindowDesc& desc)
 {
 	// Store window settings
 	windowClassName = desc.windowClassName;
@@ -412,7 +479,7 @@ void win32Window::init(const sWin32WindowInitDesc& desc)
 	}
 }
 
-void win32Window::shutdown()
+void platformWindow::shutdown()
 {
 	// Get handle to the executable 
 	HINSTANCE hInstance = GetModuleHandleW(nullptr);
@@ -424,7 +491,7 @@ void win32Window::shutdown()
 	}
 }
 
-int8_t win32Window::enterFullScreen()
+int8_t platformWindow::enterFullScreen()
 {
 	// Do nothing if the window is currently in full screen
 	if (inFullscreen)
@@ -477,12 +544,12 @@ int8_t win32Window::enterFullScreen()
 	// Send enter full screen system event 
 	enterFullScreenEvent event = {};
 
-	onEnterFullScreen.broadcast(event);
+	// Todo: onEnterFullScreen.broadcast(event);
 
 	return 0;
 }
 
-int8_t win32Window::exitFullScreen()
+int8_t platformWindow::exitFullScreen()
 {
 	// Do nothing if the window is currently not in full screen
 	if (!inFullscreen)
@@ -518,12 +585,12 @@ int8_t win32Window::exitFullScreen()
 	// Send exit full screen system event 
 	exitFullScreenEvent event = {};
 
-	onExitFullScreen.broadcast(event);
+	// Todo: onExitFullScreen.broadcast(event);
 
 	return 0;
 }
 
-int8_t win32Window::setPosition(uint32_t x, uint32_t y)
+int8_t platformWindow::setPosition(uint32_t x, uint32_t y)
 {
 	if (SetWindowPos(hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW) == 0)
 	{
@@ -533,7 +600,7 @@ int8_t win32Window::setPosition(uint32_t x, uint32_t y)
 	return 0;
 }
 
-int8_t win32Window::setStyle(eWindowStyle inStyle)
+int8_t platformWindow::setStyle(eWindowStyle inStyle)
 {
 	style = inStyle;
 
@@ -553,7 +620,7 @@ int8_t win32Window::setStyle(eWindowStyle inStyle)
 	return 0;
 }
 
-int8_t win32Window::getClientAreaDimensions(uint32_t& x, uint32_t& y) const
+int8_t platformWindow::getClientAreaDimensions(uint32_t& x, uint32_t& y) const
 {
 	RECT clientRect;
 	if (GetClientRect(hwnd, &clientRect) == 0)
@@ -568,7 +635,7 @@ int8_t win32Window::getClientAreaDimensions(uint32_t& x, uint32_t& y) const
 	return 0;
 }
 
-int8_t win32Window::getPosition(uint32_t& x, uint32_t& y) const
+int8_t platformWindow::getPosition(uint32_t& x, uint32_t& y) const
 {
 	RECT windowRect;
 	if (GetWindowRect(hwnd, &windowRect) == 0)
@@ -582,3 +649,5 @@ int8_t win32Window::getPosition(uint32_t& x, uint32_t& y) const
 
 	return 0;
 }
+
+#endif // PLATFORM_WIN32

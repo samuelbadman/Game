@@ -1,11 +1,24 @@
 #include "pch.h"
-#include "xaudio2Audio.h"
+
+#if defined(PLATFORM_WIN32)
+
+#include "win32Audio.h"
 #include "platform/framework/win32/win32MessageBox.h"
+
+void platformInitAudio()
+{
+	win32Audio::init();
+}
+
+void platformShutdownAudio()
+{
+	win32Audio::destroyMasterVoice();
+}
 
 static Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
 static IXAudio2MasteringVoice* masterVoice = nullptr;
 
-void xAudio2Audio::init()
+void win32Audio::init()
 {
 	HRESULT hr;
 
@@ -20,7 +33,7 @@ void xAudio2Audio::init()
 	}
 }
 
-void xAudio2Audio::destroyMasterVoice()
+void win32Audio::destroyMasterVoice()
 {
 	if (masterVoice)
 	{
@@ -28,3 +41,5 @@ void xAudio2Audio::destroyMasterVoice()
 	}
 	masterVoice = nullptr;
 }
+
+#endif // PLATFORM_WIN32

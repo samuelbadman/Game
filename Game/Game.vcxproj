@@ -55,7 +55,7 @@
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_CONSOLE;PLATFORM_WIN32;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -74,7 +74,7 @@
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <IntrinsicFunctions>true</IntrinsicFunctions>
       <SDLCheck>true</SDLCheck>
-      <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_CONSOLE;PLATFORM_WIN32;%(PreprocessorDefinitions);</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
@@ -90,30 +90,39 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\platform\audio\xAudio2\xAudio2Audio.cpp" />
+    <ClCompile Include="source\platform\framework\win32\win32Messages.cpp" />
+    <ClCompile Include="source\platform\framework\win32\win32Audio.cpp" />
     <ClCompile Include="source\callback.cpp" />
     <ClCompile Include="source\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="source\platform\framework\win32\win32CommandLine.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32MessageBox.cpp" />
+    <ClCompile Include="source\platform\framework\win32\win32Timing.cpp" />
     <ClCompile Include="source\platform\graphics\direct3D12\direct3d12Graphics.cpp" />
     <ClCompile Include="source\stringHelper.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Console.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Display.cpp" />
-    <ClCompile Include="source\platform\gamepad\xInput\xInputGamepad.cpp" />
+    <ClCompile Include="source\platform\framework\win32\win32Gamepad.cpp" />
     <ClCompile Include="source\main.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\platform\audio\xAudio2\xAudio2Audio.h" />
+    <ClInclude Include="source\platform\framework\platformCommandLine.h" />
+    <ClInclude Include="source\platform\framework\platformConsole.h" />
+    <ClInclude Include="source\platform\framework\platformMessages.h" />
+    <ClInclude Include="source\platform\framework\platformTiming.h" />
+    <ClInclude Include="source\platform\framework\win32\win32Audio.h" />
     <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\pch.h" />
+    <ClInclude Include="source\platform\framework\PlatformAudio.h" />
+    <ClInclude Include="source\platform\framework\platformDisplay.h" />
+    <ClInclude Include="source\platform\framework\platformGamepad.h" />
     <ClInclude Include="source\platform\framework\win32\win32MessageBox.h" />
     <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Graphics.h" />
+    <ClInclude Include="source\platform\framework\platformWindow.h" />
     <ClInclude Include="source\stringHelper.h" />
-    <ClInclude Include="source\platform\framework\win32\win32Console.h" />
-    <ClInclude Include="source\platform\framework\win32\win32Display.h" />
     <ClInclude Include="source\events\core\closedEvent.h" />
     <ClInclude Include="source\events\core\destroyedEvent.h" />
     <ClInclude Include="source\events\core\enterFullScreenEvent.h" />
@@ -126,7 +135,6 @@
     <ClInclude Include="source\events\core\maximizedEvent.h" />
     <ClInclude Include="source\events\core\minimizedEvent.h" />
     <ClInclude Include="source\events\core\resizedEvent.h" />
-    <ClInclude Include="source\platform\gamepad\xInput\xInputGamepad.h" />
     <ClInclude Include="source\platform\framework\win32\win32InputKeyCode.h" />
     <ClInclude Include="source\platform\framework\win32\win32Window.h" />
   </ItemGroup>

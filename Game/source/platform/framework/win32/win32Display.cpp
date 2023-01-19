@@ -1,9 +1,20 @@
 #include "pch.h"
-#include "win32Display.h"
 
-sDisplayDesc win32Display::infoForDisplayAtIndex(const uint32_t displayIndex)
+#if defined(PLATFORM_WIN32)
+
+#include "platform/framework/platformDisplay.h"
+
+uint32_t platformGetConnectedDisplayCount()
 {
-	assert(displayIndex < displayCount());
+	return GetSystemMetrics(SM_CMONITORS);
+}
+
+sDisplayDesc platformGetInfoForDisplayAtIndex(const uint32_t displayIndex)
+{
+	if (displayIndex < platformGetConnectedDisplayCount())
+	{
+		return sDisplayDesc{};
+	}
 
 	// Initialize property structure
 	sDisplayDesc info = {};
@@ -33,3 +44,5 @@ sDisplayDesc win32Display::infoForDisplayAtIndex(const uint32_t displayIndex)
 	// Return the hardware property info
 	return info;
 }
+
+#endif // PLATFORM_WIN32

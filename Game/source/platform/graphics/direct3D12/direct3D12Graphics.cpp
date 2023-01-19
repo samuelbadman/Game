@@ -228,7 +228,7 @@ static sDescriptorSizes descriptorSizes = {};
 static std::vector<ComPtr<ID3D12Resource>> renderTargetViews;
 static ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
 static std::vector<ComPtr<ID3D12CommandAllocator>> graphicsCommandAllocators;
-static ComPtr<ID3D12GraphicsCommandList6> graphicsCommandList = nullptr;;
+static ComPtr<ID3D12GraphicsCommandList6> graphicsCommandList = nullptr;
 
 void direct3d12Graphics::init(bool useWarp, HWND hwnd, uint32_t width, uint32_t height, uint32_t backBufferCount)
 {

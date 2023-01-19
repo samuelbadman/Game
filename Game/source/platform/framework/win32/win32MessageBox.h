@@ -1,5 +1,7 @@
 #pragma once
 
+#if defined(PLATFORM_WIN32)
+
 enum class eMessageLevel : uint8_t
 {
 	message = 0,
@@ -14,3 +16,5 @@ public:
 	// Shows a message box and immediately exits the application
 	static void messageBoxFatal(const std::string& message);
 };
+
+#endif // PLATFORM_WIN32

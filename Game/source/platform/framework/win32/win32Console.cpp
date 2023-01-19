@@ -1,7 +1,10 @@
 #include "pch.h"
-#include "win32Console.h"
 
-int8_t win32Console::init()
+#if defined(PLATFORM_WIN32)
+
+#include "platform/framework/platformConsole.h"
+
+int8_t platformInitConsole()
 {
 	CONSOLE_SCREEN_BUFFER_INFO console_info;
 	FILE* fp;
@@ -40,7 +43,7 @@ int8_t win32Console::init()
 	return 0;
 }
 
-int8_t win32Console::shutdown()
+int8_t platformShutdownConsole()
 {
 	FILE* fp;
 	// Just to be safe, redirect standard IO to NULL before releasing.
@@ -62,7 +65,9 @@ int8_t win32Console::shutdown()
 	return 0;
 }
 
-void win32Console::print(const std::string& string)
+void platformConsolePrint(const std::string& string)
 {
 	std::cout << string << '\n';
 }
+
+#endif // PLATFORM_WIN32
