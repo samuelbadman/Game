@@ -18,7 +18,7 @@ void xInputGamepad::refreshUsers()
 		XINPUT_STATE state;
 		if (XInputGetState(static_cast<DWORD>(i), &state) != ERROR_SUCCESS)
 		{
-			return;
+			continue;
 		}
 
 		refreshButtons(state, prevStates[i], i);
