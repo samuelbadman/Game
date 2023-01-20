@@ -1,6 +1,6 @@
 #pragma once
 
-struct resizedEvent
+struct sResizedEvent
 {
 	uint32_t newClientWidth;
 	uint32_t newClientHeight;

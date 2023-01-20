@@ -217,18 +217,18 @@ static void createCommandList(ID3D12Device8* device,
 	fatalIfFailed(outCommandList->Close());
 }
 
-static ComPtr<IDXGIFactory7> dxgiFactory = nullptr;
-static ComPtr<IDXGIAdapter4> adapter = nullptr;
-static ComPtr<ID3D12Device8> device = nullptr;
-static ComPtr<ID3D12CommandQueue> graphicsQueue = nullptr;
-static ComPtr<ID3D12CommandQueue> computeQueue = nullptr;
-static ComPtr<ID3D12CommandQueue> copyQueue = nullptr;
-static ComPtr<IDXGISwapChain4> swapChain = nullptr;
+static ComPtr<IDXGIFactory7> dxgiFactory;
+static ComPtr<IDXGIAdapter4> adapter;
+static ComPtr<ID3D12Device8> device;
+static ComPtr<ID3D12CommandQueue> graphicsQueue;
+static ComPtr<ID3D12CommandQueue> computeQueue;
+static ComPtr<ID3D12CommandQueue> copyQueue;
+static ComPtr<IDXGISwapChain4> swapChain;
 static sDescriptorSizes descriptorSizes = {};
 static std::vector<ComPtr<ID3D12Resource>> renderTargetViews;
-static ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap = nullptr;
+static ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
 static std::vector<ComPtr<ID3D12CommandAllocator>> graphicsCommandAllocators;
-static ComPtr<ID3D12GraphicsCommandList6> graphicsCommandList = nullptr;
+static ComPtr<ID3D12GraphicsCommandList6> graphicsCommandList;
 
 void direct3d12Graphics::init(bool useWarp, HWND hwnd, uint32_t width, uint32_t height, uint32_t backBufferCount)
 {
@@ -243,10 +243,10 @@ void direct3d12Graphics::init(bool useWarp, HWND hwnd, uint32_t width, uint32_t 
 
 	createSwapChain(dxgiFactory.Get(), graphicsQueue.Get(), hwnd, width, height, backBufferCount, swapChain);
 	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, backBufferCount, false, rtvDescriptorHeap);
-	renderTargetViews.resize(static_cast<size_t>(backBufferCount), nullptr);
+	renderTargetViews.resize(static_cast<size_t>(backBufferCount));
 	updateRenderTargetViews(device.Get(), swapChain.Get(), descriptorSizes.rtvDescriptorSize, renderTargetViews, rtvDescriptorHeap.Get(), backBufferCount);
 
-	graphicsCommandAllocators.resize(static_cast<size_t>(backBufferCount), nullptr);
+	graphicsCommandAllocators.resize(static_cast<size_t>(backBufferCount));
 	for (ComPtr<ID3D12CommandAllocator>& commandAllocator : graphicsCommandAllocators)
 	{
 		createCommandAllocator(device.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator);

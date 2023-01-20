@@ -1,5 +1,5 @@
 #pragma once
 
-struct exitSizeMoveEvent
+struct sExitSizeMoveEvent
 {
 };

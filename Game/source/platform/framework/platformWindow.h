@@ -25,9 +25,8 @@ struct sPlatformWindowDesc
 
 class platformWindow;
 
-extern void platformOpenWindow(const sPlatformWindowDesc& desc, platformWindow*& outPlatformWindow);
+extern void platformOpenWindow(const sPlatformWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow);
 extern void platformShutdownWindow(platformWindow* inPlatformWindow);
-extern void platformFreeWindow(platformWindow*& outPlatformWindow);
 // Returns non-zero if the function fails
 extern int8_t platformMakeWindowFullscreen(platformWindow* inPlatformWindow);
 // Returns non-zero if the function fails
@@ -42,4 +41,6 @@ extern int8_t platformGetWindowClientAreaDimensions(platformWindow* inPlatformWi
 // Returns non-zero if the function fails
 extern int8_t platformGetWindowPosition(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y);
 extern bool platformIsWindowFullscreen(platformWindow* inPlatformWindow);
+
+
 

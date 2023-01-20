@@ -9,6 +9,7 @@
 #include <cassert>
 #include <algorithm>
 #include <iostream>
+#include <stdlib.h>
 
 #if defined(PLATFORM_WIN32)
 

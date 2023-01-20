@@ -24,12 +24,6 @@
     <ClCompile Include="source\platform\framework\win32\win32Display.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\callback.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="source\platform\gamepad\xInput\xInputGamepad.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\platform\framework\win32\win32Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -42,10 +36,22 @@
     <ClCompile Include="source\platform\framework\win32\win32MessageBox.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\audio\xAudio2\xAudio2Audio.cpp">
+    <ClCompile Include="source\platform\graphics\direct3D12\direct3d12Graphics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\graphics\direct3D12\direct3d12Graphics.cpp">
+    <ClCompile Include="source\platform\framework\win32\win32OS.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\platform\framework\win32\win32Audio.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\platform\framework\win32\win32Timing.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\platform\framework\win32\win32Gamepad.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="source\Game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
@@ -53,16 +59,10 @@
     <ClInclude Include="source\platform\framework\win32\win32Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\framework\win32\win32Display.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\callback.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\events\core\inputEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\framework\win32\win32InputKeyCode.h">
+    <ClInclude Include="source\platform\framework\win32\win32KeyCodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\events\core\enterSizeMoveEvent.h">
@@ -98,12 +98,6 @@
     <ClInclude Include="source\events\core\exitFullScreenEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\gamepad\xInput\xInputGamepad.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\platform\framework\win32\win32Console.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\stringHelper.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -113,10 +107,34 @@
     <ClInclude Include="source\platform\framework\win32\win32MessageBox.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\audio\xAudio2\xAudio2Audio.h">
+    <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Graphics.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Graphics.h">
+    <ClInclude Include="source\platform\framework\platformConsole.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\framework\platformOS.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\framework\platformTiming.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\framework\win32\win32Audio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\framework\PlatformAudio.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\framework\platformDisplay.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\framework\platformGamepad.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\framework\platformWindow.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\Game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

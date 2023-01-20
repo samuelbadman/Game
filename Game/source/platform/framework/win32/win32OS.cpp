@@ -2,7 +2,7 @@
 
 #if defined(PLATFORM_WIN32)
 
-void platformDispatchMessages()
+void platformPollOS()
 {
 	// Dispatch windows messages
 	MSG msg = {};

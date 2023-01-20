@@ -1,6 +1,6 @@
 #pragma once
 
-struct inputEvent
+struct sInputEvent
 {
 	bool repeatedKey = false;
 	int16_t input = 0;

@@ -2,7 +2,7 @@
 
 #if defined(PLATFORM_WIN32)
 
-class win32InputKeyCode
+class win32KeyCodes
 {
 public:
 	static constexpr int16_t Backspace{ VK_BACK };

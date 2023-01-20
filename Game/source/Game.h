@@ -1,0 +1,34 @@
+#pragma once
+
+class Game
+{
+private:
+	static bool running;
+	static std::shared_ptr<class platformWindow> window;
+
+public:
+	static void start();
+	static void exit();
+	/* 
+	Called when the platform layer generates an input event.
+	inWindow acts as an id to identify the window that generated the event
+	inWindow will be nullptr when the input event comes from a gamepad as gamepad's are polled seperately from a window 
+	*/
+	static void onInputEvent(class platformWindow* inWindow, const struct sInputEvent& evt);
+	static void onWindowMaximized(class platformWindow* inWindow, const struct sMaximizedEvent& evt);
+	static void onWindowResized(class platformWindow* inWindow, const struct sResizedEvent& evt);
+	static void onWindowMinimized(class platformWindow* inWindow, const struct sMinimizedEvent& evt);
+	static void onWindowEnterSizeMove(class platformWindow* inWindow, const struct sEnterSizeMoveEvent& evt);
+	static void onWindowExitSizeMove(class platformWindow* inWindow, const struct sExitSizeMoveEvent& evt);
+	static void onWindowGainedFocus(class platformWindow* inWindow, const struct sGainedFocusEvent& evt);
+	static void onWindowLostFocus(class platformWindow* inWindow, const struct sLostFocusEvent& evt);
+	static void onWindowClosed(class platformWindow* inWindow, const struct sClosedEvent& evt);
+	static void onWindowDestroyedEvent(class platformWindow* inWindow, const struct sDestroyedEvent& evt);
+	static void onWindowEnterFullScreen(class platformWindow* inWindow, const struct sEnterFullScreenEvent& evt);
+	static void onWindowExitFullScreen(class platformWindow* inWindow, const struct sExitFullScreenEvent& evt);
+
+private:
+	static void initializeWindow();
+	static void initializeGraphics();
+	static void initializeAudio();
+};

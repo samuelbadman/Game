@@ -1,6 +1,6 @@
 #pragma once
 
-struct exitFullScreenEvent
+struct sExitFullScreenEvent
 {
 
 };

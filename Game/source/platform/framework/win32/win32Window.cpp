@@ -3,7 +3,7 @@
 #if defined(PLATFORM_WIN32)
 
 #include "win32Window.h"
-#include "win32InputKeyCode.h"
+#include "win32KeyCodes.h"
 #include "win32MessageBox.h"
 #include "events/core/closedEvent.h"
 #include "events/core/destroyedEvent.h"
@@ -17,22 +17,17 @@
 #include "events/core/resizedEvent.h"
 #include "events/core/enterFullScreenEvent.h"
 #include "events/core/exitFullScreenEvent.h"
+#include "Game.h"
 
-void platformOpenWindow(const sPlatformWindowDesc& desc, platformWindow*& outPlatformWindow)
+void platformOpenWindow(const sPlatformWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
 {
-	outPlatformWindow = new platformWindow;
+	outPlatformWindow = std::make_shared<platformWindow>();
 	outPlatformWindow->init(desc);
 }
 
 void platformShutdownWindow(platformWindow* inPlatformWindow)
 {
 	inPlatformWindow->shutdown();
-}
-
-void platformFreeWindow(platformWindow*& outPlatformWindow)
-{
-	delete outPlatformWindow;
-	outPlatformWindow = nullptr;
 }
 
 int8_t platformMakeWindowFullscreen(platformWindow* inPlatformWindow)
@@ -102,24 +97,24 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			if (delta > 0)
 			{
 				// Mouse wheel up
-				inputEvent event = {};
-				event.repeatedKey = false;
-				event.input = win32InputKeyCode::Mouse_Wheel_Up;
-				event.port = 0;
-				event.data = 1.f;
+				sInputEvent evt = {};
+				evt.repeatedKey = false;
+				evt.input = win32KeyCodes::Mouse_Wheel_Up;
+				evt.port = 0;
+				evt.data = 1.f;
 
-				//Todo: window->onInput.broadcast(event);
+				Game::onInputEvent(window, evt);
 			}
 			else if (delta < 0)
 			{
 				// Mouse wheel down
-				inputEvent event = {};
-				event.repeatedKey = false;
-				event.input = win32InputKeyCode::Mouse_Wheel_Down;
-				event.port = 0;
-				event.data = 1.f;
+				sInputEvent evt = {};
+				evt.repeatedKey = false;
+				evt.input = win32KeyCodes::Mouse_Wheel_Down;
+				evt.port = 0;
+				evt.data = 1.f;
 
-				// Todo: window->onInput.broadcast(event);
+				Game::onInputEvent(window, evt);
 			}
 
 			return 0;
@@ -160,119 +155,129 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			}
 
 			// Raw mouse delta
-			inputEvent eventX = {};
-			eventX.repeatedKey = false;
-			eventX.input = win32InputKeyCode::Mouse_X;
-			eventX.port = 0;
-			eventX.data = static_cast<float>(raw->data.mouse.lLastX);
+			sInputEvent evtX = {};
+			evtX.repeatedKey = false;
+			evtX.input = win32KeyCodes::Mouse_X;
+			evtX.port = 0;
+			evtX.data = static_cast<float>(raw->data.mouse.lLastX);
 
-			// Todo: window->onInput.broadcast(eventX);
+			Game::onInputEvent(window, evtX);
 
-			inputEvent eventY = {};
-			eventY.repeatedKey = false;
-			eventY.input = win32InputKeyCode::Mouse_Y;
-			eventY.port = 0;
-			eventY.data = static_cast<float>(raw->data.mouse.lLastY);
+			sInputEvent evtY = {};
+			evtY.repeatedKey = false;
+			evtY.input = win32KeyCodes::Mouse_Y;
+			evtY.port = 0;
+			evtY.data = static_cast<float>(raw->data.mouse.lLastY);
 
-			// Todo: window->onInput.broadcast(eventY);
+			Game::onInputEvent(window, evtY);
 			return 0;
 		}
 
 		case WM_LBUTTONDOWN:
 		{
-			inputEvent event = {};
-			event.repeatedKey = false;
-			event.input = win32InputKeyCode::Left_Mouse_Button;
-			event.port = 0;
-			event.data = 1.f;
+			sInputEvent evt = {};
+			evt.repeatedKey = false;
+			evt.input = win32KeyCodes::Left_Mouse_Button;
+			evt.port = 0;
+			evt.data = 1.f;
 
-			// Todo: window->onInput.broadcast(event);
+			Game::onInputEvent(window, evt);
 			return 0;
 		}
 
 		case WM_RBUTTONDOWN:
 		{
-			inputEvent event = {};
-			event.repeatedKey = false;
-			event.input = win32InputKeyCode::Right_Mouse_Button;
-			event.port = 0;
-			event.data = 1.f;
+			sInputEvent evt = {};
+			evt.repeatedKey = false;
+			evt.input = win32KeyCodes::Right_Mouse_Button;
+			evt.port = 0;
+			evt.data = 1.f;
 
-			// Todo: window->onInput.broadcast(event);
+			Game::onInputEvent(window, evt);
 			return 0;
 		}
 
 		case WM_MBUTTONDOWN:
 		{
-			inputEvent event = {};
-			event.repeatedKey = false;
-			event.input = win32InputKeyCode::Middle_Mouse_Button;
-			event.port = 0;
-			event.data = 1.f;
+			sInputEvent evt = {};
+			evt.repeatedKey = false;
+			evt.input = win32KeyCodes::Middle_Mouse_Button;
+			evt.port = 0;
+			evt.data = 1.f;
 
-			// Todo: window->onInput.broadcast(event);
+			Game::onInputEvent(window, evt);
 			return 0;
 		}
 
 		case WM_LBUTTONUP:
 		{
-			inputEvent event = {};
-			event.repeatedKey = false;
-			event.input = win32InputKeyCode::Left_Mouse_Button;
-			event.port = 0;
-			event.data = 0.f;
+			sInputEvent evt = {};
+			evt.repeatedKey = false;
+			evt.input = win32KeyCodes::Left_Mouse_Button;
+			evt.port = 0;
+			evt.data = 0.f;
 
-			// Todo: window->onInput.broadcast(event);
+			Game::onInputEvent(window, evt);
 			return 0;
 		}
 
 		case WM_RBUTTONUP:
 		{
-			inputEvent event = {};
-			event.repeatedKey = false;
-			event.input = win32InputKeyCode::Right_Mouse_Button;
-			event.port = 0;
-			event.data = 0.f;
+			sInputEvent evt = {};
+			evt.repeatedKey = false;
+			evt.input = win32KeyCodes::Right_Mouse_Button;
+			evt.port = 0;
+			evt.data = 0.f;
 
-			// Todo: window->onInput.broadcast(event);
+			Game::onInputEvent(window, evt);
 			return 0;
 		}
 
 		case WM_MBUTTONUP:
 		{
-			inputEvent event = {};
-			event.repeatedKey = false;
-			event.input = win32InputKeyCode::Middle_Mouse_Button;
-			event.port = 0;
-			event.data = 0.f;
+			sInputEvent evt = {};
+			evt.repeatedKey = false;
+			evt.input = win32KeyCodes::Middle_Mouse_Button;
+			evt.port = 0;
+			evt.data = 0.f;
 
-			// Todo: window->onInput.broadcast(event);
+			Game::onInputEvent(window, evt);
 			return 0;
 		}
 
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
 		{
-			inputEvent event = {};
-			event.repeatedKey = static_cast<bool>(lparam & 0x40000000);
-			event.input = static_cast<int16_t>(wparam);
-			event.port = 0;
-			event.data = 1.f;
+			// Handle alt+f4 exit shortcut
+			bool altBit = false;
+			altBit = (lparam & (1 << 29)) != 0;
+			if (altBit && (static_cast<int16_t>(wparam) == win32KeyCodes::F4))
+			{
+				Game::exit();
+				return 0;
+			}
 
-			// Todo: window->onInput.broadcast(event);
+			// Generate input evt
+			sInputEvent evt = {};
+			evt.repeatedKey = static_cast<bool>(lparam & 0x40000000);
+			evt.input = static_cast<int16_t>(wparam);
+			evt.port = 0;
+			evt.data = 1.f;
+
+			Game::onInputEvent(window, evt);
 			return 0;
 		}
 
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
 		{
-			inputEvent event = {};
-			event.repeatedKey = false;
-			event.input = static_cast<int16_t>(wparam);
-			event.port = 0;
-			event.data = 0.f;
+			sInputEvent evt = {};
+			evt.repeatedKey = false;
+			evt.input = static_cast<int16_t>(wparam);
+			evt.port = 0;
+			evt.data = 0.f;
 
-			// Todo: window->onInput.broadcast(event);
+			Game::onInputEvent(window, evt);
 			return 0;
 		}
 
@@ -283,35 +288,38 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			case SIZE_MAXIMIZED:
 			{
 				// Window maximized
-				maximizedEvent maximize = {};
+				sMaximizedEvent maximize = {};
+				Game::onWindowMaximized(window, maximize);
 
-				// Todo: window->onMaximized.broadcast(maximize);
-
-				resizedEvent resize = {};
+				sResizedEvent resize = {};
 				resize.newClientWidth = LOWORD(lparam);
 				resize.newClientHeight = HIWORD(lparam);
 
-				// Todo: window->onResized.broadcast(resize);
+				Game::onWindowResized(window, resize);
 				return 0;
 			}
 
 			case SIZE_MINIMIZED:
 			{
 				// Window minimized
-				minimizedEvent minimize = {};
+				sMinimizedEvent minimize = {};
 
-				// Todo: window->onMinimized.broadcast(minimize);
+				Game::onWindowMinimized(window, minimize);
 				return 0;
 			}
 
 			case SIZE_RESTORED:
 			{
-				// Window restored
-				resizedEvent resize = {};
-				resize.newClientWidth = LOWORD(lparam);
-				resize.newClientHeight = HIWORD(lparam);
+				if (!window->getInSizeMove())
+				{
+					// Window restored
+					sResizedEvent resize = {};
+					resize.newClientWidth = LOWORD(lparam);
+					resize.newClientHeight = HIWORD(lparam);
 
-				// Todo: window->onResized.broadcast(resize);
+					Game::onWindowResized(window, resize);
+				}
+
 				return 0;
 			}
 			}
@@ -321,23 +329,27 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 		case WM_ENTERSIZEMOVE:
 		{
-			enterSizeMoveEvent event = {};
+			window->setInSizeMove(true);
 
-			// Todo: window->onEnterSizeMove.broadcast(event);
+			sEnterSizeMoveEvent evt = {};
+
+			Game::onWindowEnterSizeMove(window, evt);
 			return 0;
 		}
 
 		case WM_EXITSIZEMOVE:
 		{
-			exitSizeMoveEvent event = {};
+			window->setInSizeMove(false);
 
-			// Todo: window->onExitSizeMove.broadcast(event);
+			sExitSizeMoveEvent evt = {};
 
-			resizedEvent resize = {};
+			Game::onWindowExitSizeMove(window, evt);
+
+			sResizedEvent resize = {};
 			resize.newClientWidth = LOWORD(lparam);
 			resize.newClientHeight = HIWORD(lparam);
 
-			// Todo: window->onResized.broadcast(resize);
+			Game::onWindowResized(window, resize);
 			return 0;
 		}
 
@@ -346,17 +358,17 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			if (wparam == TRUE)
 			{
 				// Received focus
-				gainedFocusEvent event = {};
+				sGainedFocusEvent evt = {};
 
-				// Todo: window->onGainedFocus.broadcast(event);
+				Game::onWindowGainedFocus(window, evt);
 				return 0;
 			}
 			else if (wparam == FALSE)
 			{
 				// Lost focus
-				lostFocusEvent event = {};
+				sLostFocusEvent evt = {};
 
-				// Todo: window->onLostFocus.broadcast(event);
+				Game::onWindowLostFocus(window, evt);
 				return 0;
 			}
 
@@ -365,9 +377,9 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 		case WM_CLOSE:
 		{
-			closedEvent event = {};
+			sClosedEvent evt = {};
 
-			// Todo: window->onClosed.broadcast(event);
+			Game::onWindowClosed(window, evt);
 
 			DestroyWindow(hwnd);
 			return 0;
@@ -375,9 +387,9 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 		case WM_DESTROY:
 		{
-			destroyedEvent event = {};
+			sDestroyedEvent evt = {};
 
-			// Todo: window->onDestroyed.broadcast(event);
+			Game::onWindowDestroyedEvent(window, evt);
 
 			PostQuitMessage(0);
 			return 0;
@@ -541,10 +553,10 @@ int8_t platformWindow::enterFullScreen()
 	// Update full screen flag
 	inFullscreen = true;
 
-	// Send enter full screen system event 
-	enterFullScreenEvent event = {};
+	// Send enter full screen system evt 
+	sEnterFullScreenEvent evt = {};
 
-	// Todo: onEnterFullScreen.broadcast(event);
+	Game::onWindowEnterFullScreen(this, evt);
 
 	return 0;
 }
@@ -582,10 +594,10 @@ int8_t platformWindow::exitFullScreen()
 	// Update full screen flag
 	inFullscreen = false;
 
-	// Send exit full screen system event 
-	exitFullScreenEvent event = {};
+	// Send exit full screen system evt 
+	sExitFullScreenEvent evt = {};
 
-	// Todo: onExitFullScreen.broadcast(event);
+	Game::onWindowExitFullScreen(this, evt);
 
 	return 0;
 }

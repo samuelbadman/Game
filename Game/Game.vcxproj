@@ -90,14 +90,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\platform\framework\win32\win32Messages.cpp" />
+    <ClCompile Include="source\Game.cpp" />
+    <ClCompile Include="source\platform\framework\win32\win32OS.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Audio.cpp" />
-    <ClCompile Include="source\callback.cpp" />
     <ClCompile Include="source\pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="source\platform\framework\win32\win32CommandLine.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32MessageBox.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Timing.cpp" />
     <ClCompile Include="source\platform\graphics\direct3D12\direct3d12Graphics.cpp" />
@@ -109,12 +108,11 @@
     <ClCompile Include="source\platform\framework\win32\win32Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\platform\framework\platformCommandLine.h" />
+    <ClInclude Include="source\Game.h" />
     <ClInclude Include="source\platform\framework\platformConsole.h" />
-    <ClInclude Include="source\platform\framework\platformMessages.h" />
+    <ClInclude Include="source\platform\framework\platformOS.h" />
     <ClInclude Include="source\platform\framework\platformTiming.h" />
     <ClInclude Include="source\platform\framework\win32\win32Audio.h" />
-    <ClInclude Include="source\callback.h" />
     <ClInclude Include="source\pch.h" />
     <ClInclude Include="source\platform\framework\PlatformAudio.h" />
     <ClInclude Include="source\platform\framework\platformDisplay.h" />
@@ -135,7 +133,7 @@
     <ClInclude Include="source\events\core\maximizedEvent.h" />
     <ClInclude Include="source\events\core\minimizedEvent.h" />
     <ClInclude Include="source\events\core\resizedEvent.h" />
-    <ClInclude Include="source\platform\framework\win32\win32InputKeyCode.h" />
+    <ClInclude Include="source\platform\framework\win32\win32KeyCodes.h" />
     <ClInclude Include="source\platform\framework\win32\win32Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

@@ -1,6 +1,6 @@
 #pragma once
 
-struct enterFullScreenEvent
+struct sEnterFullScreenEvent
 {
 
 };
