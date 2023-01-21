@@ -122,7 +122,10 @@ void Game::onWindowLostFocus(platformWindow* inWindow, const sLostFocusEvent& ev
 
 void Game::onWindowClosed(platformWindow* inWindow, const sClosedEvent& evt)
 {
-	running = false;
+	if (inWindow == window.get())
+	{
+		running = false;
+	}
 }
 
 void Game::onWindowDestroyedEvent(platformWindow* inWindow, const sDestroyedEvent& evt)
