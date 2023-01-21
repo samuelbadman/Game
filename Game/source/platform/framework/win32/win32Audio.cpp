@@ -2,23 +2,12 @@
 
 #if defined(PLATFORM_WIN32)
 
-#include "win32Audio.h"
 #include "platform/framework/win32/win32MessageBox.h"
-
-void platformInitAudio()
-{
-	win32Audio::init();
-}
-
-void platformShutdownAudio()
-{
-	win32Audio::destroyMasterVoice();
-}
 
 static Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
 static IXAudio2MasteringVoice* masterVoice = nullptr;
 
-void win32Audio::init()
+void platformInitAudio()
 {
 	HRESULT hr;
 
@@ -33,7 +22,7 @@ void win32Audio::init()
 	}
 }
 
-void win32Audio::destroyMasterVoice()
+void platformShutdownAudio()
 {
 	if (masterVoice)
 	{

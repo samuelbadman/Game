@@ -113,7 +113,6 @@
     <ClInclude Include="source\platform\framework\platformKeyCodes.h" />
     <ClInclude Include="source\platform\framework\platformOS.h" />
     <ClInclude Include="source\platform\framework\platformTiming.h" />
-    <ClInclude Include="source\platform\framework\win32\win32Audio.h" />
     <ClInclude Include="source\pch.h" />
     <ClInclude Include="source\platform\framework\platformAudio.h" />
     <ClInclude Include="source\platform\framework\platformDisplay.h" />
