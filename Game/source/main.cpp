@@ -3,6 +3,7 @@
 
 static int initGame()
 {
+	// Todo: Parse command line arguments for additional inialize settings for the game. e.g. Additional debug tools. 
 	Game::start();
 	return EXIT_SUCCESS;
 }
