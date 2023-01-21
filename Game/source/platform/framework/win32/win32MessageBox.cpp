@@ -2,9 +2,9 @@
 
 #if defined(PLATFORM_WIN32)
 
-#include "win32MessageBox.h"
+#include "platform/framework/platformMessageBox.h"
 
-void win32MessageBox::messageBox(const eMessageLevel level, const std::string& message)
+void platformMessageBox(const eMessageLevel level, const std::string& message)
 {
 	LPCSTR caption = "\0";
 	UINT type = MB_OK;
@@ -36,7 +36,7 @@ void win32MessageBox::messageBox(const eMessageLevel level, const std::string& m
 	MessageBoxA(0, message.c_str(), caption, type);
 }
 
-void win32MessageBox::messageBoxFatal(const std::string& message)
+void platformMessageBoxFatal(const std::string& message)
 {
 	LPCSTR caption = "Fatal";
 	UINT type = MB_OK | MB_ICONERROR;

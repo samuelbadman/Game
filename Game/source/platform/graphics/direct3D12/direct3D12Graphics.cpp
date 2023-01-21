@@ -1,10 +1,13 @@
 #include "pch.h"
+
+#if defined(PLATFORM_WIN32)
+
 #include "direct3d12Graphics.h"
-#include "platform/framework/win32/win32MessageBox.h"
+#include "platform/framework/platformMessageBox.h"
 
 using namespace Microsoft::WRL;
 
-#define fatalIfFailed(x) if(FAILED(x)) win32MessageBox::messageBoxFatal("hresult failed.");
+#define fatalIfFailed(x) if(FAILED(x)) platformMessageBoxFatal("hresult failed.");
 
 struct sDescriptorSizes
 {
@@ -56,7 +59,7 @@ static void getAdapter(IDXGIFactory7* dxgiFactory, bool useWarp, ComPtr<IDXGIAda
 		}
 
 		// No adapters were found that meet minimum requirements
-		win32MessageBox::messageBoxFatal("direct3d12Graphics: did not find any suitable adapter");
+		platformMessageBoxFatal("direct3d12Graphics: did not find any suitable adapter");
 	}
 }
 
@@ -69,7 +72,7 @@ static void createDevice(IDXGIAdapter4* adapter, ComPtr<ID3D12Device8>& outDevic
 	Microsoft::WRL::ComPtr<ID3D12InfoQueue> InfoQueue;
 	if (FAILED(outDevice.As(&InfoQueue)))
 	{
-		win32MessageBox::messageBoxFatal("direct3d12Graphics::createDevice: failed to cast device to info queue.Could not enable device debug info.");
+		platformMessageBoxFatal("direct3d12Graphics::createDevice: failed to cast device to info queue.Could not enable device debug info.");
 	}
 
 	InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
@@ -99,7 +102,7 @@ static void createDevice(IDXGIAdapter4* adapter, ComPtr<ID3D12Device8>& outDevic
 
 	if (FAILED(InfoQueue->PushStorageFilter(&QueueFilter)))
 	{
-		win32MessageBox::messageBoxFatal("direct3d12Graphics::createDevice: failed to push queue filter. Could not enable device debug info.");
+		platformMessageBoxFatal("direct3d12Graphics::createDevice: failed to push queue filter. Could not enable device debug info.");
 	}
 #endif //_DEBUG
 }
@@ -253,3 +256,5 @@ void direct3d12Graphics::init(bool useWarp, HWND hwnd, uint32_t width, uint32_t 
 	}
 	createCommandList(device.Get(), graphicsCommandAllocators[0].Get(), nullptr, D3D12_COMMAND_LIST_TYPE_DIRECT, graphicsCommandList);
 }
+
+#endif // PLATFORM_WIN32

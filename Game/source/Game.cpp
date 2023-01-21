@@ -7,6 +7,7 @@
 #include "platform/framework/platformGamepad.h"
 #include "platform/framework/PlatformAudio.h"
 #include "platform/framework/platformTiming.h"
+#include "platform/framework/platformMessageBox.h"
 #include "events/core/closedEvent.h"
 #include "events/core/destroyedEvent.h"
 #include "events/core/inputEvent.h"
@@ -19,6 +20,7 @@
 #include "events/core/resizedEvent.h"
 #include "events/core/enterFullScreenEvent.h"
 #include "events/core/exitFullScreenEvent.h"
+#include "platform/graphics/direct3D12/direct3d12Graphics.h"
 
 struct sGameSettings
 {
@@ -161,14 +163,14 @@ void Game::initializeWindow()
 
 void Game::initializeGraphics()
 {
-	//uint32_t width;
-	//uint32_t height;
-	//if (window->getClientAreaDimensions(width, height) != 0)
-	//{
-	//	win32MessageBox::messageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
-	//}
-	//
-	//direct3d12Graphics::init(false, window->getHwnd(), width, height, 3);
+	uint32_t width;
+	uint32_t height;
+	if (platformGetWindowClientAreaDimensions(window.get(), width, height) != 0)
+	{
+		platformMessageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
+	}
+	
+	direct3d12Graphics::init(false, window->getHwnd(), width, height, 3);
 }
 
 void Game::initializeAudio()
