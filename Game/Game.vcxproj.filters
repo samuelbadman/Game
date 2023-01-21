@@ -62,9 +62,6 @@
     <ClInclude Include="source\events\core\inputEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\framework\win32\win32KeyCodes.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="source\events\core\enterSizeMoveEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -122,7 +119,7 @@
     <ClInclude Include="source\platform\framework\win32\win32Audio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\framework\PlatformAudio.h">
+    <ClInclude Include="source\platform\framework\platformAudio.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\framework\platformDisplay.h">
@@ -135,6 +132,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\Game.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\framework\platformKeyCodes.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

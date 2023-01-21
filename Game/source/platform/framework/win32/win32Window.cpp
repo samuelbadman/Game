@@ -3,7 +3,7 @@
 #if defined(PLATFORM_WIN32)
 
 #include "win32Window.h"
-#include "win32KeyCodes.h"
+#include "platform/framework/platformKeyCodes.h"
 #include "win32MessageBox.h"
 #include "events/core/closedEvent.h"
 #include "events/core/destroyedEvent.h"
@@ -99,7 +99,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Mouse wheel up
 				sInputEvent evt = {};
 				evt.repeatedKey = false;
-				evt.input = win32KeyCodes::Mouse_Wheel_Up;
+				evt.input = platformKeyCodes::Mouse_Wheel_Up;
 				evt.port = 0;
 				evt.data = 1.f;
 
@@ -110,7 +110,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Mouse wheel down
 				sInputEvent evt = {};
 				evt.repeatedKey = false;
-				evt.input = win32KeyCodes::Mouse_Wheel_Down;
+				evt.input = platformKeyCodes::Mouse_Wheel_Down;
 				evt.port = 0;
 				evt.data = 1.f;
 
@@ -157,7 +157,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			// Raw mouse delta
 			sInputEvent evtX = {};
 			evtX.repeatedKey = false;
-			evtX.input = win32KeyCodes::Mouse_X;
+			evtX.input = platformKeyCodes::Mouse_X;
 			evtX.port = 0;
 			evtX.data = static_cast<float>(raw->data.mouse.lLastX);
 
@@ -165,7 +165,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			sInputEvent evtY = {};
 			evtY.repeatedKey = false;
-			evtY.input = win32KeyCodes::Mouse_Y;
+			evtY.input = platformKeyCodes::Mouse_Y;
 			evtY.port = 0;
 			evtY.data = static_cast<float>(raw->data.mouse.lLastY);
 
@@ -177,7 +177,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = win32KeyCodes::Left_Mouse_Button;
+			evt.input = platformKeyCodes::Left_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
@@ -189,7 +189,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = win32KeyCodes::Right_Mouse_Button;
+			evt.input = platformKeyCodes::Right_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
@@ -201,7 +201,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = win32KeyCodes::Middle_Mouse_Button;
+			evt.input = platformKeyCodes::Middle_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
@@ -213,7 +213,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = win32KeyCodes::Left_Mouse_Button;
+			evt.input = platformKeyCodes::Left_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
@@ -225,7 +225,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = win32KeyCodes::Right_Mouse_Button;
+			evt.input = platformKeyCodes::Right_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
@@ -237,7 +237,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = win32KeyCodes::Middle_Mouse_Button;
+			evt.input = platformKeyCodes::Middle_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
@@ -251,7 +251,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			// Handle alt+f4 exit shortcut
 			bool altBit = false;
 			altBit = (lparam & (1 << 29)) != 0;
-			if (altBit && (static_cast<int16_t>(wparam) == win32KeyCodes::F4))
+			if (altBit && (static_cast<int16_t>(wparam) == platformKeyCodes::F4))
 			{
 				Game::exit();
 				return 0;
@@ -310,15 +310,15 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			case SIZE_RESTORED:
 			{
-				if (!window->getInSizeMove())
-				{
+				//if (!window->getInSizeMove())
+				//{
 					// Window restored
-					sResizedEvent resize = {};
-					resize.newClientWidth = LOWORD(lparam);
-					resize.newClientHeight = HIWORD(lparam);
+					//sResizedEvent resize = {};
+					//resize.newClientWidth = LOWORD(lparam);
+					//resize.newClientHeight = HIWORD(lparam);
 
-					Game::onWindowResized(window, resize);
-				}
+					//Game::onWindowResized(window, resize);
+				//}
 
 				return 0;
 			}
@@ -346,8 +346,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			Game::onWindowExitSizeMove(window, evt);
 
 			sResizedEvent resize = {};
-			resize.newClientWidth = LOWORD(lparam);
-			resize.newClientHeight = HIWORD(lparam);
+			window->getClientAreaDimensions(resize.newClientWidth, resize.newClientHeight);
 
 			Game::onWindowResized(window, resize);
 			return 0;

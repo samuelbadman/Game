@@ -7,6 +7,18 @@
 #include "platform/framework/platformGamepad.h"
 #include "platform/framework/PlatformAudio.h"
 #include "platform/framework/platformTiming.h"
+#include "events/core/closedEvent.h"
+#include "events/core/destroyedEvent.h"
+#include "events/core/inputEvent.h"
+#include "events/core/enterSizeMoveEvent.h"
+#include "events/core/exitSizeMoveEvent.h"
+#include "events/core/gainedFocusEvent.h"
+#include "events/core/lostFocusEvent.h"
+#include "events/core/maximizedEvent.h"
+#include "events/core/minimizedEvent.h"
+#include "events/core/resizedEvent.h"
+#include "events/core/enterFullScreenEvent.h"
+#include "events/core/exitFullScreenEvent.h"
 
 struct sGameSettings
 {
@@ -76,6 +88,7 @@ void Game::exit()
 
 void Game::onInputEvent(platformWindow* inWindow, const sInputEvent& evt)
 {
+
 }
 
 void Game::onWindowMaximized(platformWindow* inWindow, const struct sMaximizedEvent& evt)
@@ -84,6 +97,7 @@ void Game::onWindowMaximized(platformWindow* inWindow, const struct sMaximizedEv
 
 void Game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
 {
+
 }
 
 void Game::onWindowMinimized(platformWindow* inWindow, const sMinimizedEvent& evt)

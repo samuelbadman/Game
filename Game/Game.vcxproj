@@ -110,11 +110,12 @@
   <ItemGroup>
     <ClInclude Include="source\Game.h" />
     <ClInclude Include="source\platform\framework\platformConsole.h" />
+    <ClInclude Include="source\platform\framework\platformKeyCodes.h" />
     <ClInclude Include="source\platform\framework\platformOS.h" />
     <ClInclude Include="source\platform\framework\platformTiming.h" />
     <ClInclude Include="source\platform\framework\win32\win32Audio.h" />
     <ClInclude Include="source\pch.h" />
-    <ClInclude Include="source\platform\framework\PlatformAudio.h" />
+    <ClInclude Include="source\platform\framework\platformAudio.h" />
     <ClInclude Include="source\platform\framework\platformDisplay.h" />
     <ClInclude Include="source\platform\framework\platformGamepad.h" />
     <ClInclude Include="source\platform\framework\win32\win32MessageBox.h" />
@@ -133,7 +134,6 @@
     <ClInclude Include="source\events\core\maximizedEvent.h" />
     <ClInclude Include="source\events\core\minimizedEvent.h" />
     <ClInclude Include="source\events\core\resizedEvent.h" />
-    <ClInclude Include="source\platform\framework\win32\win32KeyCodes.h" />
     <ClInclude Include="source\platform\framework\win32\win32Window.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
