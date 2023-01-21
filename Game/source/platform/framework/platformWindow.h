@@ -41,6 +41,4 @@ extern int8_t platformGetWindowClientAreaDimensions(platformWindow* inPlatformWi
 // Returns non-zero if the function fails
 extern int8_t platformGetWindowPosition(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y);
 extern bool platformIsWindowFullscreen(platformWindow* inPlatformWindow);
-
-
-
+extern void* platformGetWindowHandle(platformWindow* inPlatformWindow);

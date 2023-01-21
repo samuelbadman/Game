@@ -170,7 +170,7 @@ void Game::initializeGraphics()
 		platformMessageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
 	}
 	
-	direct3d12Graphics::init(false, window->getHwnd(), width, height, 3);
+	direct3d12Graphics::init(false, platformGetWindowHandle(window.get()), width, height, 3);
 }
 
 void Game::initializeAudio()

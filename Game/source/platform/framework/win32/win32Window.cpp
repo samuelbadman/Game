@@ -4,7 +4,7 @@
 
 #include "win32Window.h"
 #include "platform/framework/platformKeyCodes.h"
-#include "win32MessageBox.h"
+#include "platform/framework/platformMessageBox.h"
 #include "events/core/closedEvent.h"
 #include "events/core/destroyedEvent.h"
 #include "events/core/inputEvent.h"
@@ -17,7 +17,7 @@
 #include "events/core/resizedEvent.h"
 #include "events/core/enterFullScreenEvent.h"
 #include "events/core/exitFullScreenEvent.h"
-#include "Game.h"
+#include "Game/Game.h"
 
 void platformOpenWindow(const sPlatformWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
 {
@@ -63,6 +63,11 @@ int8_t platformGetWindowPosition(platformWindow* inPlatformWindow, uint32_t& x, 
 bool platformIsWindowFullscreen(platformWindow* inPlatformWindow)
 {
 	return inPlatformWindow->isFullScreen();
+}
+
+void* platformGetWindowHandle(platformWindow* inPlatformWindow)
+{
+	return static_cast<void*>(inPlatformWindow->getHwnd());
 }
 
 static DWORD styleToDword(const eWindowStyle inStyle)
@@ -458,7 +463,7 @@ void platformWindow::init(const sPlatformWindowDesc& desc)
 	if (!(RegisterClassExW(&windowClass) > 0))
 	{
 		// Failed to register window class
-		win32MessageBox::messageBoxFatal("win32Window::init failed to register window class.");
+		platformMessageBoxFatal("win32Window::init failed to register window class.");
 	}
 
 	// Create the window and store a handle to it
@@ -477,7 +482,7 @@ void platformWindow::init(const sPlatformWindowDesc& desc)
 		if (!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
 		{
 			// Failed to register raw input devices
-			win32MessageBox::messageBoxFatal("win32Window::init failed to register raw input devices.");
+			platformMessageBoxFatal("win32Window::init failed to register raw input devices.");
 		}
 
 		// Show the window
@@ -486,7 +491,7 @@ void platformWindow::init(const sPlatformWindowDesc& desc)
 	else
 	{
 		// Failed to create window
-		win32MessageBox::messageBoxFatal("win32Window::init failed to create window.");
+		platformMessageBoxFatal("win32Window::init failed to create window.");
 	}
 }
 
@@ -498,7 +503,7 @@ void platformWindow::shutdown()
 	// Unregister the window class
 	if (!UnregisterClassW(windowClassName.c_str(), hInstance))
 	{
-		win32MessageBox::messageBoxFatal("win32Window::shutdown failed to unregister class.");
+		platformMessageBoxFatal("win32Window::shutdown failed to unregister class.");
 	}
 }
 

@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Game.h"
+#include "Game/Game.h"
 
 static int initGame()
 {

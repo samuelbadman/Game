@@ -233,7 +233,7 @@ static ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
 static std::vector<ComPtr<ID3D12CommandAllocator>> graphicsCommandAllocators;
 static ComPtr<ID3D12GraphicsCommandList6> graphicsCommandList;
 
-void direct3d12Graphics::init(bool useWarp, HWND hwnd, uint32_t width, uint32_t height, uint32_t backBufferCount)
+void direct3d12Graphics::init(bool useWarp, void* hwnd, uint32_t width, uint32_t height, uint32_t backBufferCount)
 {
 	enableDebugLayer();
 	createDxgiFactory(dxgiFactory);
@@ -244,7 +244,7 @@ void direct3d12Graphics::init(bool useWarp, HWND hwnd, uint32_t width, uint32_t 
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_COMPUTE, computeQueue);
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_COPY, copyQueue);
 
-	createSwapChain(dxgiFactory.Get(), graphicsQueue.Get(), hwnd, width, height, backBufferCount, swapChain);
+	createSwapChain(dxgiFactory.Get(), graphicsQueue.Get(), static_cast<HWND>(hwnd), width, height, backBufferCount, swapChain);
 	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, backBufferCount, false, rtvDescriptorHeap);
 	renderTargetViews.resize(static_cast<size_t>(backBufferCount));
 	updateRenderTargetViews(device.Get(), swapChain.Get(), descriptorSizes.rtvDescriptorSize, renderTargetViews, rtvDescriptorHeap.Get(), backBufferCount);
@@ -255,6 +255,8 @@ void direct3d12Graphics::init(bool useWarp, HWND hwnd, uint32_t width, uint32_t 
 		createCommandAllocator(device.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator);
 	}
 	createCommandList(device.Get(), graphicsCommandAllocators[0].Get(), nullptr, D3D12_COMMAND_LIST_TYPE_DIRECT, graphicsCommandList);
+
+
 }
 
 #endif // PLATFORM_WIN32
