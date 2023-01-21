@@ -220,6 +220,20 @@ static void createCommandList(ID3D12Device8* device,
 	fatalIfFailed(outCommandList->Close());
 }
 
+static void createFence(ID3D12Device8* device, ComPtr<ID3D12Fence>& outFence)
+{
+	fatalIfFailed(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&outFence)));
+}
+
+static void createEventHandle(HANDLE& outEventHandle)
+{
+	CreateEvent(nullptr, FALSE, FALSE, nullptr);
+	if (outEventHandle == nullptr)
+	{
+		platformMessageBoxFatal("direct3d12Graphics::CreateEvent: failed to create event handle.");
+	}
+}
+
 static ComPtr<IDXGIFactory7> dxgiFactory;
 static ComPtr<IDXGIAdapter4> adapter;
 static ComPtr<ID3D12Device8> device;
@@ -227,11 +241,18 @@ static ComPtr<ID3D12CommandQueue> graphicsQueue;
 static ComPtr<ID3D12CommandQueue> computeQueue;
 static ComPtr<ID3D12CommandQueue> copyQueue;
 static ComPtr<IDXGISwapChain4> swapChain;
-static sDescriptorSizes descriptorSizes = {};
+static sDescriptorSizes descriptorSizes{};
 static std::vector<ComPtr<ID3D12Resource>> renderTargetViews;
 static ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
 static std::vector<ComPtr<ID3D12CommandAllocator>> graphicsCommandAllocators;
 static ComPtr<ID3D12GraphicsCommandList6> graphicsCommandList;
+static ComPtr<ID3D12Fence> graphicsFence;
+static uint64_t graphicsFenceValue{ 0 };
+static ComPtr<ID3D12Fence> computeFence;
+static uint64_t computeFenceValue{ 0 };
+static ComPtr<ID3D12Fence> copyFence;
+static uint64_t copyFenceValue{ 0 };
+static HANDLE eventHandle = nullptr;
 
 void direct3d12Graphics::init(bool useWarp, void* hwnd, uint32_t width, uint32_t height, uint32_t backBufferCount)
 {
@@ -255,6 +276,14 @@ void direct3d12Graphics::init(bool useWarp, void* hwnd, uint32_t width, uint32_t
 		createCommandAllocator(device.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator);
 	}
 	createCommandList(device.Get(), graphicsCommandAllocators[0].Get(), nullptr, D3D12_COMMAND_LIST_TYPE_DIRECT, graphicsCommandList);
+
+	createFence(device.Get(), graphicsFence);
+	graphicsFenceValue = 0;
+	createFence(device.Get(), computeFence);
+	computeFenceValue = 0;
+	createFence(device.Get(), copyFence);
+	copyFenceValue = 0;
+	createEventHandle(eventHandle);
 
 
 }
