@@ -196,6 +196,51 @@ static void updateRenderTargetViews(ID3D12Device8* device,
 	}
 }
 
+static void updateDepthStencilView(ID3D12Device8* device, 
+	uint32_t width, 
+	uint32_t height, 
+	ComPtr<ID3D12Resource>& depthStencilView, 
+	ID3D12DescriptorHeap* dsvDescriptorHeap)
+{
+	D3D12_CLEAR_VALUE depthOptimizedClearValue = {};
+	depthOptimizedClearValue.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	depthOptimizedClearValue.DepthStencil.Depth = 1.0f;
+	depthOptimizedClearValue.DepthStencil.Stencil = 0;
+
+	D3D12_HEAP_PROPERTIES heapProperties = {};
+	heapProperties.Type = D3D12_HEAP_TYPE_DEFAULT;
+	heapProperties.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_UNKNOWN;
+	heapProperties.MemoryPoolPreference = D3D12_MEMORY_POOL_UNKNOWN;
+	heapProperties.CreationNodeMask = 0;
+	heapProperties.VisibleNodeMask = 0;
+
+	D3D12_RESOURCE_DESC resourceDesc = {};
+	resourceDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
+	resourceDesc.Alignment = 0;
+	resourceDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	resourceDesc.Width = width;
+	resourceDesc.Height = height;
+	resourceDesc.MipLevels = 1;
+	resourceDesc.SampleDesc = { 1, 0 };
+	resourceDesc.DepthOrArraySize = 1;
+	resourceDesc.Layout = D3D12_TEXTURE_LAYOUT_UNKNOWN;
+	resourceDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;
+
+	fatalIfFailed(device->CreateCommittedResource(&heapProperties, 
+		D3D12_HEAP_FLAG_NONE, 
+		&resourceDesc, 
+		D3D12_RESOURCE_STATE_DEPTH_WRITE,
+		&depthOptimizedClearValue, 
+		IID_PPV_ARGS(&depthStencilView)));
+
+	D3D12_DEPTH_STENCIL_VIEW_DESC dsvDesc = {};
+	dsvDesc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	dsvDesc.ViewDimension = D3D12_DSV_DIMENSION_TEXTURE2D;
+	dsvDesc.Flags = D3D12_DSV_FLAG_NONE;
+
+	device->CreateDepthStencilView(depthStencilView.Get(), &dsvDesc, dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart());
+}
+
 static void createCommandAllocator(ID3D12Device8* device, D3D12_COMMAND_LIST_TYPE type, ComPtr<ID3D12CommandAllocator>& outCommandAllocator)
 {
 	fatalIfFailed(device->CreateCommandAllocator(type, IID_PPV_ARGS(&outCommandAllocator)));
@@ -235,6 +280,8 @@ ComPtr<IDXGISwapChain4> direct3d12Graphics::swapChain;
 sDescriptorSizes direct3d12Graphics::descriptorSizes = {};
 std::vector<ComPtr<ID3D12Resource>> direct3d12Graphics::renderTargetViews;
 ComPtr<ID3D12DescriptorHeap> direct3d12Graphics::rtvDescriptorHeap;
+ComPtr<ID3D12Resource> direct3d12Graphics::depthStencilView;
+ComPtr<ID3D12DescriptorHeap> direct3d12Graphics::dsvDescriptorHeap;
 std::vector<ComPtr<ID3D12CommandAllocator>> direct3d12Graphics::graphicsCommandAllocators;
 ComPtr<ID3D12GraphicsCommandList6> direct3d12Graphics::graphicsCommandList;
 ComPtr<ID3D12Fence> direct3d12Graphics::graphicsFence;
@@ -258,6 +305,8 @@ void direct3d12Graphics::init(bool useWarp, void* hwnd, uint32_t width, uint32_t
 	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, backBufferCount, false, rtvDescriptorHeap);
 	renderTargetViews.resize(static_cast<size_t>(backBufferCount));
 	updateRenderTargetViews(device.Get(), swapChain.Get(), descriptorSizes.rtvDescriptorSize, renderTargetViews, rtvDescriptorHeap.Get(), backBufferCount);
+	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false, dsvDescriptorHeap);
+	updateDepthStencilView(device.Get(), width, height, depthStencilView, dsvDescriptorHeap.Get());
 
 	graphicsCommandAllocators.resize(static_cast<size_t>(backBufferCount));
 	for (ComPtr<ID3D12CommandAllocator>& commandAllocator : graphicsCommandAllocators)
@@ -308,6 +357,9 @@ void direct3d12Graphics::resize(uint32_t width, uint32_t height)
 
 		// Update render target view resources with new back buffers
 		updateRenderTargetViews(device.Get(), swapChain.Get(), descriptorSizes.rtvDescriptorSize, renderTargetViews, rtvDescriptorHeap.Get(), static_cast<UINT>(backBufferCount));
+
+		// Update depth stencil view resource
+		updateDepthStencilView(device.Get(), width, height, depthStencilView, dsvDescriptorHeap.Get());
 	}
 }
 

@@ -28,6 +28,8 @@ private:
 	static sDescriptorSizes descriptorSizes;
 	static std::vector<ComPtr<ID3D12Resource>> renderTargetViews;
 	static ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
+	static ComPtr<ID3D12Resource> depthStencilView;
+	static ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
 	static std::vector<ComPtr<ID3D12CommandAllocator>> graphicsCommandAllocators;
 	static ComPtr<ID3D12GraphicsCommandList6> graphicsCommandList;
 	static ComPtr<ID3D12Fence> graphicsFence;
