@@ -270,6 +270,20 @@ static void createEventHandle(HANDLE& outEventHandle)
 	}
 }
 
+static void waitForFence(ID3D12Fence* fence, HANDLE inEventHandle, uint64_t value, DWORD waitDuration)
+{
+	if (fence->GetCompletedValue() < value)
+	{
+		fatalIfFailed(fence->SetEventOnCompletion(value, inEventHandle));
+		if (WaitForSingleObject(inEventHandle, waitDuration) == WAIT_FAILED)
+		{
+			platformMessageBoxFatal("direct3d12Graphics::waitForFence: failed to wait for single object.");
+		}
+	}
+}
+
+static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
+
 ComPtr<IDXGIFactory7> direct3d12Graphics::dxgiFactory;
 ComPtr<IDXGIAdapter4> direct3d12Graphics::adapter;
 ComPtr<ID3D12Device8> direct3d12Graphics::device;
@@ -366,7 +380,7 @@ void direct3d12Graphics::resize(uint32_t width, uint32_t height)
 void direct3d12Graphics::render(const bool useVSync)
 {
 	// Wait for the previous frame to finish on the GPU
-	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentBackBufferIndex]);
+	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentBackBufferIndex], maxFenceWaitDurationMs);
 
 	// Get frame resources
 	ID3D12CommandAllocator* const graphicsCommandAllocator = graphicsCommandAllocators[currentBackBufferIndex].Get();
@@ -425,19 +439,7 @@ void direct3d12Graphics::waitForGPU()
 	const size_t backBufferCount = renderTargetViews.size();
 	for (size_t i = 0; i < backBufferCount; ++i)
 	{
-		waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[i]);
-	}
-}
-
-void direct3d12Graphics::waitForFence(ID3D12Fence* fence, HANDLE inEventHandle, uint64_t value)
-{
-	if (fence->GetCompletedValue() < value)
-	{
-		fatalIfFailed(fence->SetEventOnCompletion(value, inEventHandle));
-		if (WaitForSingleObject(inEventHandle, maxFenceWaitDurationMs) == WAIT_FAILED)
-		{
-			platformMessageBoxFatal("direct3d12Graphics::waitForFence: failed to wait for single object.");
-		}
+		waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[i], maxFenceWaitDurationMs);
 	}
 }
 
