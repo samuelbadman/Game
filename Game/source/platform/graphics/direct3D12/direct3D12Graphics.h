@@ -15,6 +15,9 @@ struct sDescriptorSizes
 class direct3d12Graphics
 {
 private:
+	static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
+
+private:
 	static ComPtr<IDXGIFactory7> dxgiFactory;
 	static ComPtr<IDXGIAdapter4> adapter;
 	static ComPtr<ID3D12Device8> device;
@@ -41,6 +44,7 @@ public:
 
 private:
 	static void waitForGPU();
+	static void waitForFence(ID3D12Fence* fence, HANDLE inEventHandle, uint64_t value);
 };
 
 #endif // PLATFORM_WIN32

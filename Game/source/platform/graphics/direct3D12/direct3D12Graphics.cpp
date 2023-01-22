@@ -225,8 +225,6 @@ static void createEventHandle(HANDLE& outEventHandle)
 	}
 }
 
-static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
-
 ComPtr<IDXGIFactory7> direct3d12Graphics::dxgiFactory;
 ComPtr<IDXGIAdapter4> direct3d12Graphics::adapter;
 ComPtr<ID3D12Device8> direct3d12Graphics::device;
@@ -316,14 +314,7 @@ void direct3d12Graphics::resize(uint32_t width, uint32_t height)
 void direct3d12Graphics::render(const bool useVSync)
 {
 	// Wait for the previous frame to finish on the GPU
-	if (graphicsFence->GetCompletedValue() < graphicsFenceValues[currentBackBufferIndex])
-	{
-		graphicsFence->SetEventOnCompletion(graphicsFenceValues[currentBackBufferIndex], eventHandle);
-		if (WaitForSingleObject(eventHandle, maxFenceWaitDurationMs) == WAIT_FAILED)
-		{
-			platformMessageBoxFatal("direct3d12Graphics::render: failed to wait for single object.");
-		}
-	}
+	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentBackBufferIndex]);
 
 	// Get frame resources
 	ID3D12CommandAllocator* const graphicsCommandAllocator = graphicsCommandAllocators[currentBackBufferIndex].Get();
@@ -345,7 +336,7 @@ void direct3d12Graphics::render(const bool useVSync)
 
 	D3D12_CPU_DESCRIPTOR_HANDLE cpu_rtvDescriptorHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	cpu_rtvDescriptorHandle.ptr += (descriptorSizes.rtvDescriptorSize * currentBackBufferIndex);
-	const FLOAT clearColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	const FLOAT clearColor[4] = { 0.0f, 0.0f, 0.4f, 1.0f };
 	graphicsCommandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
 
 	D3D12_RESOURCE_BARRIER backBufferResourceEndTransitionBarrier = {};
@@ -370,7 +361,7 @@ void direct3d12Graphics::render(const bool useVSync)
 	fatalIfFailed(swapChain->Present(useVSync ? 1 : 0, ((tearingSupported) && (!useVSync)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
 	currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
-	// Signal end frame
+	// Signal end frame. Must be done after present as flip discard swap effect is being used
 	++graphicsFenceValue;
 	graphicsFenceValues[currentBackBufferIndex] = graphicsFenceValue;
 	fatalIfFailed(graphicsQueue->Signal(graphicsFence.Get(), graphicsFenceValues[currentBackBufferIndex]));
@@ -382,13 +373,18 @@ void direct3d12Graphics::waitForGPU()
 	const size_t backBufferCount = renderTargetViews.size();
 	for (size_t i = 0; i < backBufferCount; ++i)
 	{
-		if (graphicsFence->GetCompletedValue() < graphicsFenceValues[i])
+		waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[i]);
+	}
+}
+
+void direct3d12Graphics::waitForFence(ID3D12Fence* fence, HANDLE inEventHandle, uint64_t value)
+{
+	if (fence->GetCompletedValue() < value)
+	{
+		fatalIfFailed(fence->SetEventOnCompletion(value, inEventHandle));
+		if (WaitForSingleObject(inEventHandle, maxFenceWaitDurationMs) == WAIT_FAILED)
 		{
-			fatalIfFailed(graphicsFence->SetEventOnCompletion(graphicsFenceValues[i], eventHandle));
-			if (WaitForSingleObject(eventHandle, maxFenceWaitDurationMs) == WAIT_FAILED)
-			{
-				platformMessageBoxFatal("direct3d12Graphics::waitForGPU: failed to wait for single object.");
-			}
+			platformMessageBoxFatal("direct3d12Graphics::waitForFence: failed to wait for single object.");
 		}
 	}
 }
