@@ -27,7 +27,7 @@ private:
 
 public:
 	void init(const sPlatformWindowDesc& desc);
-	void shutdown();
+	void destroy();
 	// Returns non-zero if the function fails
 	int8_t enterFullScreen();
 	// Returns non-zero if the function fails

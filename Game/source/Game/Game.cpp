@@ -36,6 +36,9 @@ struct sGameSettings
 	static constexpr double fixedTimeSlice = 0.001;
 	// The step size used to step the simulation on each time slice update
 	static constexpr float fixedStep = 0.1f;
+
+	// Render settings
+	static constexpr bool enableVSync = false;
 };
 
 bool Game::running = false;
@@ -76,16 +79,19 @@ void Game::start()
 			accumulator -= fixedTimeSliceMs;
 		}
 
-		// Todo: Render
+		render();
 
 		// Update frame timing
 		platformUpdateTiming(fps, ms);
 	}
+
+	shutdownGraphics();
 }
 
 void Game::exit()
 {
 	running = false;
+	platformDestroyWindow(window);
 }
 
 void Game::onInputEvent(platformWindow* inWindow, const sInputEvent& evt)
@@ -99,7 +105,10 @@ void Game::onWindowMaximized(platformWindow* inWindow, const struct sMaximizedEv
 
 void Game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
 {
-
+	if (inWindow == window.get())
+	{
+		direct3d12Graphics::resize(evt.newClientWidth, evt.newClientHeight);
+	}
 }
 
 void Game::onWindowMinimized(platformWindow* inWindow, const sMinimizedEvent& evt)
@@ -126,12 +135,13 @@ void Game::onWindowClosed(platformWindow* inWindow, const sClosedEvent& evt)
 {
 	if (inWindow == window.get())
 	{
-		running = false;
+		exit();
 	}
 }
 
 void Game::onWindowDestroyedEvent(platformWindow* inWindow, const sDestroyedEvent& evt)
 {
+
 }
 
 void Game::onWindowEnterFullScreen(platformWindow* inWindow, const sEnterFullScreenEvent& evt)
@@ -173,7 +183,17 @@ void Game::initializeGraphics()
 	direct3d12Graphics::init(false, platformGetWindowHandle(window.get()), width, height, 3);
 }
 
+void Game::shutdownGraphics()
+{
+	direct3d12Graphics::shutdown();
+}
+
 void Game::initializeAudio()
 {
 	platformInitAudio();
+}
+
+void Game::render()
+{
+	direct3d12Graphics::render(sGameSettings::enableVSync);
 }

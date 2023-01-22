@@ -30,5 +30,7 @@ public:
 private:
 	static void initializeWindow();
 	static void initializeGraphics();
+	static void shutdownGraphics();
 	static void initializeAudio();
+	static void render();
 };

@@ -25,9 +25,10 @@ void platformOpenWindow(const sPlatformWindowDesc& desc, std::shared_ptr<platfor
 	outPlatformWindow->init(desc);
 }
 
-void platformShutdownWindow(platformWindow* inPlatformWindow)
+void platformDestroyWindow(std::shared_ptr<platformWindow>& outPlatformWindow)
 {
-	inPlatformWindow->shutdown();
+	outPlatformWindow->destroy();
+	outPlatformWindow.reset();
 }
 
 int8_t platformMakeWindowFullscreen(platformWindow* inPlatformWindow)
@@ -258,7 +259,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			altBit = (lparam & (1 << 29)) != 0;
 			if (altBit && (static_cast<int16_t>(wparam) == platformKeyCodes::F4))
 			{
-				Game::exit();
+				SendMessage(hwnd, WM_CLOSE, 0, 0);
 				return 0;
 			}
 
@@ -315,16 +316,6 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			case SIZE_RESTORED:
 			{
-				//if (!window->getInSizeMove())
-				//{
-					// Window restored
-					//sResizedEvent resize = {};
-					//resize.newClientWidth = LOWORD(lparam);
-					//resize.newClientHeight = HIWORD(lparam);
-
-					//Game::onWindowResized(window, resize);
-				//}
-
 				return 0;
 			}
 			}
@@ -384,8 +375,6 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			sClosedEvent evt = {};
 
 			Game::onWindowClosed(window, evt);
-
-			DestroyWindow(hwnd);
 			return 0;
 		}
 
@@ -394,8 +383,6 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			sDestroyedEvent evt = {};
 
 			Game::onWindowDestroyedEvent(window, evt);
-
-			PostQuitMessage(0);
 			return 0;
 		}
 		}
@@ -495,15 +482,21 @@ void platformWindow::init(const sPlatformWindowDesc& desc)
 	}
 }
 
-void platformWindow::shutdown()
+void platformWindow::destroy()
 {
+	// Destroy the window instance
+	if (DestroyWindow(hwnd) == 0)
+	{
+		platformMessageBoxFatal("win32Window::destroy: failed to destroy window.");
+	}
+
 	// Get handle to the executable 
 	HINSTANCE hInstance = GetModuleHandleW(nullptr);
 
 	// Unregister the window class
 	if (!UnregisterClassW(windowClassName.c_str(), hInstance))
 	{
-		platformMessageBoxFatal("win32Window::shutdown failed to unregister class.");
+		platformMessageBoxFatal("win32Window::destroy failed to unregister class.");
 	}
 }
 

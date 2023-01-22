@@ -5,17 +5,7 @@
 #include "direct3d12Graphics.h"
 #include "platform/framework/platformMessageBox.h"
 
-using namespace Microsoft::WRL;
-
 #define fatalIfFailed(x) if(FAILED(x)) platformMessageBoxFatal("hresult failed.");
-
-struct sDescriptorSizes
-{
-	UINT rtvDescriptorSize;
-	UINT dsvDescriptorSize;
-	UINT cbv_srv_uavDescriptorSize;
-	UINT samplerDescriptorSize;
-};
 
 static void enableDebugLayer()
 {
@@ -201,6 +191,7 @@ static void updateRenderTargetViews(ID3D12Device8* device,
 	{
 		fatalIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargetViews[i])));
 		device->CreateRenderTargetView(renderTargetViews[i].Get(), nullptr, rtvHandle);
+		renderTargetViews[i]->SetName((std::wstring(L"rtv") + std::to_wstring(i)).c_str());
 		rtvHandle.ptr += rtvDescriptorSize;
 	}
 }
@@ -227,32 +218,32 @@ static void createFence(ID3D12Device8* device, ComPtr<ID3D12Fence>& outFence)
 
 static void createEventHandle(HANDLE& outEventHandle)
 {
-	CreateEvent(nullptr, FALSE, FALSE, nullptr);
+	outEventHandle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	if (outEventHandle == nullptr)
 	{
 		platformMessageBoxFatal("direct3d12Graphics::CreateEvent: failed to create event handle.");
 	}
 }
 
-static ComPtr<IDXGIFactory7> dxgiFactory;
-static ComPtr<IDXGIAdapter4> adapter;
-static ComPtr<ID3D12Device8> device;
-static ComPtr<ID3D12CommandQueue> graphicsQueue;
-static ComPtr<ID3D12CommandQueue> computeQueue;
-static ComPtr<ID3D12CommandQueue> copyQueue;
-static ComPtr<IDXGISwapChain4> swapChain;
-static sDescriptorSizes descriptorSizes{};
-static std::vector<ComPtr<ID3D12Resource>> renderTargetViews;
-static ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
-static std::vector<ComPtr<ID3D12CommandAllocator>> graphicsCommandAllocators;
-static ComPtr<ID3D12GraphicsCommandList6> graphicsCommandList;
-static ComPtr<ID3D12Fence> graphicsFence;
-static uint64_t graphicsFenceValue{ 0 };
-static ComPtr<ID3D12Fence> computeFence;
-static uint64_t computeFenceValue{ 0 };
-static ComPtr<ID3D12Fence> copyFence;
-static uint64_t copyFenceValue{ 0 };
-static HANDLE eventHandle = nullptr;
+static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
+
+ComPtr<IDXGIFactory7> direct3d12Graphics::dxgiFactory;
+ComPtr<IDXGIAdapter4> direct3d12Graphics::adapter;
+ComPtr<ID3D12Device8> direct3d12Graphics::device;
+ComPtr<ID3D12CommandQueue> direct3d12Graphics::graphicsQueue;
+ComPtr<ID3D12CommandQueue> direct3d12Graphics::computeQueue;
+ComPtr<ID3D12CommandQueue> direct3d12Graphics::copyQueue;
+ComPtr<IDXGISwapChain4> direct3d12Graphics::swapChain;
+sDescriptorSizes direct3d12Graphics::descriptorSizes = {};
+std::vector<ComPtr<ID3D12Resource>> direct3d12Graphics::renderTargetViews;
+ComPtr<ID3D12DescriptorHeap> direct3d12Graphics::rtvDescriptorHeap;
+std::vector<ComPtr<ID3D12CommandAllocator>> direct3d12Graphics::graphicsCommandAllocators;
+ComPtr<ID3D12GraphicsCommandList6> direct3d12Graphics::graphicsCommandList;
+ComPtr<ID3D12Fence> direct3d12Graphics::graphicsFence;
+uint64_t direct3d12Graphics::graphicsFenceValue = 0;
+std::vector<uint64_t> direct3d12Graphics::graphicsFenceValues;
+HANDLE direct3d12Graphics::eventHandle = nullptr;
+uint32_t direct3d12Graphics::currentBackBufferIndex = 0;
 
 void direct3d12Graphics::init(bool useWarp, void* hwnd, uint32_t width, uint32_t height, uint32_t backBufferCount)
 {
@@ -279,13 +270,127 @@ void direct3d12Graphics::init(bool useWarp, void* hwnd, uint32_t width, uint32_t
 
 	createFence(device.Get(), graphicsFence);
 	graphicsFenceValue = 0;
-	createFence(device.Get(), computeFence);
-	computeFenceValue = 0;
-	createFence(device.Get(), copyFence);
-	copyFenceValue = 0;
+	graphicsFenceValues.resize(static_cast<size_t>(backBufferCount), graphicsFenceValue);
 	createEventHandle(eventHandle);
+}
 
+void direct3d12Graphics::shutdown()
+{
+	waitForGPU();
+}
 
+void direct3d12Graphics::resize(uint32_t width, uint32_t height)
+{
+	DXGI_SWAP_CHAIN_DESC swapChainDesc;
+	fatalIfFailed(swapChain->GetDesc(&swapChainDesc));
+
+	// Don't resize if the width and height have not changed
+	if (swapChainDesc.BufferDesc.Width != width || swapChainDesc.BufferDesc.Height != height)
+	{
+		// Don't allow 0 size swap chain back buffers
+		width = std::max(1u, width);
+		height = std::max(1u, height);
+
+		// Wait for all frames to finish executing on the GPU
+		waitForGPU();
+
+		// Release render target view resources
+		const size_t backBufferCount = renderTargetViews.size();
+		for (size_t i = 0; i < backBufferCount; ++i)
+		{
+			renderTargetViews[i].Reset();
+			graphicsFenceValues[i] = graphicsFenceValues[currentBackBufferIndex];
+		}
+
+		// Resize the swap chain back buffers
+		fatalIfFailed(swapChain->ResizeBuffers(static_cast<UINT>(backBufferCount), width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
+
+		// Update current back buffer index
+		currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
+		// Update render target view resources with new back buffers
+		updateRenderTargetViews(device.Get(), swapChain.Get(), descriptorSizes.rtvDescriptorSize, renderTargetViews, rtvDescriptorHeap.Get(), static_cast<UINT>(backBufferCount));
+	}
+}
+
+void direct3d12Graphics::render(const bool useVSync)
+{
+	// Wait for the previous frame to finish on the GPU
+	if (graphicsFence->GetCompletedValue() < graphicsFenceValues[currentBackBufferIndex])
+	{
+		graphicsFence->SetEventOnCompletion(graphicsFenceValues[currentBackBufferIndex], eventHandle);
+		if (WaitForSingleObject(eventHandle, maxFenceWaitDurationMs) == WAIT_FAILED)
+		{
+			platformMessageBoxFatal("direct3d12Graphics::render: failed to wait for single object.");
+		}
+	}
+
+	// Get frame resources
+	ID3D12CommandAllocator* const graphicsCommandAllocator = graphicsCommandAllocators[currentBackBufferIndex].Get();
+	ID3D12Resource* const backBuffer = renderTargetViews[currentBackBufferIndex].Get();
+
+	// Start recording command list
+	fatalIfFailed(graphicsCommandAllocator->Reset());
+	fatalIfFailed(graphicsCommandList->Reset(graphicsCommandAllocator, nullptr));
+
+	D3D12_RESOURCE_BARRIER backBufferResourceStartTransitionBarrier = {};
+	backBufferResourceStartTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	backBufferResourceStartTransitionBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	backBufferResourceStartTransitionBarrier.Transition.pResource = backBuffer;
+	backBufferResourceStartTransitionBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	backBufferResourceStartTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	backBufferResourceStartTransitionBarrier.Transition.Subresource = 0;
+
+	graphicsCommandList->ResourceBarrier(1, &backBufferResourceStartTransitionBarrier);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE cpu_rtvDescriptorHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	cpu_rtvDescriptorHandle.ptr += (descriptorSizes.rtvDescriptorSize * currentBackBufferIndex);
+	const FLOAT clearColor[4] = { 0.0f, 0.0f, 1.0f, 1.0f };
+	graphicsCommandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
+
+	D3D12_RESOURCE_BARRIER backBufferResourceEndTransitionBarrier = {};
+	backBufferResourceEndTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	backBufferResourceEndTransitionBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	backBufferResourceEndTransitionBarrier.Transition.pResource = backBuffer;
+	backBufferResourceEndTransitionBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	backBufferResourceEndTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	backBufferResourceEndTransitionBarrier.Transition.Subresource = 0;
+
+	graphicsCommandList->ResourceBarrier(1, &backBufferResourceEndTransitionBarrier);
+
+	// Stop recording command list
+	fatalIfFailed(graphicsCommandList->Close());
+
+	// Execute command lists
+	ID3D12CommandList* graphicsExecuteLists[1] = { graphicsCommandList.Get() };
+	graphicsQueue->ExecuteCommandLists(_countof(graphicsExecuteLists), graphicsExecuteLists);
+
+	// Present
+	static bool tearingSupported = checkTearingSupport(dxgiFactory.Get());
+	fatalIfFailed(swapChain->Present(useVSync ? 1 : 0, ((tearingSupported) && (!useVSync)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
+	currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
+
+	// Signal end frame
+	++graphicsFenceValue;
+	graphicsFenceValues[currentBackBufferIndex] = graphicsFenceValue;
+	fatalIfFailed(graphicsQueue->Signal(graphicsFence.Get(), graphicsFenceValues[currentBackBufferIndex]));
+}
+
+void direct3d12Graphics::waitForGPU()
+{
+	// Wait for all frames to finish executing on the GPU
+	const size_t backBufferCount = renderTargetViews.size();
+	for (size_t i = 0; i < backBufferCount; ++i)
+	{
+		if (graphicsFence->GetCompletedValue() < graphicsFenceValues[i])
+		{
+			fatalIfFailed(graphicsFence->SetEventOnCompletion(graphicsFenceValues[i], eventHandle));
+			if (WaitForSingleObject(eventHandle, maxFenceWaitDurationMs) == WAIT_FAILED)
+			{
+				platformMessageBoxFatal("direct3d12Graphics::waitForGPU: failed to wait for single object.");
+			}
+		}
+	}
 }
 
 #endif // PLATFORM_WIN32
