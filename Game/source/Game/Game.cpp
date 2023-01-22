@@ -8,18 +8,18 @@
 #include "platform/framework/PlatformAudio.h"
 #include "platform/framework/platformTiming.h"
 #include "platform/framework/platformMessageBox.h"
-#include "events/core/closedEvent.h"
-#include "events/core/destroyedEvent.h"
-#include "events/core/inputEvent.h"
-#include "events/core/enterSizeMoveEvent.h"
-#include "events/core/exitSizeMoveEvent.h"
-#include "events/core/gainedFocusEvent.h"
-#include "events/core/lostFocusEvent.h"
-#include "events/core/maximizedEvent.h"
-#include "events/core/minimizedEvent.h"
-#include "events/core/resizedEvent.h"
-#include "events/core/enterFullScreenEvent.h"
-#include "events/core/exitFullScreenEvent.h"
+#include "events/platform/closedEvent.h"
+#include "events/platform/destroyedEvent.h"
+#include "events/platform/inputEvent.h"
+#include "events/platform/enterSizeMoveEvent.h"
+#include "events/platform/exitSizeMoveEvent.h"
+#include "events/platform/gainedFocusEvent.h"
+#include "events/platform/lostFocusEvent.h"
+#include "events/platform/maximizedEvent.h"
+#include "events/platform/minimizedEvent.h"
+#include "events/platform/resizedEvent.h"
+#include "events/platform/enterFullScreenEvent.h"
+#include "events/platform/exitFullScreenEvent.h"
 #include "platform/graphics/direct3D12/direct3d12Graphics.h"
 
 struct sGameSettings
@@ -64,18 +64,18 @@ void Game::start()
 	{
 		// Calculate and accumulate delta time in seconds
 		std::chrono::time_point currentTime = std::chrono::high_resolution_clock::now();
-		float deltaSeconds = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
+		const float deltaSeconds = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - previousTime).count();
 		previousTime = currentTime;
 		accumulator += deltaSeconds;
 
 		platformPollOS();
 		platformPollGamepads();
 
-		// Todo: Variable tick
+		tick(deltaSeconds);
 
 		while (accumulator > fixedTimeSliceMs)
 		{
-			// Todo: Fixed tick(fixed step)
+			fixedTick(sGameSettings::fixedStep);
 			accumulator -= fixedTimeSliceMs;
 		}
 
@@ -191,6 +191,14 @@ void Game::shutdownGraphics()
 void Game::initializeAudio()
 {
 	platformInitAudio();
+}
+
+void Game::tick(float deltaSeconds)
+{
+}
+
+void Game::fixedTick(float fixedStep)
+{
 }
 
 void Game::render()

@@ -4,7 +4,7 @@
 
 #include "platform/framework/platformGamepad.h"
 #include "platform/framework/platformKeyCodes.h"
-#include "events/core/inputEvent.h"
+#include "events/platform/inputEvent.h"
 #include "Game/Game.h"
 
 static XINPUT_STATE prevStates[XUSER_MAX_COUNT];
