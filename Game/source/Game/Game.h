@@ -5,6 +5,8 @@ class Game
 private:
 	static bool running;
 	static std::shared_ptr<class platformWindow> window;
+	static int64_t fps;
+	static double ms;
 
 public:
 	static void start();
@@ -28,6 +30,7 @@ public:
 	static void onWindowExitFullScreen(class platformWindow* inWindow, const struct sExitFullScreenEvent& evt);
 
 private:
+	static void parseCommandLineArgs();
 	static void initializeWindow();
 	static void initializeGraphics();
 	static void shutdownGraphics();

@@ -361,7 +361,7 @@ void direct3d12Graphics::render(const bool useVSync)
 	fatalIfFailed(swapChain->Present(useVSync ? 1 : 0, ((tearingSupported) && (!useVSync)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
 	currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
 
-	// Signal end frame. Must be done after present as flip discard swap effect is being used
+	// Signal end frame. Must be done after present as flip discard swap effect is being used and this presents without blocking CPU thread
 	++graphicsFenceValue;
 	graphicsFenceValues[currentBackBufferIndex] = graphicsFenceValue;
 	fatalIfFailed(graphicsQueue->Signal(graphicsFence.Get(), graphicsFenceValues[currentBackBufferIndex]));

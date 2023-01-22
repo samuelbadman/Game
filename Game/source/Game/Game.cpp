@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "Game.h"
-#include "platform/framework/platformWindow.h"
+#include "platform/framework/platformCommandLine.h"
 #include "platform/framework/platformWindow.h"
 #include "platform/framework/platformDisplay.h"
 #include "platform/framework/platformOS.h"
@@ -43,19 +43,19 @@ struct sGameSettings
 
 bool Game::running = false;
 std::shared_ptr<platformWindow> Game::window;
+int64_t Game::fps = 0;
+double Game::ms = 0.0;
 
 void Game::start()
 {
 	running = true;
 
+	parseCommandLineArgs();
 	initializeWindow();
 	initializeGraphics();
 	initializeAudio();
 
 	// Initialize game loop
-	int64_t fps = 0;
-	double ms = 0.0;
-
 	double fixedTimeSliceMs = sGameSettings::fixedTimeSlice * 1000.0;
 	double accumulator = 0.0;
 	std::chrono::time_point previousTime = std::chrono::high_resolution_clock::now();
@@ -150,6 +150,16 @@ void Game::onWindowEnterFullScreen(platformWindow* inWindow, const sEnterFullScr
 
 void Game::onWindowExitFullScreen(platformWindow* inWindow, const sExitFullScreenEvent& evt)
 {
+}
+
+void Game::parseCommandLineArgs()
+{
+	int32_t argc;
+	wchar_t** argv = platformGetArgcArgv(argc);
+
+
+
+	platformFreeArgv(argv);
 }
 
 void Game::initializeWindow()
