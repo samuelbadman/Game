@@ -412,35 +412,7 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, sDirect3d12Surface* 
 	for(uint32_t i = 0; i < numSurfaces; ++i)
 	{
 		const sDirect3d12Surface& surface = *surfaces[static_cast<size_t>(i)];
-
-		ID3D12Resource* const backBuffer = surface.renderTargetViews[currentBackBufferIndex].Get();
-
-		D3D12_RESOURCE_BARRIER backBufferResourceStartTransitionBarrier = {};
-		backBufferResourceStartTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		backBufferResourceStartTransitionBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		backBufferResourceStartTransitionBarrier.Transition.pResource = backBuffer;
-		backBufferResourceStartTransitionBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		backBufferResourceStartTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-		backBufferResourceStartTransitionBarrier.Transition.Subresource = 0;
-
-		graphicsCommandList->ResourceBarrier(1, &backBufferResourceStartTransitionBarrier);
-
-		D3D12_CPU_DESCRIPTOR_HANDLE cpu_rtvDescriptorHandle = surface.rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-		cpu_rtvDescriptorHandle.ptr += (descriptorSizes.rtvDescriptorSize * currentBackBufferIndex);
-		const FLOAT clearColor[4] = { 0.0f, 0.0f, 0.4f, 1.0f };
-		graphicsCommandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
-
-		// Todo: Receive as function argument an array of render data for each surface describing what to render onto each surface
-
-		D3D12_RESOURCE_BARRIER backBufferResourceEndTransitionBarrier = {};
-		backBufferResourceEndTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-		backBufferResourceEndTransitionBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-		backBufferResourceEndTransitionBarrier.Transition.pResource = backBuffer;
-		backBufferResourceEndTransitionBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-		backBufferResourceEndTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-		backBufferResourceEndTransitionBarrier.Transition.Subresource = 0;
-
-		graphicsCommandList->ResourceBarrier(1, &backBufferResourceEndTransitionBarrier);
+		recordSurface(surface, graphicsCommandList.Get());
 	}
 
 	// Stop recording command list
@@ -473,6 +445,38 @@ void direct3d12Graphics::waitForGPU()
 	{
 		waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[i], maxFenceWaitDurationMs);
 	}
+}
+
+void direct3d12Graphics::recordSurface(const sDirect3d12Surface& surface, ID3D12GraphicsCommandList6* commandList)
+{
+	ID3D12Resource* const backBuffer = surface.renderTargetViews[currentBackBufferIndex].Get();
+
+	D3D12_RESOURCE_BARRIER backBufferResourceStartTransitionBarrier = {};
+	backBufferResourceStartTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	backBufferResourceStartTransitionBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	backBufferResourceStartTransitionBarrier.Transition.pResource = backBuffer;
+	backBufferResourceStartTransitionBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	backBufferResourceStartTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+	backBufferResourceStartTransitionBarrier.Transition.Subresource = 0;
+
+	graphicsCommandList->ResourceBarrier(1, &backBufferResourceStartTransitionBarrier);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE cpu_rtvDescriptorHandle = surface.rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	cpu_rtvDescriptorHandle.ptr += (descriptorSizes.rtvDescriptorSize * currentBackBufferIndex);
+	const FLOAT clearColor[4] = { 0.0f, 0.0f, 0.4f, 1.0f };
+	graphicsCommandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
+
+	// Todo: Receive as function argument an array of render data for each surface describing what to render onto each surface
+
+	D3D12_RESOURCE_BARRIER backBufferResourceEndTransitionBarrier = {};
+	backBufferResourceEndTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+	backBufferResourceEndTransitionBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+	backBufferResourceEndTransitionBarrier.Transition.pResource = backBuffer;
+	backBufferResourceEndTransitionBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+	backBufferResourceEndTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+	backBufferResourceEndTransitionBarrier.Transition.Subresource = 0;
+
+	graphicsCommandList->ResourceBarrier(1, &backBufferResourceEndTransitionBarrier);
 }
 
 #endif // PLATFORM_WIN32

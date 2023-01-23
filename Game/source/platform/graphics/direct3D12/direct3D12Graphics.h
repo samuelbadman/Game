@@ -43,6 +43,7 @@ public:
 
 private:
 	static void waitForGPU();
+	static void recordSurface(const sDirect3d12Surface& surface, ID3D12GraphicsCommandList6* commandList);
 };
 
 #endif // PLATFORM_WIN32
