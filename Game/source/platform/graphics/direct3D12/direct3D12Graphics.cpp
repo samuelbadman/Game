@@ -347,6 +347,8 @@ sDirect3d12Surface direct3d12Graphics::createSurface(void* hwnd, uint32_t width,
 
 void direct3d12Graphics::destroySurface(sDirect3d12Surface& surface)
 {
+	waitForGPU();
+
 	surface.swapChain.Reset();
 	surface.renderTargetViews.clear();
 	surface.rtvDescriptorHeap.Reset();
@@ -423,13 +425,11 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, sDirect3d12Surface* 
 	graphicsQueue->ExecuteCommandLists(_countof(graphicsExecuteLists), graphicsExecuteLists);
 
 	// Present each surface
+	static bool tearingSupported = checkTearingSupport(dxgiFactory.Get());
 	for (uint32_t i = 0; i < numSurfaces; ++i)
 	{
 		const sDirect3d12Surface& surface = *surfaces[static_cast<size_t>(i)];
-
-		static bool tearingSupported = checkTearingSupport(dxgiFactory.Get());
-		fatalIfFailed(surface.swapChain->Present(useVSync ? 1 : 0, ((tearingSupported) && (!useVSync)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
-		currentBackBufferIndex = surface.swapChain->GetCurrentBackBufferIndex();
+		presentSurface(surface, useVSync, tearingSupported);
 	}
 
 	// Signal end frame. Must be done after present as flip discard swap effect is being used and this presents without blocking CPU thread
@@ -477,6 +477,12 @@ void direct3d12Graphics::recordSurface(const sDirect3d12Surface& surface, ID3D12
 	backBufferResourceEndTransitionBarrier.Transition.Subresource = 0;
 
 	graphicsCommandList->ResourceBarrier(1, &backBufferResourceEndTransitionBarrier);
+}
+
+void direct3d12Graphics::presentSurface(const sDirect3d12Surface& surface, const bool useVSync, const bool tearingSupported)
+{
+	fatalIfFailed(surface.swapChain->Present(useVSync ? 1 : 0, ((tearingSupported) && (!useVSync)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
+	currentBackBufferIndex = surface.swapChain->GetCurrentBackBufferIndex();
 }
 
 #endif // PLATFORM_WIN32

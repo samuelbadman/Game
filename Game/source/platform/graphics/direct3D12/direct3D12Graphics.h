@@ -44,6 +44,7 @@ public:
 private:
 	static void waitForGPU();
 	static void recordSurface(const sDirect3d12Surface& surface, ID3D12GraphicsCommandList6* commandList);
+	static void presentSurface(const sDirect3d12Surface& surface, const bool useVSync, const bool tearingSupported);
 };
 
 #endif // PLATFORM_WIN32
