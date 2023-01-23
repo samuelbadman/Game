@@ -43,6 +43,7 @@ struct sGameSettings
 
 bool Game::running = false;
 std::shared_ptr<platformWindow> Game::window;
+sDirect3d12Surface Game::surface = {};
 int64_t Game::fps = 0;
 double Game::ms = 0.0;
 
@@ -107,7 +108,7 @@ void Game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
 {
 	if (inWindow == window.get())
 	{
-		direct3d12Graphics::resize(evt.newClientWidth, evt.newClientHeight);
+		direct3d12Graphics::resizeSurface(surface, evt.newClientWidth, evt.newClientHeight);
 	}
 }
 
@@ -156,9 +157,7 @@ void Game::parseCommandLineArgs()
 {
 	int32_t argc;
 	wchar_t** argv = platformGetArgcArgv(argc);
-
-
-
+	// Todo: Parse arguments
 	platformFreeArgv(argv);
 }
 
@@ -190,7 +189,8 @@ void Game::initializeGraphics()
 		platformMessageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
 	}
 	
-	direct3d12Graphics::init(false, platformGetWindowHandle(window.get()), width, height, 3);
+	direct3d12Graphics::init(false, 3);
+	surface = direct3d12Graphics::createSurface(platformGetWindowHandle(window.get()), width, height);
 }
 
 void Game::shutdownGraphics()
@@ -213,5 +213,6 @@ void Game::fixedTick(float fixedStep)
 
 void Game::render()
 {
-	direct3d12Graphics::render(sGameSettings::enableVSync);
+	sDirect3d12Surface* const surfaces[1] = { &surface };
+	direct3d12Graphics::render(_countof(surfaces), surfaces, sGameSettings::enableVSync);
 }

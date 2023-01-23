@@ -284,18 +284,14 @@ static void waitForFence(ID3D12Fence* fence, HANDLE inEventHandle, uint64_t valu
 
 static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
 
+uint32_t direct3d12Graphics::backBufferCount = 0;
 ComPtr<IDXGIFactory7> direct3d12Graphics::dxgiFactory;
 ComPtr<IDXGIAdapter4> direct3d12Graphics::adapter;
 ComPtr<ID3D12Device8> direct3d12Graphics::device;
 ComPtr<ID3D12CommandQueue> direct3d12Graphics::graphicsQueue;
 ComPtr<ID3D12CommandQueue> direct3d12Graphics::computeQueue;
 ComPtr<ID3D12CommandQueue> direct3d12Graphics::copyQueue;
-ComPtr<IDXGISwapChain4> direct3d12Graphics::swapChain;
 sDescriptorSizes direct3d12Graphics::descriptorSizes = {};
-std::vector<ComPtr<ID3D12Resource>> direct3d12Graphics::renderTargetViews;
-ComPtr<ID3D12DescriptorHeap> direct3d12Graphics::rtvDescriptorHeap;
-ComPtr<ID3D12Resource> direct3d12Graphics::depthStencilView;
-ComPtr<ID3D12DescriptorHeap> direct3d12Graphics::dsvDescriptorHeap;
 std::vector<ComPtr<ID3D12CommandAllocator>> direct3d12Graphics::graphicsCommandAllocators;
 ComPtr<ID3D12GraphicsCommandList6> direct3d12Graphics::graphicsCommandList;
 ComPtr<ID3D12Fence> direct3d12Graphics::graphicsFence;
@@ -304,8 +300,10 @@ std::vector<uint64_t> direct3d12Graphics::graphicsFenceValues;
 HANDLE direct3d12Graphics::eventHandle = nullptr;
 uint32_t direct3d12Graphics::currentBackBufferIndex = 0;
 
-void direct3d12Graphics::init(bool useWarp, void* hwnd, uint32_t width, uint32_t height, uint32_t backBufferCount)
+void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
+	backBufferCount = inBackBufferCount;
+
 	enableDebugLayer();
 	createDxgiFactory(dxgiFactory);
 	getAdapter(dxgiFactory.Get(), false, adapter);
@@ -314,13 +312,6 @@ void direct3d12Graphics::init(bool useWarp, void* hwnd, uint32_t width, uint32_t
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT, graphicsQueue);
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_COMPUTE, computeQueue);
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_COPY, copyQueue);
-
-	createSwapChain(dxgiFactory.Get(), graphicsQueue.Get(), static_cast<HWND>(hwnd), width, height, backBufferCount, swapChain);
-	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, backBufferCount, false, rtvDescriptorHeap);
-	renderTargetViews.resize(static_cast<size_t>(backBufferCount));
-	updateRenderTargetViews(device.Get(), swapChain.Get(), descriptorSizes.rtvDescriptorSize, renderTargetViews, rtvDescriptorHeap.Get(), backBufferCount);
-	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false, dsvDescriptorHeap);
-	updateDepthStencilView(device.Get(), width, height, depthStencilView, dsvDescriptorHeap.Get());
 
 	graphicsCommandAllocators.resize(static_cast<size_t>(backBufferCount));
 	for (ComPtr<ID3D12CommandAllocator>& commandAllocator : graphicsCommandAllocators)
@@ -340,10 +331,33 @@ void direct3d12Graphics::shutdown()
 	waitForGPU();
 }
 
-void direct3d12Graphics::resize(uint32_t width, uint32_t height)
+sDirect3d12Surface direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t height)
+{
+	sDirect3d12Surface surface = {};
+
+	createSwapChain(dxgiFactory.Get(), graphicsQueue.Get(), static_cast<HWND>(hwnd), width, height, backBufferCount, surface.swapChain);
+	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, backBufferCount, false, surface.rtvDescriptorHeap);
+	surface.renderTargetViews.resize(static_cast<size_t>(backBufferCount));
+	updateRenderTargetViews(device.Get(), surface.swapChain.Get(), descriptorSizes.rtvDescriptorSize, surface.renderTargetViews, surface.rtvDescriptorHeap.Get(), backBufferCount);
+	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false, surface.dsvDescriptorHeap);
+	updateDepthStencilView(device.Get(), width, height, surface.depthStencilView, surface.dsvDescriptorHeap.Get());
+
+	return surface;
+}
+
+void direct3d12Graphics::destroySurface(sDirect3d12Surface& surface)
+{
+	surface.swapChain.Reset();
+	surface.renderTargetViews.clear();
+	surface.rtvDescriptorHeap.Reset();
+	surface.depthStencilView.Reset();
+	surface.dsvDescriptorHeap.Reset();
+}
+
+void direct3d12Graphics::resizeSurface(sDirect3d12Surface& surface, uint32_t width, uint32_t height)
 {
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
-	fatalIfFailed(swapChain->GetDesc(&swapChainDesc));
+	fatalIfFailed(surface.swapChain->GetDesc(&swapChainDesc));
 
 	// Don't resize if the width and height have not changed
 	if (swapChainDesc.BufferDesc.Width != width || swapChainDesc.BufferDesc.Height != height)
@@ -356,64 +370,78 @@ void direct3d12Graphics::resize(uint32_t width, uint32_t height)
 		waitForGPU();
 
 		// Release render target view resources
-		const size_t backBufferCount = renderTargetViews.size();
+		const size_t backBufferCount = surface.renderTargetViews.size();
 		for (size_t i = 0; i < backBufferCount; ++i)
 		{
-			renderTargetViews[i].Reset();
+			surface.renderTargetViews[i].Reset();
 			graphicsFenceValues[i] = graphicsFenceValues[currentBackBufferIndex];
 		}
 
 		// Resize the swap chain back buffers
-		fatalIfFailed(swapChain->ResizeBuffers(static_cast<UINT>(backBufferCount), width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
+		fatalIfFailed(surface.swapChain->ResizeBuffers(static_cast<UINT>(backBufferCount), width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
 
 		// Update current back buffer index
-		currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
+		currentBackBufferIndex = surface.swapChain->GetCurrentBackBufferIndex();
 
 		// Update render target view resources with new back buffers
-		updateRenderTargetViews(device.Get(), swapChain.Get(), descriptorSizes.rtvDescriptorSize, renderTargetViews, rtvDescriptorHeap.Get(), static_cast<UINT>(backBufferCount));
+		updateRenderTargetViews(device.Get(),
+			surface.swapChain.Get(), 
+			descriptorSizes.rtvDescriptorSize, 
+			surface.renderTargetViews, 
+			surface.rtvDescriptorHeap.Get(), 
+			static_cast<UINT>(backBufferCount));
 
 		// Update depth stencil view resource
-		updateDepthStencilView(device.Get(), width, height, depthStencilView, dsvDescriptorHeap.Get());
+		updateDepthStencilView(device.Get(), width, height, surface.depthStencilView, surface.dsvDescriptorHeap.Get());
 	}
 }
 
-void direct3d12Graphics::render(const bool useVSync)
+void direct3d12Graphics::render(const uint32_t numSurfaces, sDirect3d12Surface* const * surfaces, const bool useVSync)
 {
 	// Wait for the previous frame to finish on the GPU
 	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentBackBufferIndex], maxFenceWaitDurationMs);
 
 	// Get frame resources
 	ID3D12CommandAllocator* const graphicsCommandAllocator = graphicsCommandAllocators[currentBackBufferIndex].Get();
-	ID3D12Resource* const backBuffer = renderTargetViews[currentBackBufferIndex].Get();
 
 	// Start recording command list
 	fatalIfFailed(graphicsCommandAllocator->Reset());
 	fatalIfFailed(graphicsCommandList->Reset(graphicsCommandAllocator, nullptr));
 
-	D3D12_RESOURCE_BARRIER backBufferResourceStartTransitionBarrier = {};
-	backBufferResourceStartTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	backBufferResourceStartTransitionBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	backBufferResourceStartTransitionBarrier.Transition.pResource = backBuffer;
-	backBufferResourceStartTransitionBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	backBufferResourceStartTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
-	backBufferResourceStartTransitionBarrier.Transition.Subresource = 0;
+	// For each surface
+	for(uint32_t i = 0; i < numSurfaces; ++i)
+	{
+		const sDirect3d12Surface& surface = *surfaces[static_cast<size_t>(i)];
 
-	graphicsCommandList->ResourceBarrier(1, &backBufferResourceStartTransitionBarrier);
+		ID3D12Resource* const backBuffer = surface.renderTargetViews[currentBackBufferIndex].Get();
 
-	D3D12_CPU_DESCRIPTOR_HANDLE cpu_rtvDescriptorHandle = rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	cpu_rtvDescriptorHandle.ptr += (descriptorSizes.rtvDescriptorSize * currentBackBufferIndex);
-	const FLOAT clearColor[4] = { 0.0f, 0.0f, 0.4f, 1.0f };
-	graphicsCommandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
+		D3D12_RESOURCE_BARRIER backBufferResourceStartTransitionBarrier = {};
+		backBufferResourceStartTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		backBufferResourceStartTransitionBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		backBufferResourceStartTransitionBarrier.Transition.pResource = backBuffer;
+		backBufferResourceStartTransitionBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		backBufferResourceStartTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
+		backBufferResourceStartTransitionBarrier.Transition.Subresource = 0;
 
-	D3D12_RESOURCE_BARRIER backBufferResourceEndTransitionBarrier = {};
-	backBufferResourceEndTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-	backBufferResourceEndTransitionBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-	backBufferResourceEndTransitionBarrier.Transition.pResource = backBuffer;
-	backBufferResourceEndTransitionBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-	backBufferResourceEndTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-	backBufferResourceEndTransitionBarrier.Transition.Subresource = 0;
+		graphicsCommandList->ResourceBarrier(1, &backBufferResourceStartTransitionBarrier);
 
-	graphicsCommandList->ResourceBarrier(1, &backBufferResourceEndTransitionBarrier);
+		D3D12_CPU_DESCRIPTOR_HANDLE cpu_rtvDescriptorHandle = surface.rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+		cpu_rtvDescriptorHandle.ptr += (descriptorSizes.rtvDescriptorSize * currentBackBufferIndex);
+		const FLOAT clearColor[4] = { 0.0f, 0.0f, 0.4f, 1.0f };
+		graphicsCommandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
+
+		// Todo: Receive as function argument an array of render data for each surface describing what to render onto each surface
+
+		D3D12_RESOURCE_BARRIER backBufferResourceEndTransitionBarrier = {};
+		backBufferResourceEndTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
+		backBufferResourceEndTransitionBarrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
+		backBufferResourceEndTransitionBarrier.Transition.pResource = backBuffer;
+		backBufferResourceEndTransitionBarrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
+		backBufferResourceEndTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
+		backBufferResourceEndTransitionBarrier.Transition.Subresource = 0;
+
+		graphicsCommandList->ResourceBarrier(1, &backBufferResourceEndTransitionBarrier);
+	}
 
 	// Stop recording command list
 	fatalIfFailed(graphicsCommandList->Close());
@@ -422,10 +450,15 @@ void direct3d12Graphics::render(const bool useVSync)
 	ID3D12CommandList* graphicsExecuteLists[1] = { graphicsCommandList.Get() };
 	graphicsQueue->ExecuteCommandLists(_countof(graphicsExecuteLists), graphicsExecuteLists);
 
-	// Present
-	static bool tearingSupported = checkTearingSupport(dxgiFactory.Get());
-	fatalIfFailed(swapChain->Present(useVSync ? 1 : 0, ((tearingSupported) && (!useVSync)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
-	currentBackBufferIndex = swapChain->GetCurrentBackBufferIndex();
+	// Present each surface
+	for (uint32_t i = 0; i < numSurfaces; ++i)
+	{
+		const sDirect3d12Surface& surface = *surfaces[static_cast<size_t>(i)];
+
+		static bool tearingSupported = checkTearingSupport(dxgiFactory.Get());
+		fatalIfFailed(surface.swapChain->Present(useVSync ? 1 : 0, ((tearingSupported) && (!useVSync)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
+		currentBackBufferIndex = surface.swapChain->GetCurrentBackBufferIndex();
+	}
 
 	// Signal end frame. Must be done after present as flip discard swap effect is being used and this presents without blocking CPU thread
 	++graphicsFenceValue;
@@ -436,8 +469,7 @@ void direct3d12Graphics::render(const bool useVSync)
 void direct3d12Graphics::waitForGPU()
 {
 	// Wait for all frames to finish executing on the GPU
-	const size_t backBufferCount = renderTargetViews.size();
-	for (size_t i = 0; i < backBufferCount; ++i)
+	for (size_t i = 0; i < static_cast<size_t>(backBufferCount); ++i)
 	{
 		waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[i], maxFenceWaitDurationMs);
 	}

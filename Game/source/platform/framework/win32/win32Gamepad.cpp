@@ -31,7 +31,7 @@ static void applyCircularDeadzone(float& axisX, float& axisY, float deadzoneRadi
 	}
 }
 
-static void refreshButton(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port, int16_t button)
+static void pollButton(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port, int16_t button)
 {
 	// Get the current and previous states of the button
 	auto currentButtonState = state.Gamepad.wButtons & static_cast<WORD>(button);
@@ -68,25 +68,25 @@ static void refreshButton(const XINPUT_STATE& state, const XINPUT_STATE& prevSta
 	}
 }
 
-static void refreshButtons(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
+static void pollButtons(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
 {
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Bottom);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Top);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Left);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Right);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Down);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Up);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Left);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Right);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_Special_Left);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_Special_Right);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_Left_Shoulder);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_Right_Shoulder);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_Left_Thumbstick_Button);
-	refreshButton(state, prevState, port, platformKeyCodes::Gamepad_Right_Thumbstick_Button);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Bottom);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Top);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Left);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Right);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Down);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Up);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Left);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Right);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Special_Left);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Special_Right);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Left_Shoulder);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Right_Shoulder);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Left_Thumbstick_Button);
+	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Right_Thumbstick_Button);
 }
 
-static void refreshThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
+static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
 {
 	// Left
 	// Axis
@@ -277,7 +277,7 @@ static void refreshThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& pr
 	}
 }
 
-static void refreshTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
+static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
 {
 	// Action
 	// Left
@@ -338,9 +338,9 @@ void platformPollGamepads()
 			continue;
 		}
 
-		refreshButtons(state, prevStates[i], i);
-		refreshThumbsticks(state, prevStates[i], i);
-		refreshTriggers(state, prevStates[i], i);
+		pollButtons(state, prevStates[i], i);
+		pollThumbsticks(state, prevStates[i], i);
+		pollTriggers(state, prevStates[i], i);
 
 		prevStates[i] = state;
 	}

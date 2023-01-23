@@ -140,5 +140,8 @@
     <ClInclude Include="source\platform\framework\platformCommandLine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Surface.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
