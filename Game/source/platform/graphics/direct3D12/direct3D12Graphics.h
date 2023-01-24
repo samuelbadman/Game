@@ -2,8 +2,6 @@
 
 #if defined(PLATFORM_WIN32)
 
-using namespace Microsoft::WRL;
-
 struct sDescriptorSizes
 {
 	UINT rtvDescriptorSize;
@@ -16,16 +14,16 @@ class direct3d12Graphics
 {
 private:
 	static uint32_t backBufferCount;
-	static ComPtr<IDXGIFactory7> dxgiFactory;
-	static ComPtr<IDXGIAdapter4> adapter;
-	static ComPtr<ID3D12Device8> device;
-	static ComPtr<ID3D12CommandQueue> graphicsQueue;
-	static ComPtr<ID3D12CommandQueue> computeQueue;
-	static ComPtr<ID3D12CommandQueue> copyQueue;
+	static Microsoft::WRL::ComPtr<IDXGIFactory7> dxgiFactory;
+	static Microsoft::WRL::ComPtr<IDXGIAdapter4> adapter;
+	static Microsoft::WRL::ComPtr<ID3D12Device8> device;
+	static Microsoft::WRL::ComPtr<ID3D12CommandQueue> graphicsQueue;
+	static Microsoft::WRL::ComPtr<ID3D12CommandQueue> computeQueue;
+	static Microsoft::WRL::ComPtr<ID3D12CommandQueue> copyQueue;
 	static sDescriptorSizes descriptorSizes;
-	static std::vector<ComPtr<ID3D12CommandAllocator>> graphicsCommandAllocators;
-	static ComPtr<ID3D12GraphicsCommandList6> graphicsCommandList;
-	static ComPtr<ID3D12Fence> graphicsFence;
+	static std::vector<Microsoft::WRL::ComPtr<ID3D12CommandAllocator>> graphicsCommandAllocators;
+	static Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList6> graphicsCommandList;
+	static Microsoft::WRL::ComPtr<ID3D12Fence> graphicsFence;
 	static uint64_t graphicsFenceValue;
 	static std::vector<uint64_t> graphicsFenceValues;
 	static HANDLE eventHandle;
