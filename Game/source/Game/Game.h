@@ -1,13 +1,11 @@
 #pragma once
 
-#include "platform/graphics/direct3D12/direct3d12Surface.h"
-
 class Game
 {
 private:
 	static bool running;
 	static std::shared_ptr<class platformWindow> window;
-	static sDirect3d12Surface surface;
+	static std::shared_ptr<class graphicsSurface> surface;
 	static int64_t fps;
 	static double ms;
 

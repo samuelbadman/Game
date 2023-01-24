@@ -123,6 +123,7 @@
     <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Graphics.h" />
     <ClInclude Include="source\platform\framework\platformWindow.h" />
     <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Surface.h" />
+    <ClInclude Include="source\platform\graphics\graphicsSurface.h" />
     <ClInclude Include="source\stringHelper.h" />
     <ClInclude Include="source\events\platform\closedEvent.h" />
     <ClInclude Include="source\events\platform\destroyedEvent.h" />

@@ -2,8 +2,6 @@
 
 #if defined(PLATFORM_WIN32)
 
-#include "direct3d12Surface.h"
-
 using namespace Microsoft::WRL;
 
 struct sDescriptorSizes
@@ -36,15 +34,15 @@ private:
 public:
 	static void init(bool useWarp, uint32_t inBackBufferCount);
 	static void shutdown();
-	static sDirect3d12Surface createSurface(void* hwnd, uint32_t width, uint32_t height);
-	static void destroySurface(sDirect3d12Surface& surface);
-	static void resizeSurface(sDirect3d12Surface& surface, uint32_t width, uint32_t height);
-	static void render(const uint32_t numSurfaces, sDirect3d12Surface* const * surfaces, const bool useVSync);
+	static void createSurface(void* hwnd, uint32_t width, uint32_t height, std::shared_ptr<class graphicsSurface>& outSurface);
+	static void destroySurface(std::shared_ptr<class graphicsSurface>& surface);
+	static void resizeSurface(class graphicsSurface* surface, uint32_t width, uint32_t height);
+	static void render(const uint32_t numSurfaces, class graphicsSurface* const * surfaces, const bool useVSync);
 
 private:
 	static void waitForGPU();
-	static void recordSurface(const sDirect3d12Surface& surface, ID3D12GraphicsCommandList6* commandList);
-	static void presentSurface(const sDirect3d12Surface& surface, const bool useVSync, const bool tearingSupported);
+	static void recordSurface(const class graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList);
+	static void presentSurface(const class graphicsSurface* surface, const bool useVSync, const bool tearingSupported);
 };
 
 #endif // PLATFORM_WIN32

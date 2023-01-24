@@ -4,6 +4,7 @@
 
 #include "direct3d12Graphics.h"
 #include "platform/framework/platformMessageBox.h"
+#include "direct3d12Surface.h"
 
 #define fatalIfFailed(x) if(FAILED(x)) platformMessageBoxFatal("hresult failed.");
 
@@ -331,35 +332,39 @@ void direct3d12Graphics::shutdown()
 	waitForGPU();
 }
 
-sDirect3d12Surface direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t height)
+void direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t height, std::shared_ptr<graphicsSurface>& outSurface)
 {
-	sDirect3d12Surface surface = {};
-
-	createSwapChain(dxgiFactory.Get(), graphicsQueue.Get(), static_cast<HWND>(hwnd), width, height, backBufferCount, surface.swapChain);
-	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, backBufferCount, false, surface.rtvDescriptorHeap);
-	surface.renderTargetViews.resize(static_cast<size_t>(backBufferCount));
-	updateRenderTargetViews(device.Get(), surface.swapChain.Get(), descriptorSizes.rtvDescriptorSize, surface.renderTargetViews, surface.rtvDescriptorHeap.Get(), backBufferCount);
-	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false, surface.dsvDescriptorHeap);
-	updateDepthStencilView(device.Get(), width, height, surface.depthStencilView, surface.dsvDescriptorHeap.Get());
-
-	return surface;
+	outSurface = std::make_shared<graphicsSurface>();
+	createSwapChain(dxgiFactory.Get(), graphicsQueue.Get(), static_cast<HWND>(hwnd), width, height, backBufferCount, outSurface->swapChain);
+	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_RTV, backBufferCount, false, outSurface->rtvDescriptorHeap);
+	outSurface->renderTargetViews.resize(static_cast<size_t>(backBufferCount));
+	updateRenderTargetViews(device.Get(),
+		outSurface->swapChain.Get(), 
+		descriptorSizes.rtvDescriptorSize, 
+		outSurface->renderTargetViews, 
+		outSurface->rtvDescriptorHeap.Get(), 
+		backBufferCount);
+	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false, outSurface->dsvDescriptorHeap);
+	updateDepthStencilView(device.Get(), width, height, outSurface->depthStencilView, outSurface->dsvDescriptorHeap.Get());
 }
 
-void direct3d12Graphics::destroySurface(sDirect3d12Surface& surface)
+void direct3d12Graphics::destroySurface(std::shared_ptr<graphicsSurface>& surface)
 {
 	waitForGPU();
 
-	surface.swapChain.Reset();
-	surface.renderTargetViews.clear();
-	surface.rtvDescriptorHeap.Reset();
-	surface.depthStencilView.Reset();
-	surface.dsvDescriptorHeap.Reset();
+	surface->swapChain.Reset();
+	surface->renderTargetViews.clear();
+	surface->rtvDescriptorHeap.Reset();
+	surface->depthStencilView.Reset();
+	surface->dsvDescriptorHeap.Reset();
+
+	surface.reset();
 }
 
-void direct3d12Graphics::resizeSurface(sDirect3d12Surface& surface, uint32_t width, uint32_t height)
+void direct3d12Graphics::resizeSurface(graphicsSurface* surface, uint32_t width, uint32_t height)
 {
 	DXGI_SWAP_CHAIN_DESC swapChainDesc;
-	fatalIfFailed(surface.swapChain->GetDesc(&swapChainDesc));
+	fatalIfFailed(surface->swapChain->GetDesc(&swapChainDesc));
 
 	// Don't resize if the width and height have not changed
 	if (swapChainDesc.BufferDesc.Width != width || swapChainDesc.BufferDesc.Height != height)
@@ -372,33 +377,33 @@ void direct3d12Graphics::resizeSurface(sDirect3d12Surface& surface, uint32_t wid
 		waitForGPU();
 
 		// Release render target view resources
-		const size_t backBufferCount = surface.renderTargetViews.size();
+		const size_t backBufferCount = surface->renderTargetViews.size();
 		for (size_t i = 0; i < backBufferCount; ++i)
 		{
-			surface.renderTargetViews[i].Reset();
+			surface->renderTargetViews[i].Reset();
 			graphicsFenceValues[i] = graphicsFenceValues[currentBackBufferIndex];
 		}
 
 		// Resize the swap chain back buffers
-		fatalIfFailed(surface.swapChain->ResizeBuffers(static_cast<UINT>(backBufferCount), width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
+		fatalIfFailed(surface->swapChain->ResizeBuffers(static_cast<UINT>(backBufferCount), width, height, swapChainDesc.BufferDesc.Format, swapChainDesc.Flags));
 
 		// Update current back buffer index
-		currentBackBufferIndex = surface.swapChain->GetCurrentBackBufferIndex();
+		currentBackBufferIndex = surface->swapChain->GetCurrentBackBufferIndex();
 
 		// Update render target view resources with new back buffers
 		updateRenderTargetViews(device.Get(),
-			surface.swapChain.Get(), 
+			surface->swapChain.Get(), 
 			descriptorSizes.rtvDescriptorSize, 
-			surface.renderTargetViews, 
-			surface.rtvDescriptorHeap.Get(), 
+			surface->renderTargetViews,
+			surface->rtvDescriptorHeap.Get(),
 			static_cast<UINT>(backBufferCount));
 
 		// Update depth stencil view resource
-		updateDepthStencilView(device.Get(), width, height, surface.depthStencilView, surface.dsvDescriptorHeap.Get());
+		updateDepthStencilView(device.Get(), width, height, surface->depthStencilView, surface->dsvDescriptorHeap.Get());
 	}
 }
 
-void direct3d12Graphics::render(const uint32_t numSurfaces, sDirect3d12Surface* const * surfaces, const bool useVSync)
+void direct3d12Graphics::render(const uint32_t numSurfaces, graphicsSurface* const * surfaces, const bool useVSync)
 {
 	// Wait for the previous frame to finish on the GPU
 	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentBackBufferIndex], maxFenceWaitDurationMs);
@@ -413,7 +418,7 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, sDirect3d12Surface* 
 	// For each surface
 	for(uint32_t i = 0; i < numSurfaces; ++i)
 	{
-		const sDirect3d12Surface& surface = *surfaces[static_cast<size_t>(i)];
+		const graphicsSurface* const surface = surfaces[static_cast<size_t>(i)];
 		recordSurface(surface, graphicsCommandList.Get());
 	}
 
@@ -428,7 +433,7 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, sDirect3d12Surface* 
 	static bool tearingSupported = checkTearingSupport(dxgiFactory.Get());
 	for (uint32_t i = 0; i < numSurfaces; ++i)
 	{
-		const sDirect3d12Surface& surface = *surfaces[static_cast<size_t>(i)];
+		const graphicsSurface* surface = surfaces[static_cast<size_t>(i)];
 		presentSurface(surface, useVSync, tearingSupported);
 	}
 
@@ -447,9 +452,9 @@ void direct3d12Graphics::waitForGPU()
 	}
 }
 
-void direct3d12Graphics::recordSurface(const sDirect3d12Surface& surface, ID3D12GraphicsCommandList6* commandList)
+void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList)
 {
-	ID3D12Resource* const backBuffer = surface.renderTargetViews[currentBackBufferIndex].Get();
+	ID3D12Resource* const backBuffer = surface->renderTargetViews[currentBackBufferIndex].Get();
 
 	D3D12_RESOURCE_BARRIER backBufferResourceStartTransitionBarrier = {};
 	backBufferResourceStartTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -461,7 +466,7 @@ void direct3d12Graphics::recordSurface(const sDirect3d12Surface& surface, ID3D12
 
 	graphicsCommandList->ResourceBarrier(1, &backBufferResourceStartTransitionBarrier);
 
-	D3D12_CPU_DESCRIPTOR_HANDLE cpu_rtvDescriptorHandle = surface.rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	D3D12_CPU_DESCRIPTOR_HANDLE cpu_rtvDescriptorHandle = surface->rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	cpu_rtvDescriptorHandle.ptr += (descriptorSizes.rtvDescriptorSize * currentBackBufferIndex);
 	const FLOAT clearColor[4] = { 0.0f, 0.0f, 0.4f, 1.0f };
 	graphicsCommandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
@@ -479,10 +484,10 @@ void direct3d12Graphics::recordSurface(const sDirect3d12Surface& surface, ID3D12
 	graphicsCommandList->ResourceBarrier(1, &backBufferResourceEndTransitionBarrier);
 }
 
-void direct3d12Graphics::presentSurface(const sDirect3d12Surface& surface, const bool useVSync, const bool tearingSupported)
+void direct3d12Graphics::presentSurface(const graphicsSurface* surface, const bool useVSync, const bool tearingSupported)
 {
-	fatalIfFailed(surface.swapChain->Present(useVSync ? 1 : 0, ((tearingSupported) && (!useVSync)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
-	currentBackBufferIndex = surface.swapChain->GetCurrentBackBufferIndex();
+	fatalIfFailed(surface->swapChain->Present(useVSync ? 1 : 0, ((tearingSupported) && (!useVSync)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
+	currentBackBufferIndex = surface->swapChain->GetCurrentBackBufferIndex();
 }
 
 #endif // PLATFORM_WIN32

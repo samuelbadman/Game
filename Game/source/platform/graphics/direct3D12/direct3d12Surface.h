@@ -4,8 +4,9 @@
 
 using namespace Microsoft::WRL;
 
-struct sDirect3d12Surface
+class graphicsSurface
 {
+public:
 	ComPtr<IDXGISwapChain4> swapChain;
 	std::vector<ComPtr<ID3D12Resource>> renderTargetViews;
 	ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
