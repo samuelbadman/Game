@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "Game.h"
+#include "game.h"
 #include "platform/framework/platformCommandLine.h"
 #include "platform/framework/platformWindow.h"
 #include "platform/framework/platformDisplay.h"
@@ -41,13 +41,13 @@ struct sGameSettings
 	static constexpr bool enableVSync = false;
 };
 
-bool Game::running = false;
-std::shared_ptr<platformWindow> Game::window;
-std::shared_ptr<graphicsSurface> Game::surface;
-int64_t Game::fps = 0;
-double Game::ms = 0.0;
+bool game::running = false;
+std::shared_ptr<platformWindow> game::window;
+std::shared_ptr<graphicsSurface> game::surface;
+int64_t game::fps = 0;
+double game::ms = 0.0;
 
-void Game::start()
+void game::start()
 {
 	running = true;
 
@@ -89,22 +89,22 @@ void Game::start()
 	shutdownGraphics();
 }
 
-void Game::exit()
+void game::exit()
 {
 	running = false;
 	platformDestroyWindow(window);
 }
 
-void Game::onInputEvent(platformWindow* inWindow, const sInputEvent& evt)
+void game::onInputEvent(platformWindow* inWindow, const sInputEvent& evt)
 {
 
 }
 
-void Game::onWindowMaximized(platformWindow* inWindow, const struct sMaximizedEvent& evt)
+void game::onWindowMaximized(platformWindow* inWindow, const struct sMaximizedEvent& evt)
 {
 }
 
-void Game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
+void game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
 {
 	if (inWindow == window.get())
 	{
@@ -112,27 +112,27 @@ void Game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
 	}
 }
 
-void Game::onWindowMinimized(platformWindow* inWindow, const sMinimizedEvent& evt)
+void game::onWindowMinimized(platformWindow* inWindow, const sMinimizedEvent& evt)
 {
 }
 
-void Game::onWindowEnterSizeMove(platformWindow* inWindow, const sEnterSizeMoveEvent& evt)
+void game::onWindowEnterSizeMove(platformWindow* inWindow, const sEnterSizeMoveEvent& evt)
 {
 }
 
-void Game::onWindowExitSizeMove(platformWindow* inWindow, const sExitSizeMoveEvent& evt)
+void game::onWindowExitSizeMove(platformWindow* inWindow, const sExitSizeMoveEvent& evt)
 {
 }
 
-void Game::onWindowGainedFocus(platformWindow* inWindow, const sGainedFocusEvent& evt)
+void game::onWindowGainedFocus(platformWindow* inWindow, const sGainedFocusEvent& evt)
 {
 }
 
-void Game::onWindowLostFocus(platformWindow* inWindow, const sLostFocusEvent& evt)
+void game::onWindowLostFocus(platformWindow* inWindow, const sLostFocusEvent& evt)
 {
 }
 
-void Game::onWindowClosed(platformWindow* inWindow, const sClosedEvent& evt)
+void game::onWindowClosed(platformWindow* inWindow, const sClosedEvent& evt)
 {
 	if (inWindow == window.get())
 	{
@@ -140,20 +140,20 @@ void Game::onWindowClosed(platformWindow* inWindow, const sClosedEvent& evt)
 	}
 }
 
-void Game::onWindowDestroyedEvent(platformWindow* inWindow, const sDestroyedEvent& evt)
+void game::onWindowDestroyedEvent(platformWindow* inWindow, const sDestroyedEvent& evt)
 {
 
 }
 
-void Game::onWindowEnterFullScreen(platformWindow* inWindow, const sEnterFullScreenEvent& evt)
+void game::onWindowEnterFullScreen(platformWindow* inWindow, const sEnterFullScreenEvent& evt)
 {
 }
 
-void Game::onWindowExitFullScreen(platformWindow* inWindow, const sExitFullScreenEvent& evt)
+void game::onWindowExitFullScreen(platformWindow* inWindow, const sExitFullScreenEvent& evt)
 {
 }
 
-void Game::parseCommandLineArgs()
+void game::parseCommandLineArgs()
 {
 	int32_t argc;
 	wchar_t** argv = platformGetArgcArgv(argc);
@@ -161,7 +161,7 @@ void Game::parseCommandLineArgs()
 	platformFreeArgv(argv);
 }
 
-void Game::initializeWindow()
+void game::initializeWindow()
 {
 	// Get the default display info
 	sDisplayDesc defaultDisplayDesc = platformGetInfoForDisplayAtIndex(sGameSettings::defaultDisplayIndex);
@@ -180,7 +180,7 @@ void Game::initializeWindow()
 	platformOpenWindow(windowDesc, window);
 }
 
-void Game::initializeGraphics()
+void game::initializeGraphics()
 {
 	uint32_t width;
 	uint32_t height;
@@ -193,25 +193,25 @@ void Game::initializeGraphics()
 	direct3d12Graphics::createSurface(platformGetWindowHandle(window.get()), width, height, surface);
 }
 
-void Game::shutdownGraphics()
+void game::shutdownGraphics()
 {
 	direct3d12Graphics::shutdown();
 }
 
-void Game::initializeAudio()
+void game::initializeAudio()
 {
 	platformInitAudio();
 }
 
-void Game::tick(float deltaSeconds)
+void game::tick(float deltaSeconds)
 {
 }
 
-void Game::fixedTick(float fixedStep)
+void game::fixedTick(float fixedStep)
 {
 }
 
-void Game::render()
+void game::render()
 {
 	graphicsSurface* const surfaces[1] = { surface.get() };
 	direct3d12Graphics::render(_countof(surfaces), surfaces, sGameSettings::enableVSync);

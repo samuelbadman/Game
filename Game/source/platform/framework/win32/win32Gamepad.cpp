@@ -5,7 +5,7 @@
 #include "platform/framework/platformGamepad.h"
 #include "platform/framework/platformKeyCodes.h"
 #include "events/platform/inputEvent.h"
-#include "Game/Game.h"
+#include "game/game.h"
 
 static XINPUT_STATE prevStates[XUSER_MAX_COUNT];
 
@@ -53,7 +53,7 @@ static void pollButton(const XINPUT_STATE& state, const XINPUT_STATE& prevState,
 		evt.port = port;
 		evt.data = 1.0f;
 
-		Game::onInputEvent(nullptr, evt);
+		game::onInputEvent(nullptr, evt);
 	}
 	else
 	{
@@ -64,7 +64,7 @@ static void pollButton(const XINPUT_STATE& state, const XINPUT_STATE& prevState,
 		evt.port = port;
 		evt.data = 0.0f;
 
-		Game::onInputEvent(nullptr, evt);
+		game::onInputEvent(nullptr, evt);
 	}
 }
 
@@ -106,7 +106,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 	leftXAxisEvent.port = port;
 	leftXAxisEvent.data = thumbLX;
 
-	Game::onInputEvent(nullptr, leftXAxisEvent);
+	game::onInputEvent(nullptr, leftXAxisEvent);
 
 	sInputEvent leftYAxisEvent = {};
 	leftYAxisEvent.repeatedKey = false;
@@ -114,7 +114,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 	leftYAxisEvent.port = port;
 	leftYAxisEvent.data = thumbLY;
 
-	Game::onInputEvent(nullptr, leftYAxisEvent);
+	game::onInputEvent(nullptr, leftYAxisEvent);
 
 	// Action
 	// Get the current and previous states of the stick
@@ -137,7 +137,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			leftThumbstickRightEvent.port = port;
 			leftThumbstickRightEvent.data = 1.0f;
 
-			Game::onInputEvent(nullptr, leftThumbstickRightEvent);
+			game::onInputEvent(nullptr, leftThumbstickRightEvent);
 		}
 		// Check if the stick is pushed left
 		else if (currLX < 0)
@@ -149,7 +149,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			leftThumbstickLeftEvent.port = port;
 			leftThumbstickLeftEvent.data = 1.0f;
 
-			Game::onInputEvent(nullptr, leftThumbstickLeftEvent);
+			game::onInputEvent(nullptr, leftThumbstickLeftEvent);
 		}
 	}
 
@@ -166,7 +166,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			leftThumbstickUpEvent.port = port;
 			leftThumbstickUpEvent.data = 1.0f;
 
-			Game::onInputEvent(nullptr, leftThumbstickUpEvent);
+			game::onInputEvent(nullptr, leftThumbstickUpEvent);
 		}
 		// Check if the stick is pushed down
 		else if (currLY < 0)
@@ -178,7 +178,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			leftThumbstickDownEvent.port = port;
 			leftThumbstickDownEvent.data = 1.0f;
 
-			Game::onInputEvent(nullptr, leftThumbstickDownEvent);
+			game::onInputEvent(nullptr, leftThumbstickDownEvent);
 		}
 	}
 
@@ -200,7 +200,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 	rightXAxisEvent.port = port;
 	rightXAxisEvent.data = thumbRX;
 
-	Game::onInputEvent(nullptr, rightXAxisEvent);
+	game::onInputEvent(nullptr, rightXAxisEvent);
 
 	sInputEvent rightYAxisEvent = {};
 	rightYAxisEvent.repeatedKey = false;
@@ -208,7 +208,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 	rightYAxisEvent.port = port;
 	rightYAxisEvent.data = thumbRY;
 
-	Game::onInputEvent(nullptr, rightYAxisEvent);
+	game::onInputEvent(nullptr, rightYAxisEvent);
 
 	// Action
 	// Get the current and previous states of the stick
@@ -231,7 +231,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			rightThumbstickRightEvent.port = port;
 			rightThumbstickRightEvent.data = 1.0f;
 
-			Game::onInputEvent(nullptr, rightThumbstickRightEvent);
+			game::onInputEvent(nullptr, rightThumbstickRightEvent);
 		}
 		// Check if the stick is pushed left
 		else if (currRX < 0)
@@ -243,7 +243,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			rightThumbstickLeftEvent.port = port;
 			rightThumbstickLeftEvent.data = 1.0f;
 
-			Game::onInputEvent(nullptr, rightThumbstickLeftEvent);
+			game::onInputEvent(nullptr, rightThumbstickLeftEvent);
 		}
 	}
 
@@ -260,7 +260,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			rightThumbstickUpEvent.port = port;
 			rightThumbstickUpEvent.data = 1.0f;
 
-			Game::onInputEvent(nullptr, rightThumbstickUpEvent);
+			game::onInputEvent(nullptr, rightThumbstickUpEvent);
 		}
 		// Check if the stick is pushed down
 		else if (currRY < 0)
@@ -272,7 +272,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			rightThumbstickDownEvent.port = port;
 			rightThumbstickDownEvent.data = 1.0f;
 
-			Game::onInputEvent(nullptr, rightThumbstickDownEvent);
+			game::onInputEvent(nullptr, rightThumbstickDownEvent);
 		}
 	}
 }
@@ -291,7 +291,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 		leftActionEvent.port = port;
 		leftActionEvent.data = static_cast<float>(currL);
 
-		Game::onInputEvent(nullptr, leftActionEvent);
+		game::onInputEvent(nullptr, leftActionEvent);
 	}
 
 	// Right
@@ -305,7 +305,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 		rightActionEvent.port = port;
 		rightActionEvent.data = static_cast<float>(currR);
 
-		Game::onInputEvent(nullptr, rightActionEvent);
+		game::onInputEvent(nullptr, rightActionEvent);
 	}
 
 	// Axis
@@ -316,7 +316,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 	leftAxisEvent.port = port;
 	leftAxisEvent.data = static_cast<float>(state.Gamepad.bLeftTrigger) / static_cast<float>(gamepadMaxTriggerMagnitude);
 
-	Game::onInputEvent(nullptr, leftAxisEvent);
+	game::onInputEvent(nullptr, leftAxisEvent);
 
 	// Right
 	sInputEvent rightAxisEvent = {};
@@ -325,7 +325,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 	rightAxisEvent.port = port;
 	rightAxisEvent.data = static_cast<float>(state.Gamepad.bRightTrigger) /	static_cast<float>(gamepadMaxTriggerMagnitude);
 
-	Game::onInputEvent(nullptr, rightAxisEvent);
+	game::onInputEvent(nullptr, rightAxisEvent);
 }
 
 void platformPollGamepads()

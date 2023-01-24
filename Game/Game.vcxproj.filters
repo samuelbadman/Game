@@ -51,7 +51,7 @@
     <ClCompile Include="source\platform\framework\win32\win32Gamepad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\Game\Game.cpp">
+    <ClCompile Include="source\game\game.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\platform\framework\win32\win32CommandLine.cpp">
@@ -128,7 +128,7 @@
     <ClInclude Include="source\platform\framework\platformWindow.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\Game\Game.h">
+    <ClInclude Include="source\game\game.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\framework\platformKeyCodes.h">

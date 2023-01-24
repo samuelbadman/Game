@@ -1,6 +1,6 @@
 #pragma once
 
-class Game
+class game
 {
 private:
 	static bool running;

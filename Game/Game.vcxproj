@@ -90,7 +90,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="source\Game\Game.cpp" />
+    <ClCompile Include="source\game\game.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32CommandLine.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32OS.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Audio.cpp" />
@@ -109,7 +109,7 @@
     <ClCompile Include="source\platform\framework\win32\win32Window.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="source\Game\Game.h" />
+    <ClInclude Include="source\game\game.h" />
     <ClInclude Include="source\platform\framework\platformCommandLine.h" />
     <ClInclude Include="source\platform\framework\platformConsole.h" />
     <ClInclude Include="source\platform\framework\platformKeyCodes.h" />

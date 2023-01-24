@@ -17,7 +17,7 @@
 #include "events/platform/resizedEvent.h"
 #include "events/platform/enterFullScreenEvent.h"
 #include "events/platform/exitFullScreenEvent.h"
-#include "Game/Game.h"
+#include "game/game.h"
 
 void platformOpenWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
 {
@@ -109,7 +109,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				evt.port = 0;
 				evt.data = 1.f;
 
-				Game::onInputEvent(window, evt);
+				game::onInputEvent(window, evt);
 			}
 			else if (delta < 0)
 			{
@@ -120,7 +120,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				evt.port = 0;
 				evt.data = 1.f;
 
-				Game::onInputEvent(window, evt);
+				game::onInputEvent(window, evt);
 			}
 
 			return 0;
@@ -167,7 +167,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evtX.port = 0;
 			evtX.data = static_cast<float>(raw->data.mouse.lLastX);
 
-			Game::onInputEvent(window, evtX);
+			game::onInputEvent(window, evtX);
 
 			sInputEvent evtY = {};
 			evtY.repeatedKey = false;
@@ -175,7 +175,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evtY.port = 0;
 			evtY.data = static_cast<float>(raw->data.mouse.lLastY);
 
-			Game::onInputEvent(window, evtY);
+			game::onInputEvent(window, evtY);
 			return 0;
 		}
 
@@ -187,7 +187,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 1.f;
 
-			Game::onInputEvent(window, evt);
+			game::onInputEvent(window, evt);
 			return 0;
 		}
 
@@ -199,7 +199,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 1.f;
 
-			Game::onInputEvent(window, evt);
+			game::onInputEvent(window, evt);
 			return 0;
 		}
 
@@ -211,7 +211,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 1.f;
 
-			Game::onInputEvent(window, evt);
+			game::onInputEvent(window, evt);
 			return 0;
 		}
 
@@ -223,7 +223,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 0.f;
 
-			Game::onInputEvent(window, evt);
+			game::onInputEvent(window, evt);
 			return 0;
 		}
 
@@ -235,7 +235,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 0.f;
 
-			Game::onInputEvent(window, evt);
+			game::onInputEvent(window, evt);
 			return 0;
 		}
 
@@ -247,7 +247,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 0.f;
 
-			Game::onInputEvent(window, evt);
+			game::onInputEvent(window, evt);
 			return 0;
 		}
 
@@ -270,7 +270,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 1.f;
 
-			Game::onInputEvent(window, evt);
+			game::onInputEvent(window, evt);
 			return 0;
 		}
 
@@ -283,7 +283,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 0.f;
 
-			Game::onInputEvent(window, evt);
+			game::onInputEvent(window, evt);
 			return 0;
 		}
 
@@ -295,13 +295,13 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			{
 				// Window maximized
 				sMaximizedEvent maximize = {};
-				Game::onWindowMaximized(window, maximize);
+				game::onWindowMaximized(window, maximize);
 
 				sResizedEvent resize = {};
 				resize.newClientWidth = LOWORD(lparam);
 				resize.newClientHeight = HIWORD(lparam);
 
-				Game::onWindowResized(window, resize);
+				game::onWindowResized(window, resize);
 				return 0;
 			}
 
@@ -310,7 +310,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Window minimized
 				sMinimizedEvent minimize = {};
 
-				Game::onWindowMinimized(window, minimize);
+				game::onWindowMinimized(window, minimize);
 				return 0;
 			}
 
@@ -329,7 +329,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			sEnterSizeMoveEvent evt = {};
 
-			Game::onWindowEnterSizeMove(window, evt);
+			game::onWindowEnterSizeMove(window, evt);
 			return 0;
 		}
 
@@ -339,12 +339,12 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			sExitSizeMoveEvent evt = {};
 
-			Game::onWindowExitSizeMove(window, evt);
+			game::onWindowExitSizeMove(window, evt);
 
 			sResizedEvent resize = {};
 			window->getClientAreaDimensions(resize.newClientWidth, resize.newClientHeight);
 
-			Game::onWindowResized(window, resize);
+			game::onWindowResized(window, resize);
 			return 0;
 		}
 
@@ -355,7 +355,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Received focus
 				sGainedFocusEvent evt = {};
 
-				Game::onWindowGainedFocus(window, evt);
+				game::onWindowGainedFocus(window, evt);
 				return 0;
 			}
 			else if (wparam == FALSE)
@@ -363,7 +363,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Lost focus
 				sLostFocusEvent evt = {};
 
-				Game::onWindowLostFocus(window, evt);
+				game::onWindowLostFocus(window, evt);
 				return 0;
 			}
 
@@ -374,7 +374,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sClosedEvent evt = {};
 
-			Game::onWindowClosed(window, evt);
+			game::onWindowClosed(window, evt);
 			return 0;
 		}
 
@@ -382,7 +382,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sDestroyedEvent evt = {};
 
-			Game::onWindowDestroyedEvent(window, evt);
+			game::onWindowDestroyedEvent(window, evt);
 			return 0;
 		}
 		}
@@ -553,7 +553,7 @@ int8_t platformWindow::enterFullScreen()
 	// Send enter full screen system evt 
 	sEnterFullScreenEvent evt = {};
 
-	Game::onWindowEnterFullScreen(this, evt);
+	game::onWindowEnterFullScreen(this, evt);
 
 	return 0;
 }
@@ -594,7 +594,7 @@ int8_t platformWindow::exitFullScreen()
 	// Send exit full screen system evt 
 	sExitFullScreenEvent evt = {};
 
-	Game::onWindowExitFullScreen(this, evt);
+	game::onWindowExitFullScreen(this, evt);
 
 	return 0;
 }

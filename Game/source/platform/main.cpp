@@ -3,7 +3,7 @@
 
 static int initGame()
 {
-	Game::start();
+	game::start();
 	return EXIT_SUCCESS;
 }
 
