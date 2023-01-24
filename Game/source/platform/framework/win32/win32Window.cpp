@@ -19,7 +19,7 @@
 #include "events/platform/exitFullScreenEvent.h"
 #include "Game/Game.h"
 
-void platformOpenWindow(const sPlatformWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
+void platformOpenWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
 {
 	outPlatformWindow = std::make_shared<platformWindow>();
 	outPlatformWindow->init(desc);
@@ -421,7 +421,7 @@ static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT msg,
 	return 0;
 }
 
-void platformWindow::init(const sPlatformWindowDesc& desc)
+void platformWindow::init(const sWindowDesc& desc)
 {
 	// Store window settings
 	windowClassName = desc.windowClassName;

@@ -167,7 +167,7 @@ void Game::initializeWindow()
 	sDisplayDesc defaultDisplayDesc = platformGetInfoForDisplayAtIndex(sGameSettings::defaultDisplayIndex);
 
 	// Create and initialize window
-	sPlatformWindowDesc windowDesc = {};
+	sWindowDesc windowDesc = {};
 	windowDesc.windowClassName = L"GameWindow";
 	windowDesc.parent = nullptr;
 	windowDesc.style = sGameSettings::windowStyle;

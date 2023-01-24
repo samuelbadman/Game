@@ -26,7 +26,7 @@ private:
 	bool inSizeMove = false;
 
 public:
-	void init(const sPlatformWindowDesc& desc);
+	void init(const sWindowDesc& desc);
 	void destroy();
 	// Returns non-zero if the function fails
 	int8_t enterFullScreen();

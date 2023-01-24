@@ -11,7 +11,7 @@ enum class eWindowStyle : uint8_t
 };
 
 // Settings struct to initialize a platform window
-struct sPlatformWindowDesc
+struct sWindowDesc
 {
 	std::wstring windowClassName = L"";
 	std::wstring windowTitle = L"New window";
@@ -25,7 +25,7 @@ struct sPlatformWindowDesc
 
 class platformWindow;
 
-extern void platformOpenWindow(const sPlatformWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow);
+extern void platformOpenWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow);
 extern void platformDestroyWindow(std::shared_ptr<platformWindow>& outPlatformWindow);
 // Returns non-zero if the function fails
 extern int8_t platformMakeWindowFullscreen(platformWindow* inPlatformWindow);
