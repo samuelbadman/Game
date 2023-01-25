@@ -29,6 +29,8 @@ private:
 	static HANDLE eventHandle;
 	static uint32_t currentBackBufferIndex;
 
+	static Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSig;
+
 public:
 	static void init(bool useWarp, uint32_t inBackBufferCount);
 	static void shutdown();

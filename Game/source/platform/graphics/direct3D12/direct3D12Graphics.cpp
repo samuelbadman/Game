@@ -301,6 +301,8 @@ std::vector<uint64_t> direct3d12Graphics::graphicsFenceValues;
 HANDLE direct3d12Graphics::eventHandle = nullptr;
 uint32_t direct3d12Graphics::currentBackBufferIndex = 0;
 
+ComPtr<ID3D12RootSignature> direct3d12Graphics::rootSig;
+
 void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
 	backBufferCount = inBackBufferCount;
@@ -325,6 +327,43 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	graphicsFenceValue = 0;
 	graphicsFenceValues.resize(static_cast<size_t>(backBufferCount), graphicsFenceValue);
 	createEventHandle(eventHandle);
+
+	// Input layout
+	D3D12_INPUT_ELEMENT_DESC inputLayout[] =
+	{
+		D3D12_INPUT_ELEMENT_DESC{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		D3D12_INPUT_ELEMENT_DESC{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		D3D12_INPUT_ELEMENT_DESC{ "COLOR0", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		D3D12_INPUT_ELEMENT_DESC{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+	};
+
+	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc = {};
+	inputLayoutDesc.NumElements = _countof(inputLayout);
+	inputLayoutDesc.pInputElementDescs = inputLayout;
+
+	// Root signature
+	D3D12_ROOT_SIGNATURE_DESC rootSigDesc = {};
+	rootSigDesc.NumParameters = 0;
+	rootSigDesc.pParameters = nullptr;
+	rootSigDesc.NumStaticSamplers = 0;
+	rootSigDesc.pStaticSamplers = nullptr;
+	rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_DOMAIN_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_MESH_SHADER_ROOT_ACCESS |
+		D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS;
+
+	ID3DBlob* signature;
+	fatalIfFailed(D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &signature, nullptr));
+	fatalIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSig)));
+
+	// Shader compilation
+
+
+	// Pipeline state
 }
 
 void direct3d12Graphics::shutdown()

@@ -146,5 +146,8 @@
     <ClInclude Include="source\platform\graphics\graphicsSurface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\platform\graphics\vertexPos3Norm3Col4UV2.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>
