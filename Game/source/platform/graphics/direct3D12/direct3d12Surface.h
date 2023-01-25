@@ -12,6 +12,8 @@ public:
 	ComPtr<ID3D12DescriptorHeap> rtvDescriptorHeap;
 	ComPtr<ID3D12Resource> depthStencilView;
 	ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
+	D3D12_VIEWPORT viewport = {};
+	D3D12_RECT scissorRect = {};
 };
 
 #endif // PLATFORM_WIN32

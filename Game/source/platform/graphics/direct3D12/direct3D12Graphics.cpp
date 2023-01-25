@@ -346,6 +346,20 @@ void direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t heig
 		backBufferCount);
 	createDescriptorHeap(device.Get(), D3D12_DESCRIPTOR_HEAP_TYPE_DSV, 1, false, outSurface->dsvDescriptorHeap);
 	updateDepthStencilView(device.Get(), width, height, outSurface->depthStencilView, outSurface->dsvDescriptorHeap.Get());
+
+	// Surfaces currently only support a single viewport. There is currently no support for splitscreen
+	D3D12_VIEWPORT& outViewport = outSurface->viewport;
+	outViewport.Width = static_cast<FLOAT>(width);
+	outViewport.Height = static_cast<FLOAT>(height);
+	outViewport.TopLeftX = 0.0f;
+	outViewport.TopLeftY = 0.0f;
+	outViewport.MinDepth = 0.0f;
+	outViewport.MaxDepth = 1.0f;
+	D3D12_RECT& outScissorRect = outSurface->scissorRect;
+	outScissorRect.top = 0;
+	outScissorRect.left = 0;
+	outScissorRect.right = width;
+	outScissorRect.bottom = height;
 }
 
 void direct3d12Graphics::destroySurface(std::shared_ptr<graphicsSurface>& surface)
@@ -400,6 +414,16 @@ void direct3d12Graphics::resizeSurface(graphicsSurface* surface, uint32_t width,
 
 		// Update depth stencil view resource
 		updateDepthStencilView(device.Get(), width, height, surface->depthStencilView, surface->dsvDescriptorHeap.Get());
+
+		// Update viewport
+		D3D12_VIEWPORT& outViewport = surface->viewport;
+		outViewport.Width = static_cast<FLOAT>(width);
+		outViewport.Height = static_cast<FLOAT>(height);
+
+		// Update scissor rect
+		D3D12_RECT& outScissorRect = surface->scissorRect;
+		outScissorRect.right = width;
+		outScissorRect.bottom = height;
 	}
 }
 
@@ -470,6 +494,12 @@ void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12Gra
 	cpu_rtvDescriptorHandle.ptr += (descriptorSizes.rtvDescriptorSize * currentBackBufferIndex);
 	const FLOAT clearColor[4] = { 0.0f, 0.0f, 0.4f, 1.0f };
 	graphicsCommandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
+
+	D3D12_CPU_DESCRIPTOR_HANDLE cpu_dsvDescriptorHandle = surface->dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
+	graphicsCommandList->ClearDepthStencilView(cpu_dsvDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+
+	graphicsCommandList->RSSetViewports(1, &surface->viewport);
+	graphicsCommandList->RSSetScissorRects(1, &surface->scissorRect);
 
 	// Todo: Receive as function argument an array of render data for each surface describing what to render onto each surface
 
