@@ -283,6 +283,42 @@ static void waitForFence(ID3D12Fence* fence, HANDLE inEventHandle, uint64_t valu
 	}
 }
 
+void createDxcLibrary(ComPtr<IDxcLibrary>& outDxcLibrary)
+{
+	// Create Dxc library instance
+	fatalIfFailed(DxcCreateInstance(CLSID_DxcLibrary, IID_PPV_ARGS(&outDxcLibrary)));
+}
+
+void createDxcCompiler(ComPtr<IDxcCompiler>& outDxcCompiler)
+{
+	// Create Dxc compiler instance
+	fatalIfFailed(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&outDxcCompiler)));
+}
+
+void compileShaderFromFile(IDxcLibrary* dxcLibrary, IDxcCompiler* dxcCompiler, LPCWSTR file, LPCWSTR entryPoint, LPCWSTR targetProfile, ComPtr<IDxcBlob>& outBlob)
+{
+	uint32_t codePage = CP_UTF8;
+	ComPtr<IDxcBlobEncoding> sourceBlob;
+	fatalIfFailed(dxcLibrary->CreateBlobFromFile(file, &codePage, &sourceBlob));
+
+	ComPtr<IDxcOperationResult> result;
+	fatalIfFailed(dxcCompiler->Compile(sourceBlob.Get(), file, entryPoint, targetProfile, nullptr, 0, nullptr, 0, nullptr, &result));
+
+	HRESULT hr;
+	fatalIfFailed(result->GetStatus(&hr));
+	if (FAILED(hr))
+	{
+		ComPtr<IDxcBlobEncoding> errorBlob;
+		fatalIfFailed(result->GetErrorBuffer(&errorBlob));
+		if (errorBlob != nullptr)
+		{
+			std::string error(static_cast<const char*>(errorBlob->GetBufferPointer()));
+		}
+	}
+
+	fatalIfFailed(result->GetResult(&outBlob));
+}
+
 static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
 
 uint32_t direct3d12Graphics::backBufferCount = 0;
@@ -300,6 +336,9 @@ uint64_t direct3d12Graphics::graphicsFenceValue = 0;
 std::vector<uint64_t> direct3d12Graphics::graphicsFenceValues;
 HANDLE direct3d12Graphics::eventHandle = nullptr;
 uint32_t direct3d12Graphics::currentBackBufferIndex = 0;
+
+Microsoft::WRL::ComPtr<IDxcLibrary> direct3d12Graphics::dxcLibrary;
+Microsoft::WRL::ComPtr<IDxcCompiler> direct3d12Graphics::dxcCompiler;
 
 ComPtr<ID3D12RootSignature> direct3d12Graphics::rootSig;
 
@@ -327,6 +366,9 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	graphicsFenceValue = 0;
 	graphicsFenceValues.resize(static_cast<size_t>(backBufferCount), graphicsFenceValue);
 	createEventHandle(eventHandle);
+
+	createDxcLibrary(dxcLibrary);
+	createDxcCompiler(dxcCompiler);
 
 	// Input layout
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] =

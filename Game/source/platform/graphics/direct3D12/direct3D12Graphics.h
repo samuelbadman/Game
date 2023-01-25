@@ -29,6 +29,9 @@ private:
 	static HANDLE eventHandle;
 	static uint32_t currentBackBufferIndex;
 
+	static Microsoft::WRL::ComPtr<IDxcLibrary> dxcLibrary;
+	static Microsoft::WRL::ComPtr<IDxcCompiler> dxcCompiler;
+
 	static Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSig;
 
 public:

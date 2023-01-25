@@ -67,6 +67,9 @@
       <SubSystem>Windows</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "C:\Program Files (x86)\Windows Kits\10\Redist\D3D\x64\dxcompiler.dll" "$(OutDir)" /k /y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <ClCompile>
@@ -88,6 +91,9 @@
       <OptimizeReferences>true</OptimizeReferences>
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
+    <PostBuildEvent>
+      <Command>xcopy "C:\Program Files (x86)\Windows Kits\10\Redist\D3D\x64\dxcompiler.dll" "$(OutDir)" /k /y</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="source\game\game.cpp" />
