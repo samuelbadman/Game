@@ -38,7 +38,7 @@ void platformMessageBox(const eMessageLevel level, const std::string& message)
 
 void platformMessageBoxFatal(const std::string& message)
 {
-	LPCSTR caption = "Fatal";
+	LPCSTR caption = "Fatal Error";
 	UINT type = MB_OK | MB_ICONERROR;
 	MessageBoxA(0, message.c_str(), caption, type);
 	exit(EXIT_FAILURE);

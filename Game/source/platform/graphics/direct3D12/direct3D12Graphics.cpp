@@ -295,7 +295,14 @@ void createDxcCompiler(ComPtr<IDxcCompiler>& outDxcCompiler)
 	fatalIfFailed(DxcCreateInstance(CLSID_DxcCompiler, IID_PPV_ARGS(&outDxcCompiler)));
 }
 
-void compileShaderFromFile(IDxcLibrary* dxcLibrary, IDxcCompiler* dxcCompiler, LPCWSTR file, LPCWSTR entryPoint, LPCWSTR targetProfile, ComPtr<IDxcBlob>& outBlob)
+// Returns non-zero if the shader compiles succesfully
+uint8_t compileShaderFromFile(IDxcLibrary* dxcLibrary,
+	IDxcCompiler* dxcCompiler,
+	LPCWSTR file,
+	LPCWSTR entryPoint,
+	LPCWSTR targetProfile,
+	ComPtr<IDxcBlob>& outBlob,
+	std::string& outErrorMessage)
 {
 	uint32_t codePage = CP_UTF8;
 	ComPtr<IDxcBlobEncoding> sourceBlob;
@@ -312,11 +319,13 @@ void compileShaderFromFile(IDxcLibrary* dxcLibrary, IDxcCompiler* dxcCompiler, L
 		fatalIfFailed(result->GetErrorBuffer(&errorBlob));
 		if (errorBlob != nullptr)
 		{
-			std::string error(static_cast<const char*>(errorBlob->GetBufferPointer()));
+			outErrorMessage = static_cast<const char*>(errorBlob->GetBufferPointer());
+			return 0;
 		}
 	}
 
 	fatalIfFailed(result->GetResult(&outBlob));
+	return 1;
 }
 
 static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
@@ -341,6 +350,8 @@ Microsoft::WRL::ComPtr<IDxcLibrary> direct3d12Graphics::dxcLibrary;
 Microsoft::WRL::ComPtr<IDxcCompiler> direct3d12Graphics::dxcCompiler;
 
 ComPtr<ID3D12RootSignature> direct3d12Graphics::rootSig;
+ComPtr<ID3D12PipelineState> direct3d12Graphics::graphicsPipelineState;
+
 
 void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
@@ -374,9 +385,9 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] =
 	{
 		D3D12_INPUT_ELEMENT_DESC{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		D3D12_INPUT_ELEMENT_DESC{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		D3D12_INPUT_ELEMENT_DESC{ "COLOR0", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		D3D12_INPUT_ELEMENT_DESC{ "TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		//D3D12_INPUT_ELEMENT_DESC{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		//D3D12_INPUT_ELEMENT_DESC{ "COLOR_ZERO", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		//D3D12_INPUT_ELEMENT_DESC{ "TEXCOORD_ZERO", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc = {};
@@ -403,9 +414,73 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	fatalIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSig)));
 
 	// Shader compilation
+	ComPtr<IDxcBlob> vertexShaderBlob;
+	compileShader(L"shaders/vertexShader.hlsl", L"main", L"vs_6_0", vertexShaderBlob);
+	D3D12_SHADER_BYTECODE vertexShaderBytecode = {};
+	vertexShaderBytecode.BytecodeLength = vertexShaderBlob->GetBufferSize();
+	vertexShaderBytecode.pShaderBytecode = vertexShaderBlob->GetBufferPointer();
 
+	ComPtr<IDxcBlob> pixelShaderBlob;
+	compileShader(L"shaders/PixelShader.hlsl", L"main", L"ps_6_0", pixelShaderBlob);
+	D3D12_SHADER_BYTECODE pixelShaderBytecode = {};
+	pixelShaderBytecode.BytecodeLength = pixelShaderBlob->GetBufferSize();
+	pixelShaderBytecode.pShaderBytecode = pixelShaderBlob->GetBufferPointer();
 
 	// Pipeline state
+	D3D12_DEPTH_STENCIL_DESC depthStencilDesc = {};
+	depthStencilDesc.DepthEnable = TRUE;
+	depthStencilDesc.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;
+	depthStencilDesc.DepthFunc = D3D12_COMPARISON_FUNC_LESS;
+	depthStencilDesc.StencilEnable = FALSE;
+	depthStencilDesc.StencilReadMask = D3D12_DEFAULT_STENCIL_READ_MASK;
+	depthStencilDesc.StencilWriteMask = D3D12_DEFAULT_STENCIL_WRITE_MASK;
+	const D3D12_DEPTH_STENCILOP_DESC defaultStencilOp = { D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_STENCIL_OP_KEEP, D3D12_COMPARISON_FUNC_ALWAYS };
+	depthStencilDesc.FrontFace = defaultStencilOp;
+	depthStencilDesc.BackFace = defaultStencilOp;
+
+	D3D12_RASTERIZER_DESC rasterizerDesc = {};
+	rasterizerDesc.FillMode = D3D12_FILL_MODE_SOLID;
+	rasterizerDesc.CullMode = D3D12_CULL_MODE_NONE;
+	rasterizerDesc.FrontCounterClockwise = FALSE;
+	rasterizerDesc.DepthBias = D3D12_DEFAULT_DEPTH_BIAS;
+	rasterizerDesc.DepthBiasClamp = D3D12_DEFAULT_DEPTH_BIAS_CLAMP;
+	rasterizerDesc.SlopeScaledDepthBias = D3D12_DEFAULT_SLOPE_SCALED_DEPTH_BIAS;
+	rasterizerDesc.DepthClipEnable = TRUE;
+	rasterizerDesc.MultisampleEnable = TRUE;
+	rasterizerDesc.AntialiasedLineEnable = FALSE;
+	rasterizerDesc.ForcedSampleCount = 0;
+	rasterizerDesc.ConservativeRaster = D3D12_CONSERVATIVE_RASTERIZATION_MODE_OFF;
+
+	D3D12_BLEND_DESC blendDesc = {};
+	blendDesc.AlphaToCoverageEnable = FALSE;
+	blendDesc.IndependentBlendEnable = FALSE;
+	blendDesc.RenderTarget[0].BlendEnable = FALSE;
+	blendDesc.RenderTarget[0].LogicOpEnable = FALSE;
+	blendDesc.RenderTarget[0].SrcBlend = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlend = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOp = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].SrcBlendAlpha = D3D12_BLEND_ONE;
+	blendDesc.RenderTarget[0].DestBlendAlpha = D3D12_BLEND_ZERO;
+	blendDesc.RenderTarget[0].BlendOpAlpha = D3D12_BLEND_OP_ADD;
+	blendDesc.RenderTarget[0].LogicOp = D3D12_LOGIC_OP_NOOP;
+	blendDesc.RenderTarget[0].RenderTargetWriteMask = D3D12_COLOR_WRITE_ENABLE_ALL;
+
+	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc = {};
+	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
+	graphicsPipelineStateDesc.pRootSignature = rootSig.Get();
+	graphicsPipelineStateDesc.VS = vertexShaderBytecode;
+	graphicsPipelineStateDesc.PS = pixelShaderBytecode;
+	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
+	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
+	graphicsPipelineStateDesc.SampleDesc = { 1,0 };
+	graphicsPipelineStateDesc.SampleMask = 0xffffffff;
+	graphicsPipelineStateDesc.DepthStencilState = depthStencilDesc;
+	graphicsPipelineStateDesc.DSVFormat = DXGI_FORMAT_D24_UNORM_S8_UINT;
+	graphicsPipelineStateDesc.RasterizerState = rasterizerDesc;
+	graphicsPipelineStateDesc.BlendState = blendDesc;
+	graphicsPipelineStateDesc.NumRenderTargets = 1;
+
+	fatalIfFailed(device->CreateGraphicsPipelineState(&graphicsPipelineStateDesc, IID_PPV_ARGS(&graphicsPipelineState)));
 }
 
 void direct3d12Graphics::shutdown()
@@ -546,6 +621,17 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, graphicsSurface* con
 	++graphicsFenceValue;
 	graphicsFenceValues[currentBackBufferIndex] = graphicsFenceValue;
 	fatalIfFailed(graphicsQueue->Signal(graphicsFence.Get(), graphicsFenceValues[currentBackBufferIndex]));
+}
+
+void direct3d12Graphics::compileShader(LPCWSTR file, LPCWSTR entryPoint, LPCWSTR targetProfile, ComPtr<IDxcBlob>& outDxcBlob)
+{
+	std::string errorMessage;
+
+	ComPtr<IDxcBlob> vertexShader;
+	if (compileShaderFromFile(dxcLibrary.Get(), dxcCompiler.Get(), file, entryPoint, targetProfile, outDxcBlob, errorMessage) == 0)
+	{
+		platformMessageBoxFatal("direct3d12Graphics::compileShader: Failed to compile shader. " + errorMessage);
+	}
 }
 
 void direct3d12Graphics::waitForGPU()

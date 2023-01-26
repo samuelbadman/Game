@@ -33,6 +33,7 @@ private:
 	static Microsoft::WRL::ComPtr<IDxcCompiler> dxcCompiler;
 
 	static Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSig;
+	static Microsoft::WRL::ComPtr<ID3D12PipelineState> graphicsPipelineState;
 
 public:
 	static void init(bool useWarp, uint32_t inBackBufferCount);
@@ -43,6 +44,7 @@ public:
 	static void render(const uint32_t numSurfaces, class graphicsSurface* const * surfaces, const bool useVSync);
 
 private:
+	static void compileShader(LPCWSTR file, LPCWSTR entryPoint, LPCWSTR targetProfile, Microsoft::WRL::ComPtr<IDxcBlob>& outDxcBlob);
 	static void waitForGPU();
 	static void recordSurface(const class graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList);
 	static void presentSurface(const class graphicsSurface* surface, const bool useVSync, const bool tearingSupported);
