@@ -108,6 +108,7 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="source\fileIO\fileIO.cpp" />
     <ClCompile Include="source\game\game.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32CommandLine.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32OS.cpp" />
@@ -127,6 +128,7 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
     <ClCompile Include="source\platform\framework\win32\win32Window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\fileIO\fileIO.h" />
     <ClInclude Include="source\game\game.h" />
     <ClInclude Include="source\platform\framework\platformCommandLine.h" />
     <ClInclude Include="source\platform\framework\platformConsole.h" />

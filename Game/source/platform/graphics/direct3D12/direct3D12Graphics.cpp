@@ -5,6 +5,7 @@
 #include "direct3d12Graphics.h"
 #include "platform/framework/platformMessageBox.h"
 #include "direct3d12Surface.h"
+#include "fileIO/fileIO.h"
 
 #define fatalIfFailed(x) if(FAILED(x)) platformMessageBoxFatal("hresult failed.");
 
@@ -385,9 +386,9 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] =
 	{
 		D3D12_INPUT_ELEMENT_DESC{ "POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		//D3D12_INPUT_ELEMENT_DESC{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		//D3D12_INPUT_ELEMENT_DESC{ "COLOR_ZERO", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
-		//D3D12_INPUT_ELEMENT_DESC{ "TEXCOORD_ZERO", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
+		D3D12_INPUT_ELEMENT_DESC{ "NORMAL", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		D3D12_INPUT_ELEMENT_DESC{ "COLOR_ZERO", 0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 },
+		D3D12_INPUT_ELEMENT_DESC{ "TEXCOORD_ZERO", 0, DXGI_FORMAT_R32G32_FLOAT, 0, D3D12_APPEND_ALIGNED_ELEMENT, D3D12_INPUT_CLASSIFICATION_PER_VERTEX_DATA, 0 }
 	};
 
 	D3D12_INPUT_LAYOUT_DESC inputLayoutDesc = {};
@@ -414,17 +415,11 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	fatalIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSig)));
 
 	// Shader compilation
-	ComPtr<IDxcBlob> vertexShaderBlob;
-	compileShader(L"shaders/vertexShader.hlsl", L"main", L"vs_6_0", vertexShaderBlob);
-	D3D12_SHADER_BYTECODE vertexShaderBytecode = {};
-	vertexShaderBytecode.BytecodeLength = vertexShaderBlob->GetBufferSize();
-	vertexShaderBytecode.pShaderBytecode = vertexShaderBlob->GetBufferPointer();
+	std::vector<uint8_t> vertexShaderBuffer;
+	loadShader("shaders/vertexShader.hlsl", L"main", L"vs_6_0", vertexShaderBuffer);
 
-	ComPtr<IDxcBlob> pixelShaderBlob;
-	compileShader(L"shaders/PixelShader.hlsl", L"main", L"ps_6_0", pixelShaderBlob);
-	D3D12_SHADER_BYTECODE pixelShaderBytecode = {};
-	pixelShaderBytecode.BytecodeLength = pixelShaderBlob->GetBufferSize();
-	pixelShaderBytecode.pShaderBytecode = pixelShaderBlob->GetBufferPointer();
+	std::vector<uint8_t> pixelShaderBuffer;
+	loadShader("shaders/pixelShader.hlsl", L"main", L"ps_6_0", pixelShaderBuffer);
 
 	// Pipeline state
 	D3D12_DEPTH_STENCIL_DESC depthStencilDesc = {};
@@ -468,8 +463,10 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc = {};
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
 	graphicsPipelineStateDesc.pRootSignature = rootSig.Get();
-	graphicsPipelineStateDesc.VS = vertexShaderBytecode;
-	graphicsPipelineStateDesc.PS = pixelShaderBytecode;
+	graphicsPipelineStateDesc.VS.BytecodeLength = vertexShaderBuffer.size();
+	graphicsPipelineStateDesc.VS.pShaderBytecode = vertexShaderBuffer.data();
+	graphicsPipelineStateDesc.PS.BytecodeLength = pixelShaderBuffer.size();
+	graphicsPipelineStateDesc.PS.pShaderBytecode = pixelShaderBuffer.data();
 	graphicsPipelineStateDesc.PrimitiveTopologyType = D3D12_PRIMITIVE_TOPOLOGY_TYPE_TRIANGLE;
 	graphicsPipelineStateDesc.RTVFormats[0] = DXGI_FORMAT_R8G8B8A8_UNORM;
 	graphicsPipelineStateDesc.SampleDesc = { 1,0 };
@@ -623,11 +620,30 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, graphicsSurface* con
 	fatalIfFailed(graphicsQueue->Signal(graphicsFence.Get(), graphicsFenceValues[currentBackBufferIndex]));
 }
 
+void direct3d12Graphics::loadShader(const std::string& shaderSourceFile, LPCWSTR entryPoint, LPCWSTR targetProfile, std::vector<uint8_t>& outBuffer)
+{
+	static const std::string compiledShaderFileExtension = "bin";
+
+	const std::string shaderCompiledFile = fileIO::replaceExtension(shaderSourceFile, compiledShaderFileExtension);
+	if (fileIO::fileExists(shaderCompiledFile))
+	{
+		fileIO::readSerializedBuffer(shaderCompiledFile, outBuffer);
+	}
+	else
+	{
+		ComPtr<IDxcBlob> blob;
+		compileShader(std::wstring(shaderSourceFile.begin(), shaderSourceFile.end()).c_str(), entryPoint, targetProfile, blob);
+		const size_t bufferSize = blob->GetBufferSize();
+		outBuffer.resize(bufferSize);
+		memcpy(outBuffer.data(), blob->GetBufferPointer(), bufferSize);
+		fileIO::writeSerializedBuffer(shaderCompiledFile, outBuffer);
+	}
+}
+
 void direct3d12Graphics::compileShader(LPCWSTR file, LPCWSTR entryPoint, LPCWSTR targetProfile, ComPtr<IDxcBlob>& outDxcBlob)
 {
 	std::string errorMessage;
 
-	ComPtr<IDxcBlob> vertexShader;
 	if (compileShaderFromFile(dxcLibrary.Get(), dxcCompiler.Get(), file, entryPoint, targetProfile, outDxcBlob, errorMessage) == 0)
 	{
 		platformMessageBoxFatal("direct3d12Graphics::compileShader: Failed to compile shader. " + errorMessage);

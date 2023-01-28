@@ -10,6 +10,8 @@
 #include <algorithm>
 #include <iostream>
 #include <stdlib.h>
+#include <filesystem>
+#include <fstream>
 
 #if defined(PLATFORM_WIN32)
 

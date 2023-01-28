@@ -44,6 +44,7 @@ public:
 	static void render(const uint32_t numSurfaces, class graphicsSurface* const * surfaces, const bool useVSync);
 
 private:
+	static void loadShader(const std::string& shaderSourceFile, LPCWSTR entryPoint, LPCWSTR targetProfile, std::vector<uint8_t>& outBuffer);
 	static void compileShader(LPCWSTR file, LPCWSTR entryPoint, LPCWSTR targetProfile, Microsoft::WRL::ComPtr<IDxcBlob>& outDxcBlob);
 	static void waitForGPU();
 	static void recordSurface(const class graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList);

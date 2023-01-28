@@ -1,9 +1,9 @@
 struct pixelShaderOutput
 {
 	float4 finalPosition : SV_POSITION;
-	//float3 normal : NORMAL;
-	//float4 color : COLOR_ZERO;
-	//float2 uv : TEXCOORD_ZERO;
+	float3 normal : NORMAL;
+	float4 color : COLOR_ZERO;
+	float2 uv : TEXCOORD_ZERO;
 };
 
 float4 main(pixelShaderOutput input) : SV_TARGET
