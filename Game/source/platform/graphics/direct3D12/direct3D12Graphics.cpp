@@ -329,9 +329,11 @@ uint8_t compileShaderFromFile(IDxcLibrary* dxcLibrary,
 	return 1;
 }
 
-static void createCommittedBuffer(D3D12_HEAP_TYPE type, UINT64 size, D3D12_RESOURCE_STATES initialResourceState)
+static void createCommittedBuffer(ID3D12Device8* device, D3D12_HEAP_TYPE type, UINT64 width, D3D12_RESOURCE_STATES initialResourceState, ComPtr<ID3D12Resource>& outResource)
 {
-
+	D3D12_HEAP_PROPERTIES heapProperties = CD3DX12_HEAP_PROPERTIES(type);
+	D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(width);
+	fatalIfFailed(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS, &resourceDesc, initialResourceState, nullptr, IID_PPV_ARGS(&outResource)));
 }
 
 static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
