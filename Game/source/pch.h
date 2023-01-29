@@ -12,6 +12,7 @@
 #include <stdlib.h>
 #include <filesystem>
 #include <fstream>
+#include <random>
 
 #if defined(PLATFORM_WIN32)
 
