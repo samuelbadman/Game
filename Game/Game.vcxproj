@@ -301,6 +301,7 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
     <ClInclude Include="source\platform\graphics\graphicsSurface.h" />
+    <ClInclude Include="source\platform\graphics\meshResources.h" />
     <ClInclude Include="source\platform\graphics\vertexPos3Norm3Col4UV2.h" />
     <ClInclude Include="source\stringHelper.h" />
     <ClInclude Include="source\events\platform\closedEvent.h" />

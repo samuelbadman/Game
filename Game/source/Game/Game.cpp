@@ -207,6 +207,7 @@ void game::initializeAudio()
 
 void game::loadResources()
 {
+
 }
 
 void game::tick(float deltaSeconds)
