@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#if defined(PLATFORM_WIN32)
-
 void platformPollOS()
 {
 	// Dispatch windows messages
@@ -13,4 +11,3 @@ void platformPollOS()
 	}
 }
 
-#endif // PLATFORM_WIN32

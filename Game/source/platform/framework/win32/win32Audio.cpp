@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#if defined(PLATFORM_WIN32)
-
 #include "platform/framework/platformMessageBox.h"
 
 static Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
@@ -30,5 +28,3 @@ void platformShutdownAudio()
 	}
 	masterVoice = nullptr;
 }
-
-#endif // PLATFORM_WIN32

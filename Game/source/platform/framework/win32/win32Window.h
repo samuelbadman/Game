@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(PLATFORM_WIN32)
-
 #include "platform/framework/platformWindow.h"
 
 class platformWindow
@@ -46,5 +44,3 @@ public:
 	bool isFullScreen() const { return inFullscreen; }
 	HWND getHwnd() const { return hwnd; }
 };
-
-#endif // PLATFORM_WIN32

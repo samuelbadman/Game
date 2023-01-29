@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#if defined(PLATFORM_WIN32)
-
 #include "platform/framework/platformMessageBox.h"
 
 void platformMessageBox(const eMessageLevel level, const std::string& message)
@@ -44,4 +42,3 @@ void platformMessageBoxFatal(const std::string& message)
 	exit(EXIT_FAILURE);
 }
 
-#endif // PLATFORM_WIN32

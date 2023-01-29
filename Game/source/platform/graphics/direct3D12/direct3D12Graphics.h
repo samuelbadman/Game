@@ -1,7 +1,5 @@
 #pragma once
 
-#if defined(PLATFORM_WIN32)
-
 struct sDescriptorSizes
 {
 	UINT rtvDescriptorSize;
@@ -51,4 +49,3 @@ private:
 	static void presentSurface(const class graphicsSurface* surface, const bool useVSync, const bool tearingSupported);
 };
 
-#endif // PLATFORM_WIN32

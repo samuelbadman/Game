@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#if defined(PLATFORM_WIN32)
-
 #include "platform/framework/platformConsole.h"
 
 int8_t platformInitConsole()
@@ -70,4 +68,3 @@ void platformConsolePrint(const std::string& string)
 	std::cout << string << '\n';
 }
 
-#endif // PLATFORM_WIN32

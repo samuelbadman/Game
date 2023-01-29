@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#if defined(PLATFORM_WIN32)
-
 #include "platform/framework/platformDisplay.h"
 
 uint32_t platformGetConnectedDisplayCount()
@@ -45,4 +43,3 @@ sDisplayDesc platformGetInfoForDisplayAtIndex(const uint32_t displayIndex)
 	return info;
 }
 
-#endif // PLATFORM_WIN32

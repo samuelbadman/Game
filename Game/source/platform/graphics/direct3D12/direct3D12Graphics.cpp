@@ -1,11 +1,11 @@
 #include "pch.h"
 
-#if defined(PLATFORM_WIN32)
-
 #include "direct3d12Graphics.h"
 #include "platform/framework/platformMessageBox.h"
 #include "direct3d12Surface.h"
 #include "fileIO/fileIO.h"
+
+using namespace Microsoft::WRL;
 
 #define fatalIfFailed(x) if(FAILED(x)) platformMessageBoxFatal("hresult failed.");
 
@@ -688,4 +688,3 @@ void direct3d12Graphics::presentSurface(const graphicsSurface* surface, const bo
 	currentBackBufferIndex = surface->swapChain->GetCurrentBackBufferIndex();
 }
 
-#endif // PLATFORM_WIN32

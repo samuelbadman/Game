@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#if defined(PLATFORM_WIN32)
-
 #include "platform/framework/platformGamepad.h"
 #include "platform/framework/platformKeyCodes.h"
 #include "events/platform/inputEvent.h"
@@ -360,5 +358,3 @@ int8_t platformSetGamepadVibration(const uint32_t port, const uint16_t leftMotor
 
 	return (setStateResult == ERROR_SUCCESS) ? 0 : 2;
 }
-
-#endif // PLATFORM_WIN32

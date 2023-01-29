@@ -1,7 +1,5 @@
 #include "pch.h"
 
-#if defined(PLATFORM_WIN32)
-
 #include "win32Window.h"
 #include "platform/framework/platformKeyCodes.h"
 #include "platform/framework/platformMessageBox.h"
@@ -659,4 +657,3 @@ int8_t platformWindow::getPosition(uint32_t& x, uint32_t& y) const
 	return 0;
 }
 
-#endif // PLATFORM_WIN32
