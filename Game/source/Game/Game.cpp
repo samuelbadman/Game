@@ -1,5 +1,6 @@
 #include "pch.h"
 #include "game.h"
+
 #include "platform/framework/platformCommandLine.h"
 #include "platform/framework/platformWindow.h"
 #include "platform/framework/platformDisplay.h"
@@ -20,7 +21,9 @@
 #include "events/platform/resizedEvent.h"
 #include "events/platform/enterFullScreenEvent.h"
 #include "events/platform/exitFullScreenEvent.h"
+
 #include "platform/graphics/direct3D12/direct3d12Graphics.h"
+#include "platform/graphics/vertexPos3Norm3Col4UV2.h"
 
 struct sGameSettings
 {
@@ -46,6 +49,8 @@ std::shared_ptr<platformWindow> game::window;
 std::shared_ptr<graphicsSurface> game::surface;
 int64_t game::fps = 0;
 double game::ms = 0.0;
+
+sMeshResources game::triangleMeshResources = {};
 
 void game::start()
 {

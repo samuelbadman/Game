@@ -1,5 +1,7 @@
 #pragma once
 
+#include "platform/graphics/meshResources.h"
+
 class game
 {
 private:
@@ -8,6 +10,8 @@ private:
 	static std::shared_ptr<class graphicsSurface> surface;
 	static int64_t fps;
 	static double ms;
+
+	static sMeshResources triangleMeshResources;
 
 public:
 	static void start();
