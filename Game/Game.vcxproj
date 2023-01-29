@@ -140,6 +140,7 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
     <ClInclude Include="source\platform\framework\platformAudio.h" />
     <ClInclude Include="source\platform\framework\platformDisplay.h" />
     <ClInclude Include="source\platform\framework\platformGamepad.h" />
+    <ClInclude Include="source\platform\graphics\direct3D12\d3dx12.h" />
     <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Graphics.h" />
     <ClInclude Include="source\platform\framework\platformWindow.h" />
     <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Surface.h" />

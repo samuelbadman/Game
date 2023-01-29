@@ -56,6 +56,8 @@ void game::start()
 	initializeGraphics();
 	initializeAudio();
 
+	loadResources();
+
 	// Initialize game loop
 	double fixedTimeSliceMs = sGameSettings::fixedTimeSlice * 1000.0;
 	double accumulator = 0.0;
@@ -201,6 +203,10 @@ void game::shutdownGraphics()
 void game::initializeAudio()
 {
 	platformInitAudio();
+}
+
+void game::loadResources()
+{
 }
 
 void game::tick(float deltaSeconds)

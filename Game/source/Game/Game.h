@@ -36,6 +36,7 @@ private:
 	static void initializeGraphics();
 	static void shutdownGraphics();
 	static void initializeAudio();
+	static void loadResources();
 	static void tick(float deltaSeconds);
 	static void fixedTick(float fixedStep);
 	static void render();
