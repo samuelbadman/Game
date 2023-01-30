@@ -1,5 +1,8 @@
 #include "pch.h"
 #include "matrix4x4.h"
+#include "vector3d.h"
+#include "rotator.h"
+#include "transform.h"
 
 static glm::mat4 asGlmMat(const matrix4x4& a)
 {
@@ -53,6 +56,42 @@ matrix4x4 matrix4x4::inverse(const matrix4x4& a)
 matrix4x4 matrix4x4::transpose(const matrix4x4& a)
 {
 	return asMatrix4x4(glm::transpose(asGlmMat(a)));
+}
+
+matrix4x4 matrix4x4::translation(const vector3d& a)
+{
+	return asMatrix4x4(glm::translate(glm::identity<glm::mat4>(), glm::vec3(a.x, a.y, a.z)));
+}
+
+matrix4x4 matrix4x4::rotation(const rotator& a)
+{
+	const quaternion aQuaternion = a.toQuaternion();
+	return asMatrix4x4(glm::mat4_cast(glm::quat(aQuaternion.w, aQuaternion.x, aQuaternion.y, aQuaternion.z)));
+}
+
+matrix4x4 matrix4x4::scale(const vector3d& a)
+{
+	return asMatrix4x4(glm::scale(glm::identity<glm::mat4>(), glm::vec3(a.x, a.y, a.z)));
+}
+
+matrix4x4 matrix4x4::transformation(const transform& a)
+{
+	return matrix4x4::translation(a.position) * matrix4x4::rotation(a.rotation) * matrix4x4::scale(a.scale);
+}
+
+matrix4x4 matrix4x4::view(const vector3d& position, const rotator& inRotation)
+{
+	return inverse(translation(position) * rotation(inRotation));
+}
+
+matrix4x4 matrix4x4::perspective(float fieldOfViewDegrees, float viewWidth, float viewHeight, float nearClipPlane, float farClipPlane)
+{
+	return asMatrix4x4(glm::perspectiveFovLH(glm::radians(fieldOfViewDegrees), viewWidth, viewHeight, nearClipPlane, farClipPlane));
+}
+
+matrix4x4 matrix4x4::orthographic(float width, float height, float nearClipPlane, float farClipPlane)
+{
+	return asMatrix4x4(glm::orthoLH(-width, width, -height, height, nearClipPlane, farClipPlane));
 }
 
 void matrix4x4::inverseInPlace()

@@ -16,8 +16,8 @@ public:
 	rotator() = default;
 
 	template <typename T>
-	rotator(const T inPitch, const T inYaw, const T inRoll) 
-		: pitch(static_cast<float>(inPitch)), yaw(static_cast<float>(inYaw)), roll(static_cast<float>(inRoll)) {}
+	rotator(const T inPitchDegrees, const T inYawDegrees, const T inRollDegrees) 
+		: pitch(static_cast<float>(inPitchDegrees)), yaw(static_cast<float>(inYawDegrees)), roll(static_cast<float>(inRollDegrees)) {}
 
 public:
 	quaternion toQuaternion() const;

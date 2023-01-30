@@ -1,7 +1,6 @@
 #pragma once
 
 #include "vector4d.h"
-#include "matrix4x4.h"
 
 class quaternion
 {
@@ -20,7 +19,4 @@ public:
 
 public:
 	vector4d operator*(const vector4d& rhs) const;
-
-public:
-	matrix4x4 toMatrix4x4() const;
 };

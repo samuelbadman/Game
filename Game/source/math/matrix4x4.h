@@ -24,6 +24,27 @@ public:
 	static matrix4x4 inverse(const matrix4x4& a);
 	static matrix4x4 transpose(const matrix4x4& a);
 
+	// Computes a translation matrix from vector a
+	static matrix4x4 translation(const class vector3d& a);
+
+	// Computes a rotation matrix from rotator a
+	static matrix4x4 rotation(const class rotator& a);
+
+	// Computes a scale matrix from vector a
+	static matrix4x4 scale(const class vector3d& a);
+
+	// Computes a transformation (world/model) matrix from transform a
+	static matrix4x4 transformation(const class transform& a);
+
+	// Computes a view matrix from input position and rotation
+	static matrix4x4 view(const class vector3d& position, const class rotator& inRotation);
+
+	// Computes a perspective matrix from input parameters
+	static matrix4x4 perspective(float fieldOfViewDegrees, float viewWidth, float viewHeight, float nearClipPlane, float farClipPlane);
+
+	// Computes an orthographic matrix from input parameters
+	static matrix4x4 orthographic(float width, float height, float nearClipPlane, float farClipPlane);
+
 public:
 	void inverseInPlace();
 	void transposeInPlace();
