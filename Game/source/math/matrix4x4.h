@@ -42,7 +42,7 @@ public:
 	// Computes a perspective matrix from input parameters
 	static matrix4x4 perspective(float fieldOfViewDegrees, float viewWidth, float viewHeight, float nearClipPlane, float farClipPlane);
 
-	// Computes an orthographic matrix from input parameters
+	// Computes an orthographic matrix from input parameters. Scale width and height to zoom the view in/out
 	static matrix4x4 orthographic(float width, float height, float nearClipPlane, float farClipPlane);
 
 public:
