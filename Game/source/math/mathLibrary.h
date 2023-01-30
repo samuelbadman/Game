@@ -16,4 +16,7 @@ class mathLibrary
 	static double roundTo1DecimalPlace(const double value, const bool negativeAwayFromZero = true);
 	static double roundTo2DecimalPlace(const double value, const bool negativeAwayFromZero = true);
 	static double roundTo3DecimalPlace(const double value, const bool negativeAwayFromZero = true);
+
+	static float degreesToRadians(const float degrees);
+	static float radiansToDegrees(const float radians);
 };

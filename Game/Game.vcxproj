@@ -202,6 +202,7 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
     <ClCompile Include="source\math\mathLibrary.cpp" />
     <ClCompile Include="source\math\matrix4x4.cpp" />
     <ClCompile Include="source\math\quaternion.cpp" />
+    <ClCompile Include="source\math\rotator.cpp" />
     <ClCompile Include="source\math\vector2d.cpp" />
     <ClCompile Include="source\math\vector3d.cpp" />
     <ClCompile Include="source\math\vector4d.cpp" />
@@ -280,6 +281,7 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
     <ClInclude Include="source\math\mathLibrary.h" />
     <ClInclude Include="source\math\matrix4x4.h" />
     <ClInclude Include="source\math\quaternion.h" />
+    <ClInclude Include="source\math\rotator.h" />
     <ClInclude Include="source\math\vector2d.h" />
     <ClInclude Include="source\math\vector3d.h" />
     <ClInclude Include="source\math\vector4d.h" />

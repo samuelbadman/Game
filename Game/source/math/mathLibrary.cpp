@@ -40,3 +40,13 @@ double mathLibrary::roundTo3DecimalPlace(const double value, const bool negative
 {
     return static_cast<double>(static_cast<int64_t>(value * 1000 + (0.5 * (negativeAwayFromZero ? sign(value) : 1.0)))) / 1000;
 }
+
+float mathLibrary::degreesToRadians(const float degrees)
+{
+    return glm::radians(degrees);
+}
+
+float mathLibrary::radiansToDegrees(const float radians)
+{
+    return glm::degrees(radians);
+}
