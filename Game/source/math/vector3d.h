@@ -3,17 +3,18 @@
 class vector3d
 {
 public:
-	float x;
-	float y;
-	float z;
+	float x = 0.0f;
+	float y = 0.0f;
+	float z = 0.0f;
 
 public:
-	vector3d() : x(0.0f), y(0.0f), z(0.0f) {}
+	vector3d() = default;
 
 	template <typename T>
-	vector3d(const T inX, const T inY, const T inZ) : x(inX), y(inY), z(inZ) {}
+	vector3d(const T inX, const T inY, const T inZ) 
+		: x(static_cast<float>(inX)), y(static_cast<float>(inY)), z(static_cast<float>(inZ)) {}
 
-	vector3d operator=(const vector3d& rhs);
+	void operator=(const vector3d& rhs);
 
 public:
 	vector3d operator-(const vector3d& rhs) const;

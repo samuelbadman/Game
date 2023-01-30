@@ -2,7 +2,7 @@
 #include "vector3d.h"
 #include "stringHelper.h"
 
-vector3d vector3d::operator=(const vector3d& rhs)
+void vector3d::operator=(const vector3d& rhs)
 {
     x = rhs.x;
     y = rhs.y;
