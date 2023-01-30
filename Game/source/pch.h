@@ -39,3 +39,10 @@
 #include <xaudio2.h>
 
 #endif // PLATFORM_WIN32
+
+// glm maths library
+#define GLM_FORCE_RADIANS
+#define GLM_FORCE_DEPTH_ZERO_TO_ONE
+
+#include "math/glm_0.9.9.8/glm.hpp"
+#include "math/glm_0.9.9.8/gtx/quaternion.hpp"
