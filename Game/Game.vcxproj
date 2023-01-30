@@ -200,6 +200,7 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
     <ClCompile Include="source\fileIO\fileIO.cpp" />
     <ClCompile Include="source\game\game.cpp" />
     <ClCompile Include="source\math\mathLibrary.cpp" />
+    <ClCompile Include="source\math\vector2d.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32CommandLine.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='releaseWin32|x64'">false</ExcludedFromBuild>
@@ -273,6 +274,7 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
     <ClInclude Include="source\fileIO\fileIO.h" />
     <ClInclude Include="source\game\game.h" />
     <ClInclude Include="source\math\mathLibrary.h" />
+    <ClInclude Include="source\math\vector2d.h" />
     <ClInclude Include="source\platform\framework\platformCommandLine.h" />
     <ClInclude Include="source\platform\framework\platformConsole.h" />
     <ClInclude Include="source\platform\framework\platformKeyCodes.h" />
