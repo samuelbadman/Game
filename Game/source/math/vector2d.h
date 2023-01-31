@@ -3,14 +3,14 @@
 class vector2d
 {
 public:
-	float x = 0.0f;
-	float y = 0.0f;
+	double x = 0.0;
+	double y = 0.0;
 
 public:
 	vector2d() = default;
 
 	template <typename T>
-	vector2d(const T inX, const T inY) : x(static_cast<float>(inX)), y(static_cast<float>(inY)) {}
+	vector2d(const T inX, const T inY) : x(static_cast<double>(inX)), y(static_cast<double>(inY)) {}
 
 public:
 	std::string toString() const;

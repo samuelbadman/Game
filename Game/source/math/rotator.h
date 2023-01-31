@@ -6,18 +6,18 @@ class rotator
 {
 public:
 	// Expressed in degrees
-	float pitch = 0.f;
+	double pitch = 0.0;
 	// Expressed in degrees
-	float yaw = 0.f;
+	double yaw = 0.0;
 	// Expressed in degrees
-	float roll = 0.f;
+	double roll = 0.0;
 
 public:
 	rotator() = default;
 
 	template <typename T>
 	rotator(const T inPitchDegrees, const T inYawDegrees, const T inRollDegrees) 
-		: pitch(static_cast<float>(inPitchDegrees)), yaw(static_cast<float>(inYawDegrees)), roll(static_cast<float>(inRollDegrees)) {}
+		: pitch(static_cast<double>(inPitchDegrees)), yaw(static_cast<double>(inYawDegrees)), roll(static_cast<double>(inRollDegrees)) {}
 
 public:
 	quaternion toQuaternion() const;
