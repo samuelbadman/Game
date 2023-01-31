@@ -84,6 +84,9 @@
     <ClCompile Include="source\math\transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\platform\graphics\vertexPos3Norm3Col4UV2.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\platform\framework\win32\win32Window.h">

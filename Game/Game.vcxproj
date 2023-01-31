@@ -134,7 +134,8 @@
     <PreBuildEvent>
       <Command>xcopy "C:\Program Files (x86)\Windows Kits\10\Redist\D3D\x64\dxcompiler.dll" "$(OutDir)" /k /y
 xcopy "C:\Program Files (x86)\Windows Kits\10\Redist\D3D\x64\dxil.dll" "$(OutDir)" /k /y
-xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s /i</Command>
+xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s /i
+del "$(OutDir)shaders\*.bin"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -193,7 +194,8 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s /i</Command>
     <PreBuildEvent>
       <Command>xcopy "C:\Program Files (x86)\Windows Kits\10\Redist\D3D\x64\dxcompiler.dll" "$(OutDir)" /k /y
 xcopy "C:\Program Files (x86)\Windows Kits\10\Redist\D3D\x64\dxil.dll" "$(OutDir)" /k /y
-xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s /i</Command>
+xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s /i
+del "$(OutDir)shaders\*.bin"</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
@@ -249,6 +251,7 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s /i</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="source\platform\graphics\vertexPos3Norm3Col4UV2.cpp" />
     <ClCompile Include="source\stringHelper.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Console.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>
