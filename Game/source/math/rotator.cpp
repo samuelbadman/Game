@@ -3,6 +3,6 @@
 
 quaternion rotator::toQuaternion() const
 {
-    glm::quat glmQuaternion = glm::quat(glm::radians(glm::vec3(pitch, yaw, roll)));
+    const glm::qua<double, glm::packed_highp> glmQuaternion = glm::qua<double, glm::packed_highp>(glm::radians(glm::vec<3, double, glm::packed_highp>(pitch, yaw, roll)));
     return quaternion(glmQuaternion.w, glmQuaternion.x, glmQuaternion.y, glmQuaternion.z);
 }

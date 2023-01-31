@@ -2,16 +2,16 @@ struct vertexShaderInput
 {
 	float3 position : POSITION;
 	float3 normal : NORMAL;
-	float4 color : COLOR_ZERO;
-	float2 uv : TEXCOORD_ZERO;
+	float4 color : COLOR;
+	float2 uv : TEXCOORD;
 };
 
 struct vertexShaderOutput
 {
 	float4 finalPosition : SV_POSITION;
 	float3 normal : NORMAL;
-	float4 color : COLOR_ZERO;
-	float2 uv : TEXCOORD_ZERO;
+	float4 color : COLOR;
+	float2 uv : TEXCOORD;
 };
 
 vertexShaderOutput main(vertexShaderInput input)

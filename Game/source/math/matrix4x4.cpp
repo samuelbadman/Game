@@ -6,10 +6,10 @@
 
 static glm::mat4 asGlmMat(const matrix4x4& a)
 {
-	return glm::mat4(glm::vec4(a.columns[0].x, a.columns[0].y, a.columns[0].z, a.columns[0].w),
-		glm::vec4(a.columns[1].x, a.columns[1].y, a.columns[1].z, a.columns[1].w),
-		glm::vec4(a.columns[2].x, a.columns[2].y, a.columns[2].z, a.columns[2].w),
-		glm::vec4(a.columns[3].x, a.columns[3].y, a.columns[3].z, a.columns[3].w));
+	return glm::mat<4, 4, double, glm::packed_highp>(glm::vec<4, double, glm::packed_highp>(a.columns[0].x, a.columns[0].y, a.columns[0].z, a.columns[0].w),
+		glm::vec<4, double, glm::packed_highp>(a.columns[1].x, a.columns[1].y, a.columns[1].z, a.columns[1].w),
+		glm::vec<4, double, glm::packed_highp>(a.columns[2].x, a.columns[2].y, a.columns[2].z, a.columns[2].w),
+		glm::vec<4, double, glm::packed_highp>(a.columns[3].x, a.columns[3].y, a.columns[3].z, a.columns[3].w));
 }
 
 static matrix4x4 asMatrix4x4(const glm::mat4& a)
@@ -38,40 +38,43 @@ void matrix4x4::operator=(const matrix4x4& rhs)
 
 matrix4x4 matrix4x4::operator*(const matrix4x4& rhs) const
 {
-	glm::mat4 glmMat = asGlmMat(*this);
-	glm::mat4 rhsGlmMat = asGlmMat(rhs);
+	glm::mat<4, 4, double, glm::packed_highp> glmMat = asGlmMat(*this);
+	glm::mat<4, 4, double, glm::packed_highp> rhsGlmMat = asGlmMat(rhs);
 	return asMatrix4x4(glmMat * rhsGlmMat);
 }
 
 matrix4x4 matrix4x4::identity()
 {
-	return asMatrix4x4(glm::identity<glm::mat4>());
+	static const glm::mat<4, 4, double, glm::packed_highp> identity = glm::identity<glm::mat<4, 4, double, glm::packed_highp>>();
+	return asMatrix4x4(identity);
 }
 
 matrix4x4 matrix4x4::inverse(const matrix4x4& a)
 {
-	return asMatrix4x4(glm::inverse(asGlmMat(a)));
+	return asMatrix4x4(glm::inverse<4, 4, double, glm::packed_highp>(asGlmMat(a)));
 }
 
 matrix4x4 matrix4x4::transpose(const matrix4x4& a)
 {
-	return asMatrix4x4(glm::transpose(asGlmMat(a)));
+	return asMatrix4x4(glm::transpose<4, 4, double, glm::packed_highp>(asGlmMat(a)));
 }
 
 matrix4x4 matrix4x4::translation(const vector3d& a)
 {
-	return asMatrix4x4(glm::translate(glm::identity<glm::mat4>(), glm::vec3(a.x, a.y, a.z)));
+	static const glm::mat<4, 4, double, glm::packed_highp> identity = glm::identity<glm::mat<4, 4, double, glm::packed_highp>>();
+	return asMatrix4x4(glm::translate<double, glm::packed_highp>(identity, glm::vec<3, double, glm::packed_highp>(a.x, a.y, a.z)));
 }
 
 matrix4x4 matrix4x4::rotation(const rotator& a)
 {
 	const quaternion aQuaternion = a.toQuaternion();
-	return asMatrix4x4(glm::mat4_cast(glm::quat(aQuaternion.w, aQuaternion.x, aQuaternion.y, aQuaternion.z)));
+	return asMatrix4x4(glm::mat4_cast<double, glm::packed_highp>(glm::qua<double, glm::packed_highp>(aQuaternion.w, aQuaternion.x, aQuaternion.y, aQuaternion.z)));
 }
 
 matrix4x4 matrix4x4::scale(const vector3d& a)
 {
-	return asMatrix4x4(glm::scale(glm::identity<glm::mat4>(), glm::vec3(a.x, a.y, a.z)));
+	static const glm::mat<4, 4, double, glm::packed_highp> identity = glm::identity<glm::mat<4, 4, double, glm::packed_highp>>();
+	return asMatrix4x4(glm::scale<double, glm::packed_highp>(identity, glm::vec<3, double, glm::packed_highp>(a.x, a.y, a.z)));
 }
 
 matrix4x4 matrix4x4::transformation(const transform& a)
@@ -84,14 +87,14 @@ matrix4x4 matrix4x4::view(const vector3d& position, const rotator& inRotation)
 	return inverse(translation(position) * rotation(inRotation));
 }
 
-matrix4x4 matrix4x4::perspective(float fieldOfViewDegrees, float viewWidth, float viewHeight, float nearClipPlane, float farClipPlane)
+matrix4x4 matrix4x4::perspective(double fieldOfViewDegrees, double viewWidth, double viewHeight, double nearClipPlane, double farClipPlane)
 {
-	return asMatrix4x4(glm::perspectiveFovLH(glm::radians(fieldOfViewDegrees), viewWidth, viewHeight, nearClipPlane, farClipPlane));
+	return asMatrix4x4(glm::perspectiveFovLH<double>(glm::radians<double>(fieldOfViewDegrees), viewWidth, viewHeight, nearClipPlane, farClipPlane));
 }
 
-matrix4x4 matrix4x4::orthographic(float width, float height, float nearClipPlane, float farClipPlane)
+matrix4x4 matrix4x4::orthographic(double width, double height, double nearClipPlane, double farClipPlane)
 {
-	return asMatrix4x4(glm::orthoLH(-width, width, -height, height, nearClipPlane, farClipPlane));
+	return asMatrix4x4(glm::orthoLH<double>(-width, width, -height, height, nearClipPlane, farClipPlane));
 }
 
 void matrix4x4::inverseInPlace()

@@ -4,7 +4,7 @@
 
 vector4d vector4d::normalize(const vector4d& a)
 {
-    glm::vec4 result = glm::normalize(glm::vec4(a.x, a.y, a.z, a.w));
+    glm::vec<4, double, glm::packed_highp> result = glm::normalize<4, double, glm::packed_highp>(glm::vec4(a.x, a.y, a.z, a.w));
     return vector4d(result.x, result.y, result.z, result.w);
 }
 

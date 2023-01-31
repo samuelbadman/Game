@@ -134,7 +134,7 @@
     <PreBuildEvent>
       <Command>xcopy "C:\Program Files (x86)\Windows Kits\10\Redist\D3D\x64\dxcompiler.dll" "$(OutDir)" /k /y
 xcopy "C:\Program Files (x86)\Windows Kits\10\Redist\D3D\x64\dxil.dll" "$(OutDir)" /k /y
-xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
+xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s /i</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -193,7 +193,7 @@ xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
     <PreBuildEvent>
       <Command>xcopy "C:\Program Files (x86)\Windows Kits\10\Redist\D3D\x64\dxcompiler.dll" "$(OutDir)" /k /y
 xcopy "C:\Program Files (x86)\Windows Kits\10\Redist\D3D\x64\dxil.dll" "$(OutDir)" /k /y
-xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s</Command>
+xcopy "$(ProjectDir)shaders\" "$(OutDir)shaders\" /y /s /i</Command>
     </PreBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>

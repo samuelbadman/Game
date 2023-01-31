@@ -13,9 +13,9 @@ class mathLibrary
 	static float fRoundTo1DecimalPlace(const float value, const bool negativeAwayFromZero = true);
 	static float fRoundTo2DecimalPlace(const float value, const bool negativeAwayFromZero = true);
 	static float fRoundTo3DecimalPlace(const float value, const bool negativeAwayFromZero = true);
-	static double fRoundTo1DecimalPlace(const double value, const bool negativeAwayFromZero = true);
-	static double fRoundTo2DecimalPlace(const double value, const bool negativeAwayFromZero = true);
-	static double fRoundTo3DecimalPlace(const double value, const bool negativeAwayFromZero = true);
+	static double roundTo1DecimalPlace(const double value, const bool negativeAwayFromZero = true);
+	static double roundTo2DecimalPlace(const double value, const bool negativeAwayFromZero = true);
+	static double roundTo3DecimalPlace(const double value, const bool negativeAwayFromZero = true);
 
 	static float fDegreesToRadians(const float degrees);
 	static double degreesToRadians(const double degrees);
