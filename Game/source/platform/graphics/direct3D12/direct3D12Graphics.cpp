@@ -639,7 +639,6 @@ void direct3d12Graphics::loadMesh(const size_t vertexCount,
 	createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_UPLOAD, indexBufferWidth, D3D12_RESOURCE_STATE_GENERIC_READ, indexUploadBuffer);
 	updateBufferResource(indexUploadBuffer.Get(), indices, indexBufferWidth);
 
-
 	// Create default heaps and submit copy upload heaps to default heaps work to the graphics queue
 	// Before the CPU can reset the graphics command allocator for the current frame, it needs to wait until previous work stored in the allocator has completed on the GPU
 	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentFrameIndex], maxFenceWaitDurationMs);
@@ -647,19 +646,8 @@ void direct3d12Graphics::loadMesh(const size_t vertexCount,
 	fatalIfFailed(graphicsCommandAllocator->Reset());
 	fatalIfFailed(graphicsCommandList->Reset(graphicsCommandAllocator, nullptr));
 
-	{
-		ComPtr<ID3D12Resource>& vertexDefaultBuffer = resourceStore.emplace_back(nullptr);
-		createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_DEFAULT, vertexBufferWidth, D3D12_RESOURCE_STATE_COPY_DEST, vertexDefaultBuffer);
-		outMeshResources.vertexBufferHandle = resourceStore.size() - 1;
-		graphicsCommandList->CopyBufferRegion(vertexDefaultBuffer.Get(), 0, vertexUploadBuffer.Get(), 0, vertexBufferWidth);
-	}
-
-	{
-		ComPtr<ID3D12Resource>& indexDefaultBuffer = resourceStore.emplace_back(nullptr);
-		createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_DEFAULT, indexBufferWidth, D3D12_RESOURCE_STATE_COPY_DEST, indexDefaultBuffer);
-		outMeshResources.indexBufferHandle = resourceStore.size() - 1;
-		graphicsCommandList->CopyBufferRegion(indexDefaultBuffer.Get(), 0, indexUploadBuffer.Get(), 0, indexBufferWidth);
-	}
+	createDefaultBufferAndRecordCopyCommand(graphicsCommandList.Get(), vertexUploadBuffer.Get(), vertexBufferWidth, outMeshResources.vertexBufferHandle);
+	createDefaultBufferAndRecordCopyCommand(graphicsCommandList.Get(), indexUploadBuffer.Get(), indexBufferWidth, outMeshResources.indexBufferHandle);
 
 	D3D12_RESOURCE_BARRIER resourceBarriers[] = {
 		CD3DX12_RESOURCE_BARRIER::Transition(resourceStore[outMeshResources.vertexBufferHandle].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER),
@@ -758,5 +746,16 @@ void direct3d12Graphics::presentSurface(const graphicsSurface* surface, const bo
 {
 	fatalIfFailed(surface->swapChain->Present(useVSync ? 1 : 0, ((tearingSupported) && (!useVSync)) ? DXGI_PRESENT_ALLOW_TEARING : 0));
 	currentFrameIndex = surface->swapChain->GetCurrentBackBufferIndex();
+}
+
+void direct3d12Graphics::createDefaultBufferAndRecordCopyCommand(ID3D12GraphicsCommandList6* commandList, 
+	ID3D12Resource* copySrcBffer, 
+	UINT64 width,
+	size_t& outDefaultBufferResourceHandle)
+{
+	ComPtr<ID3D12Resource>& defaultBuffer = resourceStore.emplace_back(nullptr);
+	outDefaultBufferResourceHandle = resourceStore.size() - 1;
+	createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_DEFAULT, width, D3D12_RESOURCE_STATE_COPY_DEST, defaultBuffer);
+	commandList->CopyBufferRegion(defaultBuffer.Get(), 0, copySrcBffer, 0, width);
 }
 

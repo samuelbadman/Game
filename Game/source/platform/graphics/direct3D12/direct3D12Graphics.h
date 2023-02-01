@@ -55,5 +55,9 @@ private:
 	static void waitForGPU();
 	static void recordSurface(const class graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList);
 	static void presentSurface(const class graphicsSurface* surface, const bool useVSync, const bool tearingSupported);
+	static void createDefaultBufferAndRecordCopyCommand(ID3D12GraphicsCommandList6* commandList,
+		ID3D12Resource* copySrcBffer,
+		UINT64 width,
+		size_t& outDefaultBufferResourceHandle);
 };
 
