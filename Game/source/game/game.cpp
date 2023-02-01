@@ -24,6 +24,9 @@
 
 #include "platform/graphics/direct3D12/direct3d12Graphics.h"
 #include "platform/graphics/vertexPos3Norm3Col4UV2.h"
+#include "math/vector3d.h"
+#include "math/vector4d.h"
+#include "math/vector2d.h"
 
 struct sGameSettings
 {
@@ -212,7 +215,15 @@ void game::initializeAudio()
 
 void game::loadResources()
 {
+	sVertexPos3Norm3Col4UV2 vertices[] = {
+		sVertexPos3Norm3Col4UV2(vector3d(-0.5, -0.5, 0.0), vector3d(0.0, 0.0, 1.0), vector4d(0.0, 0.0, 0.0, 1.0), vector2d(0.0, 0.0)), // Bottom left
+		sVertexPos3Norm3Col4UV2(vector3d(0.0, 0.5, 0.0), vector3d(0.0, 0.0, 1.0), vector4d(0.0, 0.0, 0.0, 1.0), vector2d(0.0, 0.0)), // Top middle
+		sVertexPos3Norm3Col4UV2(vector3d(0.5, -0.5, 0.0), vector3d(0.0, 0.0, 1.0), vector4d(0.0, 0.0, 0.0, 1.0), vector2d(0.0, 0.0)) // Bottom right
+	};
 
+	const uint32_t indices[] = { 0, 1, 2 };
+
+	direct3d12Graphics::loadMesh(_countof(vertices), vertices, _countof(indices), indices, triangleMeshResources);
 }
 
 void game::tick(float deltaSeconds)

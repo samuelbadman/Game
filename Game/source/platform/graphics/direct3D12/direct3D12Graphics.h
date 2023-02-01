@@ -24,10 +24,6 @@ private:
 	static Microsoft::WRL::ComPtr<ID3D12Fence> graphicsFence;
 	static uint64_t graphicsFenceValue;
 	static std::vector<uint64_t> graphicsFenceValues;
-	static Microsoft::WRL::ComPtr<ID3D12CommandAllocator> copyCommandAllocator;
-	static Microsoft::WRL::ComPtr<ID3D12GraphicsCommandList> copyCommandList;
-	static Microsoft::WRL::ComPtr<ID3D12Fence> copyFence;
-	static uint64_t copyFenceValue;
 	static HANDLE eventHandle;
 	static uint32_t currentFrameIndex;
 
@@ -47,9 +43,9 @@ public:
 	static void resizeSurface(class graphicsSurface* surface, uint32_t width, uint32_t height);
 	static void render(const uint32_t numSurfaces, class graphicsSurface* const * surfaces, const bool useVSync);
 	static void loadMesh(const size_t vertexCount,
-		const struct sVertexPos3Norm3Col4UV2* const* vertices, 
+		const struct sVertexPos3Norm3Col4UV2* const vertices, 
 		const size_t indexCount, 
-		const uint32_t* const* indices,
+		const uint32_t* const indices,
 		struct sMeshResources& outMeshResources);
 
 private:

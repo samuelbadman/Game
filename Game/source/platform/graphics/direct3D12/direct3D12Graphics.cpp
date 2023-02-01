@@ -195,7 +195,6 @@ static void updateRenderTargetViews(ID3D12Device8* device,
 	{
 		fatalIfFailed(swapChain->GetBuffer(i, IID_PPV_ARGS(&renderTargetViews[i])));
 		device->CreateRenderTargetView(renderTargetViews[i].Get(), nullptr, rtvHandle);
-		renderTargetViews[i]->SetName((std::wstring(L"rtv") + std::to_wstring(i)).c_str());
 		rtvHandle.ptr += rtvDescriptorSize;
 	}
 }
@@ -335,7 +334,7 @@ static void createCommittedBuffer(ID3D12Device8* device, D3D12_HEAP_TYPE type, U
 {
 	D3D12_HEAP_PROPERTIES heapProperties = CD3DX12_HEAP_PROPERTIES(type);
 	D3D12_RESOURCE_DESC resourceDesc = CD3DX12_RESOURCE_DESC::Buffer(width);
-	fatalIfFailed(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_ALLOW_ONLY_BUFFERS, &resourceDesc, initialResourceState, nullptr, IID_PPV_ARGS(&outResource)));
+	fatalIfFailed(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, initialResourceState, nullptr, IID_PPV_ARGS(&outResource)));
 }
 
 static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
@@ -353,10 +352,6 @@ ComPtr<ID3D12GraphicsCommandList6> direct3d12Graphics::graphicsCommandList;
 ComPtr<ID3D12Fence> direct3d12Graphics::graphicsFence;
 uint64_t direct3d12Graphics::graphicsFenceValue = 0;
 std::vector<uint64_t> direct3d12Graphics::graphicsFenceValues;
-ComPtr<ID3D12CommandAllocator> direct3d12Graphics::copyCommandAllocator;
-ComPtr<ID3D12GraphicsCommandList> direct3d12Graphics::copyCommandList;
-ComPtr<ID3D12Fence> direct3d12Graphics::copyFence;
-uint64_t direct3d12Graphics::copyFenceValue = 0;
 HANDLE direct3d12Graphics::eventHandle = nullptr;
 uint32_t direct3d12Graphics::currentFrameIndex = 0;
 
@@ -384,16 +379,16 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	graphicsCommandAllocators.resize(static_cast<size_t>(backBufferCount));
 	for (ComPtr<ID3D12CommandAllocator>& commandAllocator : graphicsCommandAllocators)
 	{
+		static uint32_t index = 0;
 		createCommandAllocator(device.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT, commandAllocator);
+		commandAllocator->SetName((std::wstring(L"graphicsCommandAllocator") + std::to_wstring(index)).c_str());
+		++index;
 	}
 	createCommandList(device.Get(), graphicsCommandAllocators[0].Get(), nullptr, D3D12_COMMAND_LIST_TYPE_DIRECT, graphicsCommandList);
 
 	createFence(device.Get(), graphicsFence);
 	graphicsFenceValue = 0;
 	graphicsFenceValues.resize(static_cast<size_t>(backBufferCount), graphicsFenceValue);
-
-	createFence(device.Get(), copyFence);
-	copyFenceValue = 0;
 
 	createEventHandle(eventHandle);
 
@@ -586,9 +581,6 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, graphicsSurface* con
 	// Get frame resources
 	ID3D12CommandAllocator* const graphicsCommandAllocator = graphicsCommandAllocators[currentFrameIndex].Get();
 
-	// Wait for pending copy work to complete on the graphics queue
-	graphicsQueue->Wait(copyFence.Get(), copyFenceValue);
-
 	// Start recording command list
 	fatalIfFailed(graphicsCommandAllocator->Reset());
 	fatalIfFailed(graphicsCommandList->Reset(graphicsCommandAllocator, nullptr));
@@ -622,9 +614,9 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, graphicsSurface* con
 }
 
 void direct3d12Graphics::loadMesh(const size_t vertexCount, 
-	const sVertexPos3Norm3Col4UV2* const* vertices, 
+	const sVertexPos3Norm3Col4UV2* const vertices, 
 	const size_t indexCount, 
-	const uint32_t* const* indices, 
+	const uint32_t* const indices, 
 	sMeshResources& outMeshResources)
 {
 	const size_t vertexBufferWidth = sizeof(sVertexPos3Norm3Col4UV2) * vertexCount;
@@ -647,36 +639,41 @@ void direct3d12Graphics::loadMesh(const size_t vertexCount,
 	createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_UPLOAD, indexBufferWidth, D3D12_RESOURCE_STATE_GENERIC_READ, indexUploadBuffer);
 	updateBufferResource(indexUploadBuffer.Get(), indices, indexBufferWidth);
 
-	// Create default heaps
-	ComPtr<ID3D12Resource>& vertexDefaultBuffer = resourceStore.emplace_back(nullptr);
-	createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_DEFAULT, vertexBufferWidth, D3D12_RESOURCE_STATE_COPY_DEST, vertexDefaultBuffer);
-	outMeshResources.vertexBufferHandle = resourceStore.size() - 1;
 
-	ComPtr<ID3D12Resource>& indexDefaultBuffer = resourceStore.emplace_back(nullptr);
-	createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_DEFAULT, indexBufferWidth, D3D12_RESOURCE_STATE_COPY_DEST, indexDefaultBuffer);
-	outMeshResources.indexBufferHandle = resourceStore.size() - 1;
+	// Create default heaps and submit copy upload heaps to default heaps work to the graphics queue
+	// Before the CPU can reset the graphics command allocator for the current frame, it needs to wait until previous work stored in the allocator has completed on the GPU
+	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentFrameIndex], maxFenceWaitDurationMs);
+	ID3D12CommandAllocator* graphicsCommandAllocator = graphicsCommandAllocators[currentFrameIndex].Get();
+	fatalIfFailed(graphicsCommandAllocator->Reset());
+	fatalIfFailed(graphicsCommandList->Reset(graphicsCommandAllocator, nullptr));
 
-	// Submit copy upload heaps to default heaps work to the copy queue
-	// Before the CPU can reset the copy command allocator, it needs to wait until previous work stored in the allocator has completed on the GPU
-	waitForFence(copyFence.Get(), eventHandle, copyFenceValue, maxFenceWaitDurationMs);
-	fatalIfFailed(copyCommandAllocator->Reset());
-	fatalIfFailed(copyCommandList->Reset(copyCommandAllocator.Get(), nullptr));
+	{
+		ComPtr<ID3D12Resource>& vertexDefaultBuffer = resourceStore.emplace_back(nullptr);
+		createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_DEFAULT, vertexBufferWidth, D3D12_RESOURCE_STATE_COPY_DEST, vertexDefaultBuffer);
+		outMeshResources.vertexBufferHandle = resourceStore.size() - 1;
+		graphicsCommandList->CopyBufferRegion(vertexDefaultBuffer.Get(), 0, vertexUploadBuffer.Get(), 0, vertexBufferWidth);
+	}
 
-	copyCommandList->CopyBufferRegion(vertexDefaultBuffer.Get(), 0, vertexUploadBuffer.Get(), 0, vertexBufferWidth);
-	copyCommandList->CopyBufferRegion(indexDefaultBuffer.Get(), 0, indexUploadBuffer.Get(), 0, indexBufferWidth);
+	{
+		ComPtr<ID3D12Resource>& indexDefaultBuffer = resourceStore.emplace_back(nullptr);
+		createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_DEFAULT, indexBufferWidth, D3D12_RESOURCE_STATE_COPY_DEST, indexDefaultBuffer);
+		outMeshResources.indexBufferHandle = resourceStore.size() - 1;
+		graphicsCommandList->CopyBufferRegion(indexDefaultBuffer.Get(), 0, indexUploadBuffer.Get(), 0, indexBufferWidth);
+	}
 
 	D3D12_RESOURCE_BARRIER resourceBarriers[] = {
-		CD3DX12_RESOURCE_BARRIER::Transition(vertexDefaultBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER),
-		CD3DX12_RESOURCE_BARRIER::Transition(indexDefaultBuffer.Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER)
+		CD3DX12_RESOURCE_BARRIER::Transition(resourceStore[outMeshResources.vertexBufferHandle].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER),
+		CD3DX12_RESOURCE_BARRIER::Transition(resourceStore[outMeshResources.indexBufferHandle].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER)
 	};
-	copyCommandList->ResourceBarrier(_countof(resourceBarriers), resourceBarriers);
+	graphicsCommandList->ResourceBarrier(_countof(resourceBarriers), resourceBarriers);
 
-	fatalIfFailed(copyCommandList->Close());
-	ID3D12CommandList* commandLists[] = { copyCommandList.Get() };
-	copyQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
+	fatalIfFailed(graphicsCommandList->Close());
+	ID3D12CommandList* commandLists[] = { graphicsCommandList.Get() };
+	graphicsQueue->ExecuteCommandLists(_countof(commandLists), commandLists);
 
-	++copyFenceValue;
-	copyQueue->Signal(copyFence.Get(), copyFenceValue);
+	graphicsFenceValues[currentFrameIndex] = ++graphicsFenceValue;
+	graphicsQueue->Signal(graphicsFence.Get(), graphicsFenceValue);
+	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentFrameIndex], maxFenceWaitDurationMs);
 }
 
 void direct3d12Graphics::loadShader(const std::string& shaderSourceFile, LPCWSTR entryPoint, LPCWSTR targetProfile, std::vector<uint8_t>& outBuffer)
@@ -712,13 +709,11 @@ void direct3d12Graphics::compileShader(LPCWSTR file, LPCWSTR entryPoint, LPCWSTR
 void direct3d12Graphics::waitForGPU()
 {
 	// Wait for all frames to finish executing on the GPU
-	for (size_t i = 0; i < static_cast<size_t>(backBufferCount); ++i)
+	const size_t graphicsFenceValueCount = graphicsFenceValues.size();
+	for (size_t i = 0; i < graphicsFenceValueCount; ++i)
 	{
 		waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[i], maxFenceWaitDurationMs);
 	}
-
-	// Wait for any copy work to finish
-	waitForFence(copyFence.Get(), eventHandle, copyFenceValue, maxFenceWaitDurationMs);
 }
 
 void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList)
