@@ -252,6 +252,7 @@ del "$(OutDir)shaders\*.bin"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="source\platform\graphics\vertexPos3Norm3Col4UV2.cpp" />
+    <ClCompile Include="source\platform\graphics\vulkan\vulkanGraphics.cpp" />
     <ClCompile Include="source\platform\graphics\win32\win32Graphics.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
@@ -330,6 +331,8 @@ del "$(OutDir)shaders\*.bin"</Command>
     <ClInclude Include="source\platform\graphics\graphicsSurface.h" />
     <ClInclude Include="source\platform\graphics\meshResources.h" />
     <ClInclude Include="source\platform\graphics\vertexPos3Norm3Col4UV2.h" />
+    <ClInclude Include="source\platform\graphics\vulkan\vulkanGraphics.h" />
+    <ClInclude Include="source\platform\graphics\vulkan\vulkanSurface.h" />
     <ClInclude Include="source\stringHelper.h" />
     <ClInclude Include="source\platform\events\closedEvent.h" />
     <ClInclude Include="source\platform\events\destroyedEvent.h" />

@@ -1,6 +1,8 @@
 #include "pch.h"
 #include "platform/graphics/graphicsApi.h"
 #include "platform/graphics/direct3D12/direct3D12Graphics.h"
+#include "platform/graphics/vulkan/vulkanGraphics.h"
+#include "platform/framework/platformMessageBox.h"
 
 static void(*shutdown)() = nullptr;
 static void(*createSurface)(void*, uint32_t, uint32_t, std::shared_ptr<class graphicsSurface>&) = nullptr;
@@ -42,8 +44,19 @@ void graphicsInit(const eGraphicsApi graphicsApi, const bool softwareRenderer, c
 
 	case eGraphicsApi::vulkan:
 	{
-		// Set function pointers
-		// Initialize graphics api
+		setFunctionPointers(&vulkanGraphics::shutdown,
+			&vulkanGraphics::createSurface,
+			&vulkanGraphics::destroySurface,
+			&vulkanGraphics::resizeSurface,
+			&vulkanGraphics::render,
+			&vulkanGraphics::loadMesh);
+		vulkanGraphics::init(false, backBufferCount);
+	}
+	break;
+
+	default:
+	{
+		platformMessageBoxFatal("win32Graphics::graphicsInit: initializing unimplemented graphics api.");
 	}
 	break;
 	}

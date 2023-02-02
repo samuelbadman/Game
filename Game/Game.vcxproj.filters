@@ -90,6 +90,9 @@
     <ClCompile Include="source\platform\graphics\win32\win32Graphics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\platform\graphics\vulkan\vulkanGraphics.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\platform\framework\win32\win32Window.h">
@@ -216,6 +219,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\graphics\graphics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\graphics\vulkan\vulkanGraphics.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\graphics\vulkan\vulkanSurface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\graphics\graphicsApi.h">
