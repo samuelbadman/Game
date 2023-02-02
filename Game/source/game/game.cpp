@@ -214,7 +214,7 @@ void game::initializeAudio()
 
 void game::loadResources()
 {
-	sVertexPos3Norm3Col4UV2 vertices[] = {
+	const sVertexPos3Norm3Col4UV2 vertices[] = {
 		sVertexPos3Norm3Col4UV2(vector3d(-0.5, -0.5, 0.0), vector3d(0.0, 0.0, 1.0), vector4d(0.0, 0.0, 0.0, 1.0), vector2d(0.0, 0.0)), // Bottom left
 		sVertexPos3Norm3Col4UV2(vector3d(0.0, 0.5, 0.0), vector3d(0.0, 0.0, 1.0), vector4d(0.0, 0.0, 0.0, 1.0), vector2d(0.0, 0.0)), // Top middle
 		sVertexPos3Norm3Col4UV2(vector3d(0.5, -0.5, 0.0), vector3d(0.0, 0.0, 1.0), vector4d(0.0, 0.0, 0.0, 1.0), vector2d(0.0, 0.0)) // Bottom right
