@@ -2,7 +2,7 @@
 
 #include "platform/framework/platformGamepad.h"
 #include "platform/framework/platformKeyCodes.h"
-#include "events/platform/inputEvent.h"
+#include "platform/events/inputEvent.h"
 #include "game/game.h"
 
 static XINPUT_STATE prevStates[XUSER_MAX_COUNT];

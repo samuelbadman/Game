@@ -380,7 +380,7 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 
 	enableDebugLayer();
 	createDxgiFactory(dxgiFactory);
-	getAdapter(dxgiFactory.Get(), false, adapter);
+	getAdapter(dxgiFactory.Get(), useWarp, adapter);
 	createDevice(adapter.Get(), device);
 	descriptorSizes = getDescriptorSizes(device.Get());
 	createCommandQueue(device.Get(), D3D12_COMMAND_LIST_TYPE_DIRECT, graphicsQueue);

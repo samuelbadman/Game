@@ -9,20 +9,20 @@
 #include "platform/framework/PlatformAudio.h"
 #include "platform/framework/platformTiming.h"
 #include "platform/framework/platformMessageBox.h"
-#include "events/platform/closedEvent.h"
-#include "events/platform/destroyedEvent.h"
-#include "events/platform/inputEvent.h"
-#include "events/platform/enterSizeMoveEvent.h"
-#include "events/platform/exitSizeMoveEvent.h"
-#include "events/platform/gainedFocusEvent.h"
-#include "events/platform/lostFocusEvent.h"
-#include "events/platform/maximizedEvent.h"
-#include "events/platform/minimizedEvent.h"
-#include "events/platform/resizedEvent.h"
-#include "events/platform/enterFullScreenEvent.h"
-#include "events/platform/exitFullScreenEvent.h"
+#include "platform/events/closedEvent.h"
+#include "platform/events/destroyedEvent.h"
+#include "platform/events/inputEvent.h"
+#include "platform/events/enterSizeMoveEvent.h"
+#include "platform/events/exitSizeMoveEvent.h"
+#include "platform/events/gainedFocusEvent.h"
+#include "platform/events/lostFocusEvent.h"
+#include "platform/events/maximizedEvent.h"
+#include "platform/events/minimizedEvent.h"
+#include "platform/events/resizedEvent.h"
+#include "platform/events/enterFullScreenEvent.h"
+#include "platform/events/exitFullScreenEvent.h"
+#include "platform/graphics/graphics.h"
 
-#include "platform/graphics/direct3D12/direct3d12Graphics.h"
 #include "platform/graphics/vertexPos3Norm3Col4UV2.h"
 #include "math/vector3d.h"
 #include "math/vector4d.h"
@@ -45,6 +45,7 @@ struct sGameSettings
 
 	// Render settings
 	static constexpr bool enableVSync = false;
+	static constexpr bool enableTripleBuffering = false;
 };
 
 bool game::running = false;
@@ -118,7 +119,7 @@ void game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
 {
 	if (inWindow == window.get())
 	{
-		direct3d12Graphics::resizeSurface(surface.get(), evt.newClientWidth, evt.newClientHeight);
+		graphicsResizeSurface(surface.get(), evt.newClientWidth, evt.newClientHeight);
 	}
 }
 
@@ -198,13 +199,13 @@ void game::initializeGraphics()
 		platformMessageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
 	}
 	
-	direct3d12Graphics::init(false, 3);
-	direct3d12Graphics::createSurface(platformGetWindowHandle(window.get()), width, height, surface);
+	graphicsInit(eGraphicsApi::direct3d12, false, sGameSettings::enableTripleBuffering ? 3 : 2);
+	graphicsCreateSurface(platformGetWindowHandle(window.get()), width, height, surface);
 }
 
 void game::shutdownGraphics()
 {
-	direct3d12Graphics::shutdown();
+	graphicsShutdown();
 }
 
 void game::initializeAudio()
@@ -222,7 +223,7 @@ void game::loadResources()
 
 	const uint32_t indices[] = { 0, 1, 2 };
 
-	direct3d12Graphics::loadMesh(_countof(vertices), vertices, _countof(indices), indices, triangleMeshResources);
+	graphicsLoadMesh(_countof(vertices), vertices, _countof(indices), indices, triangleMeshResources);
 }
 
 void game::tick(float deltaSeconds)
@@ -237,5 +238,5 @@ void game::render()
 {
 	const graphicsSurface* const surfaces[] = { surface.get() };
 	const sMeshResources* const meshes[] = { &triangleMeshResources };
-	direct3d12Graphics::render(_countof(surfaces), surfaces, sGameSettings::enableVSync, _countof(meshes), meshes);
+	graphicsRender(_countof(surfaces), surfaces, sGameSettings::enableVSync, _countof(meshes), meshes);
 }
