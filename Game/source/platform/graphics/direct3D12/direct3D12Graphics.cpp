@@ -729,7 +729,7 @@ void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12Gra
 
 	D3D12_CPU_DESCRIPTOR_HANDLE cpu_rtvDescriptorHandle = surface->rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	cpu_rtvDescriptorHandle.ptr += (descriptorSizes.rtvDescriptorSize * currentFrameIndex);
-	const FLOAT clearColor[4] = { 0.0f, 0.0f, 0.4f, 1.0f };
+	const FLOAT clearColor[4] = { 0.0f, 0.0f, 0.2f, 1.0f };
 	commandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE cpu_dsvDescriptorHandle = surface->dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();

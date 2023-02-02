@@ -215,9 +215,9 @@ void game::initializeAudio()
 void game::loadResources()
 {
 	const sVertexPos3Norm3Col4UV2 vertices[] = {
-		sVertexPos3Norm3Col4UV2(vector3d(-0.5, -0.5, 0.0), vector3d(0.0, 0.0, 1.0), vector4d(0.0, 0.0, 0.0, 1.0), vector2d(0.0, 0.0)), // Bottom left
-		sVertexPos3Norm3Col4UV2(vector3d(0.0, 0.5, 0.0), vector3d(0.0, 0.0, 1.0), vector4d(0.0, 0.0, 0.0, 1.0), vector2d(0.0, 0.0)), // Top middle
-		sVertexPos3Norm3Col4UV2(vector3d(0.5, -0.5, 0.0), vector3d(0.0, 0.0, 1.0), vector4d(0.0, 0.0, 0.0, 1.0), vector2d(0.0, 0.0)) // Bottom right
+		sVertexPos3Norm3Col4UV2(vector3d(-0.5, -0.5, 0.0), vector3d(0.0, 0.0, -1.0), vector4d(0.8, 0.0, 0.0, 1.0), vector2d(0.0, 0.0)), // Bottom left
+		sVertexPos3Norm3Col4UV2(vector3d(0.0, 0.5, 0.0), vector3d(0.0, 0.0, -1.0), vector4d(0.0, 0.8, 0.0, 1.0), vector2d(0.5, 1.0)), // Top middle
+		sVertexPos3Norm3Col4UV2(vector3d(0.5, -0.5, 0.0), vector3d(0.0, 0.0, -1.0), vector4d(0.0, 0.0, 0.8, 1.0), vector2d(1.0, 0.0)) // Bottom right
 	};
 
 	const uint32_t indices[] = { 0, 1, 2 };
