@@ -152,7 +152,6 @@ void game::onWindowClosed(platformWindow* inWindow, const sClosedEvent& evt)
 
 void game::onWindowDestroyedEvent(platformWindow* inWindow, const sDestroyedEvent& evt)
 {
-
 }
 
 void game::onWindowEnterFullScreen(platformWindow* inWindow, const sEnterFullScreenEvent& evt)

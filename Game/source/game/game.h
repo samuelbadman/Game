@@ -16,11 +16,9 @@ private:
 public:
 	static void start();
 	static void exit();
-	/* 
-	Called when the platform layer generates an input event.
-	inWindow acts as an id to identify the window that generated the event
-	inWindow will be nullptr when the input event comes from a gamepad as gamepad's are polled seperately from a window 
-	*/
+	/* Called when the platform layer generates an input event.
+	   inWindow acts as an id to identify the window that generated the event
+	   inWindow will be nullptr when the input event comes from a gamepad as gamepad's are polled seperately from a window */
 	static void onInputEvent(class platformWindow* inWindow, const struct sInputEvent& evt);
 	static void onWindowMaximized(class platformWindow* inWindow, const struct sMaximizedEvent& evt);
 	static void onWindowResized(class platformWindow* inWindow, const struct sResizedEvent& evt);
