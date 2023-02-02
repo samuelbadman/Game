@@ -337,6 +337,15 @@ static void createCommittedBuffer(ID3D12Device8* device, D3D12_HEAP_TYPE type, U
 	fatalIfFailed(device->CreateCommittedResource(&heapProperties, D3D12_HEAP_FLAG_NONE, &resourceDesc, initialResourceState, nullptr, IID_PPV_ARGS(&outResource)));
 }
 
+static void updateBufferResource(ID3D12Resource* buffer, const void* src, const size_t width)
+{
+	D3D12_RANGE readRange = {};
+	void* resourceData;
+	fatalIfFailed(buffer->Map(0, &readRange, &resourceData));
+	memcpy(resourceData, src, width);
+	buffer->Unmap(0, nullptr);
+}
+
 static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
 
 uint32_t direct3d12Graphics::backBufferCount = 0;
@@ -362,6 +371,8 @@ ComPtr<ID3D12RootSignature> direct3d12Graphics::rootSig;
 ComPtr<ID3D12PipelineState> direct3d12Graphics::graphicsPipelineState;
 
 std::vector<ComPtr<ID3D12Resource>> direct3d12Graphics::resourceStore;
+std::vector<D3D12_VERTEX_BUFFER_VIEW> direct3d12Graphics::vertexBufferViewStore;
+std::vector<D3D12_INDEX_BUFFER_VIEW> direct3d12Graphics::indexBufferViewStore;
 
 void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
@@ -573,7 +584,8 @@ void direct3d12Graphics::resizeSurface(graphicsSurface* surface, uint32_t width,
 	}
 }
 
-void direct3d12Graphics::render(const uint32_t numSurfaces, graphicsSurface* const * surfaces, const bool useVSync)
+void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const bool useVSync, const uint32_t meshCount, 
+	const struct sMeshResources* const* meshes)
 {
 	// Wait for the previous frame to finish on the GPU
 	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentFrameIndex], maxFenceWaitDurationMs);
@@ -589,7 +601,7 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, graphicsSurface* con
 	for(uint32_t i = 0; i < numSurfaces; ++i)
 	{
 		const graphicsSurface* const surface = surfaces[static_cast<size_t>(i)];
-		recordSurface(surface, graphicsCommandList.Get());
+		recordSurface(surface, graphicsCommandList.Get(), meshCount, meshes);
 	}
 
 	// Stop recording command list
@@ -613,22 +625,13 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, graphicsSurface* con
 	fatalIfFailed(graphicsQueue->Signal(graphicsFence.Get(), graphicsFenceValues[currentFrameIndex]));
 }
 
-void direct3d12Graphics::loadMesh(const size_t vertexCount, 
-	const sVertexPos3Norm3Col4UV2* const vertices, 
-	const size_t indexCount, 
-	const uint32_t* const indices, 
+void direct3d12Graphics::loadMesh(const size_t vertexCount, const sVertexPos3Norm3Col4UV2* const vertices, const size_t indexCount, const uint32_t* const indices, 
 	sMeshResources& outMeshResources)
 {
 	const size_t vertexBufferWidth = sizeof(sVertexPos3Norm3Col4UV2) * vertexCount;
 	const size_t indexBufferWidth = sizeof(uint32_t) * indexCount;
 
-	static const auto updateBufferResource = [](ID3D12Resource* buffer, const void* src, const size_t width) {
-		D3D12_RANGE readRange = {};
-		void* resourceData;
-		fatalIfFailed(buffer->Map(0, &readRange, &resourceData));
-		memcpy(resourceData, src, width);
-		buffer->Unmap(0, nullptr);
-	};
+	outMeshResources.indexCount = static_cast<uint32_t>(indexCount);
 
 	// Create and write to upload heaps
 	ComPtr<ID3D12Resource> vertexUploadBuffer;
@@ -646,12 +649,12 @@ void direct3d12Graphics::loadMesh(const size_t vertexCount,
 	fatalIfFailed(graphicsCommandAllocator->Reset());
 	fatalIfFailed(graphicsCommandList->Reset(graphicsCommandAllocator, nullptr));
 
-	createDefaultBufferAndRecordCopyCommand(graphicsCommandList.Get(), vertexUploadBuffer.Get(), vertexBufferWidth, outMeshResources.vertexBufferHandle);
-	createDefaultBufferAndRecordCopyCommand(graphicsCommandList.Get(), indexUploadBuffer.Get(), indexBufferWidth, outMeshResources.indexBufferHandle);
+	createDefaultBufferAndRecordCopyCommand(graphicsCommandList.Get(), vertexUploadBuffer.Get(), static_cast<UINT>(vertexBufferWidth), outMeshResources.vertexBufferResourceHandle);
+	createDefaultBufferAndRecordCopyCommand(graphicsCommandList.Get(), indexUploadBuffer.Get(), static_cast<UINT>(indexBufferWidth), outMeshResources.indexBufferResourceHandle);
 
 	D3D12_RESOURCE_BARRIER resourceBarriers[] = {
-		CD3DX12_RESOURCE_BARRIER::Transition(resourceStore[outMeshResources.vertexBufferHandle].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER),
-		CD3DX12_RESOURCE_BARRIER::Transition(resourceStore[outMeshResources.indexBufferHandle].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER)
+		CD3DX12_RESOURCE_BARRIER::Transition(resourceStore[outMeshResources.vertexBufferResourceHandle].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_VERTEX_AND_CONSTANT_BUFFER),
+		CD3DX12_RESOURCE_BARRIER::Transition(resourceStore[outMeshResources.indexBufferResourceHandle].Get(), D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_INDEX_BUFFER)
 	};
 	graphicsCommandList->ResourceBarrier(_countof(resourceBarriers), resourceBarriers);
 
@@ -661,6 +664,12 @@ void direct3d12Graphics::loadMesh(const size_t vertexCount,
 
 	graphicsFenceValues[currentFrameIndex] = ++graphicsFenceValue;
 	graphicsQueue->Signal(graphicsFence.Get(), graphicsFenceValue);
+
+	// Create buffer views
+	createVertexBufferView(outMeshResources.vertexBufferResourceHandle, sizeof(sVertexPos3Norm3Col4UV2), static_cast<UINT>(vertexBufferWidth), outMeshResources.vertexBufferViewHandle);
+	createIndexBufferView(outMeshResources.indexBufferResourceHandle, DXGI_FORMAT_R32_UINT, static_cast<UINT>(indexBufferWidth), outMeshResources.indexBufferViewHandle);
+
+	// Wait for the copy work to finish as the upload buffers are released after exiting this function
 	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentFrameIndex], maxFenceWaitDurationMs);
 }
 
@@ -704,7 +713,7 @@ void direct3d12Graphics::waitForGPU()
 	}
 }
 
-void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList)
+void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList, const uint32_t meshCount, const struct sMeshResources* const* meshes)
 {
 	ID3D12Resource* const backBuffer = surface->renderTargetViews[currentFrameIndex].Get();
 
@@ -716,20 +725,34 @@ void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12Gra
 	backBufferResourceStartTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;
 	backBufferResourceStartTransitionBarrier.Transition.Subresource = 0;
 
-	graphicsCommandList->ResourceBarrier(1, &backBufferResourceStartTransitionBarrier);
+	commandList->ResourceBarrier(1, &backBufferResourceStartTransitionBarrier);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE cpu_rtvDescriptorHandle = surface->rtvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
 	cpu_rtvDescriptorHandle.ptr += (descriptorSizes.rtvDescriptorSize * currentFrameIndex);
 	const FLOAT clearColor[4] = { 0.0f, 0.0f, 0.4f, 1.0f };
-	graphicsCommandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
+	commandList->ClearRenderTargetView(cpu_rtvDescriptorHandle, clearColor, 0, nullptr);
 
 	D3D12_CPU_DESCRIPTOR_HANDLE cpu_dsvDescriptorHandle = surface->dsvDescriptorHeap->GetCPUDescriptorHandleForHeapStart();
-	graphicsCommandList->ClearDepthStencilView(cpu_dsvDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
+	commandList->ClearDepthStencilView(cpu_dsvDescriptorHandle, D3D12_CLEAR_FLAG_DEPTH | D3D12_CLEAR_FLAG_STENCIL, 1.0f, 0, 0, nullptr);
 
-	graphicsCommandList->RSSetViewports(1, &surface->viewport);
-	graphicsCommandList->RSSetScissorRects(1, &surface->scissorRect);
+	commandList->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
+
+	commandList->RSSetViewports(1, &surface->viewport);
+	commandList->RSSetScissorRects(1, &surface->scissorRect);
+
+	commandList->OMSetRenderTargets(1, &cpu_rtvDescriptorHandle, FALSE, &cpu_dsvDescriptorHandle);
+
+	commandList->SetGraphicsRootSignature(rootSig.Get());
+	commandList->SetPipelineState(graphicsPipelineState.Get());
 
 	// Todo: Receive as function argument an array of render data for each surface describing what to render onto each surface
+	for (uint32_t i = 0; i < meshCount; ++i)
+	{
+		const sMeshResources* const mesh = meshes[i];
+		commandList->IASetVertexBuffers(0, 1, &vertexBufferViewStore[mesh->vertexBufferViewHandle]);
+		commandList->IASetIndexBuffer(&indexBufferViewStore[mesh->indexBufferViewHandle]);
+		commandList->DrawIndexedInstanced(mesh->indexCount, 1, 0, 0, 0);
+	}
 
 	D3D12_RESOURCE_BARRIER backBufferResourceEndTransitionBarrier = {};
 	backBufferResourceEndTransitionBarrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
@@ -739,7 +762,7 @@ void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12Gra
 	backBufferResourceEndTransitionBarrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
 	backBufferResourceEndTransitionBarrier.Transition.Subresource = 0;
 
-	graphicsCommandList->ResourceBarrier(1, &backBufferResourceEndTransitionBarrier);
+	commandList->ResourceBarrier(1, &backBufferResourceEndTransitionBarrier);
 }
 
 void direct3d12Graphics::presentSurface(const graphicsSurface* surface, const bool useVSync, const bool tearingSupported)
@@ -748,14 +771,30 @@ void direct3d12Graphics::presentSurface(const graphicsSurface* surface, const bo
 	currentFrameIndex = surface->swapChain->GetCurrentBackBufferIndex();
 }
 
-void direct3d12Graphics::createDefaultBufferAndRecordCopyCommand(ID3D12GraphicsCommandList6* commandList, 
-	ID3D12Resource* copySrcBffer, 
-	UINT64 width,
+void direct3d12Graphics::createDefaultBufferAndRecordCopyCommand(ID3D12GraphicsCommandList6* commandList, ID3D12Resource* copySrcBffer, UINT64 width,
 	size_t& outDefaultBufferResourceHandle)
 {
 	ComPtr<ID3D12Resource>& defaultBuffer = resourceStore.emplace_back(nullptr);
 	outDefaultBufferResourceHandle = resourceStore.size() - 1;
 	createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_DEFAULT, width, D3D12_RESOURCE_STATE_COPY_DEST, defaultBuffer);
 	commandList->CopyBufferRegion(defaultBuffer.Get(), 0, copySrcBffer, 0, width);
+}
+
+void direct3d12Graphics::createVertexBufferView(const size_t vertexBufferResourceHandle, const UINT vertexStride, const UINT bufferWidth, size_t& outVertexBufferViewHandle)
+{
+	D3D12_VERTEX_BUFFER_VIEW& vertexBufferView = vertexBufferViewStore.emplace_back();
+	outVertexBufferViewHandle = vertexBufferViewStore.size() - 1;
+	vertexBufferView.BufferLocation = resourceStore[vertexBufferResourceHandle]->GetGPUVirtualAddress();
+	vertexBufferView.StrideInBytes = vertexStride;
+	vertexBufferView.SizeInBytes = bufferWidth;
+}
+
+void direct3d12Graphics::createIndexBufferView(const size_t indexBufferResourceHandle, const DXGI_FORMAT format, const UINT bufferWidth, size_t& outIndexBufferViewHandle)
+{
+	D3D12_INDEX_BUFFER_VIEW& indexBufferView = indexBufferViewStore.emplace_back();
+	outIndexBufferViewHandle = indexBufferViewStore.size() - 1;
+	indexBufferView.BufferLocation = resourceStore[indexBufferResourceHandle]->GetGPUVirtualAddress();
+	indexBufferView.Format = format;
+	indexBufferView.SizeInBytes = bufferWidth;
 }
 

@@ -236,6 +236,7 @@ void game::fixedTick(float fixedStep)
 
 void game::render()
 {
-	graphicsSurface* const surfaces[1] = { surface.get() };
-	direct3d12Graphics::render(_countof(surfaces), surfaces, sGameSettings::enableVSync);
+	const graphicsSurface* const surfaces[] = { surface.get() };
+	const sMeshResources* const meshes[] = { &triangleMeshResources };
+	direct3d12Graphics::render(_countof(surfaces), surfaces, sGameSettings::enableVSync, _countof(meshes), meshes);
 }
