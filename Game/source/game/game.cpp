@@ -199,7 +199,7 @@ void game::initializeGraphics()
 		platformMessageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
 	}
 	
-	graphicsInit(eGraphicsApi::direct3d12, false, sGameSettings::enableTripleBuffering ? 3 : 2);
+	graphicsInit(eGraphicsApi::vulkan, false, sGameSettings::enableTripleBuffering ? 3 : 2);
 	graphicsCreateSurface(platformGetWindowHandle(window.get()), width, height, surface);
 }
 

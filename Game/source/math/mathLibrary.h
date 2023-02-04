@@ -2,6 +2,7 @@
 
 class mathLibrary
 {
+public:
 	static uint32_t randomUInt32();
 
 	template <typename T>
