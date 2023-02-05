@@ -46,6 +46,7 @@ struct sGameSettings
 	// Render settings
 	static constexpr bool enableVSync = false;
 	static constexpr bool enableTripleBuffering = false;
+	static constexpr eGraphicsApi graphicsApi = eGraphicsApi::direct3d12;
 };
 
 bool game::running = false;
@@ -199,7 +200,7 @@ void game::initializeGraphics()
 		platformMessageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
 	}
 	
-	graphicsInit(eGraphicsApi::vulkan, false, sGameSettings::enableTripleBuffering ? 3 : 2);
+	graphicsInit(sGameSettings::graphicsApi, false, sGameSettings::enableTripleBuffering ? 3 : 2);
 	graphicsCreateSurface(platformGetWindowHandle(window.get()), width, height, surface);
 }
 
