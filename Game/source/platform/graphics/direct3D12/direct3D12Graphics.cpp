@@ -6,10 +6,20 @@
 #include "fileIO/fileIO.h"
 #include "platform/graphics/vertexPos3Norm3Col4UV2.h"
 #include "platform/graphics/meshResources.h"
+#include "math/matrix4x4.h"
+#include "platform/graphics/renderData.h"
+
+#include "platform/framework/platformConsole.h"
+#include "stringHelper.h"
 
 using namespace Microsoft::WRL;
 
 #define fatalIfFailed(x) if(FAILED(x)) platformMessageBoxFatal("hresult failed.");
+
+struct sObjectConstantBuffer
+{
+	float worldViewProjection[16];
+};
 
 static void enableDebugLayer()
 {
@@ -367,12 +377,16 @@ uint32_t direct3d12Graphics::currentFrameIndex = 0;
 ComPtr<IDxcLibrary> direct3d12Graphics::dxcLibrary;
 ComPtr<IDxcCompiler> direct3d12Graphics::dxcCompiler;
 
-ComPtr<ID3D12RootSignature> direct3d12Graphics::rootSig;
+ComPtr<ID3D12RootSignature> direct3d12Graphics::rootSignature;
 ComPtr<ID3D12PipelineState> direct3d12Graphics::graphicsPipelineState;
 
 std::vector<ComPtr<ID3D12Resource>> direct3d12Graphics::resourceStore;
 std::vector<D3D12_VERTEX_BUFFER_VIEW> direct3d12Graphics::vertexBufferViewStore;
 std::vector<D3D12_INDEX_BUFFER_VIEW> direct3d12Graphics::indexBufferViewStore;
+
+ComPtr<ID3D12Resource> direct3d12Graphics::objectConstantBuffer;
+UINT8* direct3d12Graphics::objectConstantBufferPointer = 0;
+uint32_t direct3d12Graphics::objectConstantBufferPosition = 0;
 
 void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
@@ -406,6 +420,11 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	createDxcLibrary(dxcLibrary);
 	createDxcCompiler(dxcCompiler);
 
+	// Create object constant buffer
+	createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_UPLOAD, 65536, D3D12_RESOURCE_STATE_GENERIC_READ, objectConstantBuffer);
+	D3D12_RANGE readRange = {};
+	fatalIfFailed(objectConstantBuffer->Map(0, &readRange, reinterpret_cast<void**>(&objectConstantBufferPointer)));
+
 	// Input layout
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] =
 	{
@@ -420,13 +439,23 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	inputLayoutDesc.pInputElementDescs = inputLayout;
 
 	// Root signature
-	D3D12_ROOT_SIGNATURE_DESC rootSigDesc = {};
-	rootSigDesc.NumParameters = 0;
-	rootSigDesc.pParameters = nullptr;
-	rootSigDesc.NumStaticSamplers = 0;
-	rootSigDesc.pStaticSamplers = nullptr;
-	rootSigDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
-		D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
+	D3D12_ROOT_DESCRIPTOR rootCBDescriptor = {};
+	rootCBDescriptor.RegisterSpace = 0;
+	rootCBDescriptor.ShaderRegister = 0;
+
+	D3D12_ROOT_PARAMETER rootParameters[1];
+
+	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[0].Descriptor = rootCBDescriptor;
+	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+
+	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
+	rootSignatureDesc.NumParameters = _countof(rootParameters);
+	rootSignatureDesc.pParameters = rootParameters;
+	rootSignatureDesc.NumStaticSamplers = 0;
+	rootSignatureDesc.pStaticSamplers = nullptr;
+	rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT |
+		//D3D12_ROOT_SIGNATURE_FLAG_DENY_VERTEX_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_PIXEL_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_GEOMETRY_SHADER_ROOT_ACCESS |
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_HULL_SHADER_ROOT_ACCESS |
@@ -435,8 +464,8 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 		D3D12_ROOT_SIGNATURE_FLAG_DENY_AMPLIFICATION_SHADER_ROOT_ACCESS;
 
 	ID3DBlob* signature;
-	fatalIfFailed(D3D12SerializeRootSignature(&rootSigDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &signature, nullptr));
-	fatalIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSig)));
+	fatalIfFailed(D3D12SerializeRootSignature(&rootSignatureDesc, D3D_ROOT_SIGNATURE_VERSION_1_0, &signature, nullptr));
+	fatalIfFailed(device->CreateRootSignature(0, signature->GetBufferPointer(), signature->GetBufferSize(), IID_PPV_ARGS(&rootSignature)));
 
 	// Shader compilation
 	std::vector<uint8_t> vertexShaderBuffer;
@@ -466,7 +495,7 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 
 	D3D12_GRAPHICS_PIPELINE_STATE_DESC graphicsPipelineStateDesc = {};
 	graphicsPipelineStateDesc.InputLayout = inputLayoutDesc;
-	graphicsPipelineStateDesc.pRootSignature = rootSig.Get();
+	graphicsPipelineStateDesc.pRootSignature = rootSignature.Get();
 	graphicsPipelineStateDesc.VS.BytecodeLength = vertexShaderBuffer.size();
 	graphicsPipelineStateDesc.VS.pShaderBytecode = vertexShaderBuffer.data();
 	graphicsPipelineStateDesc.PS.BytecodeLength = pixelShaderBuffer.size();
@@ -584,8 +613,7 @@ void direct3d12Graphics::resizeSurface(graphicsSurface* surface, uint32_t width,
 	}
 }
 
-void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const bool useVSync, const uint32_t meshCount, 
-	const struct sMeshResources* const* meshes)
+void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const bool useVSync, const uint32_t renderDataCount, const struct sRenderData* const* renderData)
 {
 	// Wait for the previous frame to finish on the GPU
 	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentFrameIndex], maxFenceWaitDurationMs);
@@ -597,11 +625,12 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphics
 	fatalIfFailed(graphicsCommandAllocator->Reset());
 	fatalIfFailed(graphicsCommandList->Reset(graphicsCommandAllocator, nullptr));
 
+	// Todo: Support drawing different render data to each surface
 	// For each surface
 	for(uint32_t i = 0; i < numSurfaces; ++i)
 	{
 		const graphicsSurface* const surface = surfaces[static_cast<size_t>(i)];
-		recordSurface(surface, graphicsCommandList.Get(), meshCount, meshes);
+		recordSurface(surface, graphicsCommandList.Get(), renderDataCount, renderData);
 	}
 
 	// Stop recording command list
@@ -713,7 +742,7 @@ void direct3d12Graphics::waitForGPU()
 	}
 }
 
-void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList, const uint32_t meshCount, const struct sMeshResources* const* meshes)
+void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList, const uint32_t renderDataCount, const struct sRenderData* const* renderData)
 {
 	ID3D12Resource* const backBuffer = surface->renderTargetViews[currentFrameIndex].Get();
 
@@ -742,16 +771,52 @@ void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12Gra
 
 	commandList->OMSetRenderTargets(1, &cpu_rtvDescriptorHandle, FALSE, &cpu_dsvDescriptorHandle);
 
-	commandList->SetGraphicsRootSignature(rootSig.Get());
+	commandList->SetGraphicsRootSignature(rootSignature.Get());
 	commandList->SetPipelineState(graphicsPipelineState.Get());
 
 	// Todo: Receive as function argument an array of render data for each surface describing what to render onto each surface
-	for (uint32_t i = 0; i < meshCount; ++i)
+	for (uint32_t i = 0; i < renderDataCount; ++i)
 	{
-		const sMeshResources* const mesh = meshes[i];
+		// Update object constants
+		matrix4x4& wvp = *renderData[i]->pWorldViewProjectionMatrix;
+		vector4d& column0 = wvp.columns[0];
+		vector4d& column1 = wvp.columns[1];
+		vector4d& column2 = wvp.columns[2];
+		vector4d& column3 = wvp.columns[3];
+
+		sObjectConstantBuffer objectConstants = {};
+		objectConstants.worldViewProjection[0] =  static_cast<float>(column0.x);
+		objectConstants.worldViewProjection[1] =  static_cast<float>(column0.y);
+		objectConstants.worldViewProjection[2] =  static_cast<float>(column0.z);
+		objectConstants.worldViewProjection[3] =  static_cast<float>(column0.w);
+
+		objectConstants.worldViewProjection[4] =  static_cast<float>(column1.x);
+		objectConstants.worldViewProjection[5] =  static_cast<float>(column1.y);
+		objectConstants.worldViewProjection[6] =  static_cast<float>(column1.z);
+		objectConstants.worldViewProjection[7] =  static_cast<float>(column1.w);
+
+		objectConstants.worldViewProjection[8] =  static_cast<float>(column2.x);
+		objectConstants.worldViewProjection[9] =  static_cast<float>(column2.y);
+		objectConstants.worldViewProjection[10] = static_cast<float>(column2.z);
+		objectConstants.worldViewProjection[11] = static_cast<float>(column2.w);
+
+		objectConstants.worldViewProjection[12] = static_cast<float>(column3.x);
+		objectConstants.worldViewProjection[13] = static_cast<float>(column3.y);
+		objectConstants.worldViewProjection[14] = static_cast<float>(column3.z);
+		objectConstants.worldViewProjection[15] = static_cast<float>(column3.w);
+
+		memcpy(objectConstantBufferPointer + (objectConstantBufferPosition * 256), &objectConstants, sizeof(objectConstants));
+		//platformConsolePrint(stringHelper::printf("%d", objectConstantBufferPosition));
+
+		// Draw
+		const sMeshResources* const mesh = renderData[i]->pMeshResources;
+		commandList->SetGraphicsRootConstantBufferView(0, objectConstantBuffer->GetGPUVirtualAddress() + (objectConstantBufferPosition * 256));
 		commandList->IASetVertexBuffers(0, 1, &vertexBufferViewStore[mesh->vertexBufferViewHandle]);
 		commandList->IASetIndexBuffer(&indexBufferViewStore[mesh->indexBufferViewHandle]);
 		commandList->DrawIndexedInstanced(mesh->indexCount, 1, 0, 0, 0);
+
+		// Increment object constants pointer
+		objectConstantBufferPosition = (objectConstantBufferPosition + 1) % (65536 / 256);
 	}
 
 	D3D12_RESOURCE_BARRIER backBufferResourceEndTransitionBarrier = {};

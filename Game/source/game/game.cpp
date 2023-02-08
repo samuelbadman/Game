@@ -1,6 +1,7 @@
 #include "pch.h"
 #include "game.h"
 
+#include "platform/framework/platformConsole.h"
 #include "platform/framework/platformCommandLine.h"
 #include "platform/framework/platformWindow.h"
 #include "platform/framework/platformDisplay.h"
@@ -27,6 +28,7 @@
 #include "math/vector3d.h"
 #include "math/vector4d.h"
 #include "math/vector2d.h"
+#include "math/transform.h"
 
 struct sGameSettings
 {
@@ -56,10 +58,17 @@ int64_t game::fps = 0;
 double game::ms = 0.0;
 
 sMeshResources game::triangleMeshResources = {};
+matrix4x4 game::triangleWorldViewProjectionMatrix;
+sRenderData game::triangleRenderData;
 
 void game::start()
 {
 	running = true;
+
+	if (platformInitConsole() != 0)
+	{
+		platformMessageBoxFatal("game::start: failed to initialize platform console.");
+	}
 
 	parseCommandLineArgs();
 	initializeWindow();
@@ -69,6 +78,8 @@ void game::start()
 	loadResources();
 
 	// Initialize game loop
+	begin();
+	
 	double fixedTimeSliceMs = sGameSettings::fixedTimeSlice * 1000.0;
 	double accumulator = 0.0;
 	std::chrono::time_point previousTime = std::chrono::high_resolution_clock::now();
@@ -225,6 +236,22 @@ void game::loadResources()
 	const uint32_t indices[] = { 0, 1, 2 };
 
 	graphicsLoadMesh(_countof(vertices), vertices, _countof(indices), indices, triangleMeshResources);
+
+	transform triangleTransform(vector3d(1.0, 0.5, 0.0), rotator(0.0, 0.0, 45.0), vector3d(1.0, 1.0, 1.0));
+	matrix4x4 worldMatrix = matrix4x4::transpose(matrix4x4::transformation(triangleTransform));
+	matrix4x4 viewMatrix = matrix4x4::transpose(matrix4x4::view(vector3d(0.0, 0.0, -5.0), rotator(0.0, 0.0, 0.0)));
+	uint32_t width, height;
+	platformGetWindowClientAreaDimensions(window.get(), width, height);
+	matrix4x4 projectionMatrix = matrix4x4::transpose(matrix4x4::orthographic(static_cast<double>(width) * 0.002, static_cast<double>(height) * 0.002, 0.1, 100.0));
+	//matrix4x4 projectionMatrix = matrix4x4::transpose(matrix4x4::perspective(45.0, static_cast<double>(width), static_cast<double>(height), 0.1, 100.0));
+	triangleWorldViewProjectionMatrix = worldMatrix * viewMatrix * projectionMatrix;
+
+	triangleRenderData.pMeshResources = &triangleMeshResources;
+	triangleRenderData.pWorldViewProjectionMatrix = &triangleWorldViewProjectionMatrix;
+}
+
+void game::begin()
+{
 }
 
 void game::tick(float deltaSeconds)
@@ -238,6 +265,6 @@ void game::fixedTick(float fixedStep)
 void game::render()
 {
 	const graphicsSurface* const surfaces[] = { surface.get() };
-	const sMeshResources* const meshes[] = { &triangleMeshResources };
-	graphicsRender(_countof(surfaces), surfaces, sGameSettings::enableVSync, _countof(meshes), meshes);
+	const sRenderData* const renderDatas[] = { &triangleRenderData };
+	graphicsRender(_countof(surfaces), surfaces, sGameSettings::enableVSync, _countof(renderDatas), renderDatas);
 }

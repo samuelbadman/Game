@@ -1,6 +1,8 @@
 #pragma once
 
 #include "platform/graphics/meshResources.h"
+#include "math/matrix4x4.h"
+#include "platform/graphics/renderData.h"
 
 class game
 {
@@ -12,6 +14,8 @@ private:
 	static double ms;
 
 	static sMeshResources triangleMeshResources;
+	static matrix4x4 triangleWorldViewProjectionMatrix;
+	static sRenderData triangleRenderData;
 
 public:
 	static void start();
@@ -39,6 +43,7 @@ private:
 	static void shutdownGraphics();
 	static void initializeAudio();
 	static void loadResources();
+	static void begin();
 	static void tick(float deltaSeconds);
 	static void fixedTick(float fixedStep);
 	static void render();

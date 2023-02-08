@@ -236,6 +236,9 @@
     <ClInclude Include="source\guid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="source\platform\graphics\renderData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="shaders\vertexShader.hlsl" />

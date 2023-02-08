@@ -6,7 +6,7 @@ struct vertexShaderInput
 	float2 uv : TEXCOORD;
 };
 
-struct vertexShaderOutput
+struct pixelShaderInput
 {
 	float4 finalPosition : SV_POSITION;
 	float3 normal : NORMAL;
@@ -14,10 +14,15 @@ struct vertexShaderOutput
 	float2 uv : TEXCOORD;
 };
 
-vertexShaderOutput main(vertexShaderInput input)
+cbuffer objectConstants : register(b0, space0)
 {
-	vertexShaderOutput output;
-	output.finalPosition = float4(input.position, 1.0f);
+    float4x4 wvpMatrix;
+}
+
+pixelShaderInput main(vertexShaderInput input)
+{
+    pixelShaderInput output;
+    output.finalPosition = mul(float4(input.position, 1.0f), wvpMatrix);
 	output.normal = input.normal;
 	output.color = input.color;
 	output.uv = input.uv;

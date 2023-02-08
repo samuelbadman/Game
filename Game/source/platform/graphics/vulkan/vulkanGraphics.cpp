@@ -21,7 +21,7 @@ void vulkanGraphics::resizeSurface(graphicsSurface* surface, uint32_t width, uin
 {
 }
 
-void vulkanGraphics::render(const uint32_t numSurfaces, const graphicsSurface* const* surfaces, const bool useVSync, const uint32_t meshCount, const sMeshResources* const* meshes)
+void vulkanGraphics::render(const uint32_t numSurfaces, const graphicsSurface* const* surfaces, const bool useVSync, const uint32_t renderDataCount, const struct sRenderData* const* renderData)
 {
 }
 
