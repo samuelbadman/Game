@@ -356,7 +356,45 @@ static void updateBufferResource(ID3D12Resource* buffer, const void* src, const 
 	buffer->Unmap(0, nullptr);
 }
 
+static constexpr size_t kb_64 = 65536;
+static constexpr size_t constantBufferDataStepSize = 256;
 static constexpr DWORD maxFenceWaitDurationMs = static_cast<DWORD>(std::chrono::milliseconds::max().count());
+
+void direct3d12ConstantBuffer::init(ID3D12Device8* device, const UINT64 inHeapWidth, const size_t constantDataWidth)
+{
+	assert((inHeapWidth % kb_64) == 0); // Constant buffers must be allocated with a width that is a multiple of 64 kilobytes (65536 bytes)
+	createCommittedBuffer(device, D3D12_HEAP_TYPE_UPLOAD, inHeapWidth, D3D12_RESOURCE_STATE_GENERIC_READ, buffer);
+	heapWidth = inHeapWidth;
+	D3D12_RANGE readRange = {};
+	fatalIfFailed(buffer->Map(0, &readRange, reinterpret_cast<void**>(&bufferStartPointer)));
+	dataStepRate = static_cast<uint32_t>(((constantDataWidth % constantBufferDataStepSize) == 0) ? 1 : (constantDataWidth / constantBufferDataStepSize) + 1); // Integer division ignores remainder
+}
+
+void direct3d12ConstantBuffer::shutdown()
+{
+	buffer->Unmap(0, nullptr);
+	*this = {};
+}
+
+void direct3d12ConstantBuffer::update(const void* const src, const size_t size)
+{
+	memcpy(bufferStartPointer + getOffsetToCurrentPosition(), src, size);
+}
+
+D3D12_GPU_VIRTUAL_ADDRESS direct3d12ConstantBuffer::GetGPUVirtualAddress()
+{
+	return buffer->GetGPUVirtualAddress() + getOffsetToCurrentPosition();
+}
+
+void direct3d12ConstantBuffer::increment()
+{
+	bufferPositionIndex = (bufferPositionIndex + 1) % (heapWidth / constantBufferDataStepSize);
+}
+
+uint32_t direct3d12ConstantBuffer::getOffsetToCurrentPosition()
+{
+	return (bufferPositionIndex * constantBufferDataStepSize);
+}
 
 uint32_t direct3d12Graphics::backBufferCount = 0;
 ComPtr<IDXGIFactory7> direct3d12Graphics::dxgiFactory;
@@ -384,9 +422,7 @@ std::vector<ComPtr<ID3D12Resource>> direct3d12Graphics::resourceStore;
 std::vector<D3D12_VERTEX_BUFFER_VIEW> direct3d12Graphics::vertexBufferViewStore;
 std::vector<D3D12_INDEX_BUFFER_VIEW> direct3d12Graphics::indexBufferViewStore;
 
-ComPtr<ID3D12Resource> direct3d12Graphics::objectConstantBuffer;
-UINT8* direct3d12Graphics::objectConstantBufferPointer = 0;
-uint32_t direct3d12Graphics::objectConstantBufferPosition = 0;
+direct3d12ConstantBuffer direct3d12Graphics::objectConstantBuffer;
 
 void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
@@ -421,9 +457,7 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	createDxcCompiler(dxcCompiler);
 
 	// Create object constant buffer
-	createCommittedBuffer(device.Get(), D3D12_HEAP_TYPE_UPLOAD, 65536, D3D12_RESOURCE_STATE_GENERIC_READ, objectConstantBuffer);
-	D3D12_RANGE readRange = {};
-	fatalIfFailed(objectConstantBuffer->Map(0, &readRange, reinterpret_cast<void**>(&objectConstantBufferPointer)));
+	objectConstantBuffer.init(device.Get(), kb_64, sizeof(objectConstantBuffer));
 
 	// Input layout
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] =
@@ -516,6 +550,7 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 void direct3d12Graphics::shutdown()
 {
 	waitForGPU();
+	//objectConstantBuffer.shutdown();
 }
 
 void direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t height, std::shared_ptr<graphicsSurface>& outSurface)
@@ -779,44 +814,20 @@ void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12Gra
 	{
 		// Update object constants
 		matrix4x4& wvp = *renderData[i]->pWorldViewProjectionMatrix;
-		vector4d& column0 = wvp.columns[0];
-		vector4d& column1 = wvp.columns[1];
-		vector4d& column2 = wvp.columns[2];
-		vector4d& column3 = wvp.columns[3];
-
 		sObjectConstantBuffer objectConstants = {};
-		objectConstants.worldViewProjection[0] =  static_cast<float>(column0.x);
-		objectConstants.worldViewProjection[1] =  static_cast<float>(column0.y);
-		objectConstants.worldViewProjection[2] =  static_cast<float>(column0.z);
-		objectConstants.worldViewProjection[3] =  static_cast<float>(column0.w);
-
-		objectConstants.worldViewProjection[4] =  static_cast<float>(column1.x);
-		objectConstants.worldViewProjection[5] =  static_cast<float>(column1.y);
-		objectConstants.worldViewProjection[6] =  static_cast<float>(column1.z);
-		objectConstants.worldViewProjection[7] =  static_cast<float>(column1.w);
-
-		objectConstants.worldViewProjection[8] =  static_cast<float>(column2.x);
-		objectConstants.worldViewProjection[9] =  static_cast<float>(column2.y);
-		objectConstants.worldViewProjection[10] = static_cast<float>(column2.z);
-		objectConstants.worldViewProjection[11] = static_cast<float>(column2.w);
-
-		objectConstants.worldViewProjection[12] = static_cast<float>(column3.x);
-		objectConstants.worldViewProjection[13] = static_cast<float>(column3.y);
-		objectConstants.worldViewProjection[14] = static_cast<float>(column3.z);
-		objectConstants.worldViewProjection[15] = static_cast<float>(column3.w);
-
-		memcpy(objectConstantBufferPointer + (objectConstantBufferPosition * 256), &objectConstants, sizeof(objectConstants));
-		//platformConsolePrint(stringHelper::printf("%d", objectConstantBufferPosition));
+		// Copy matrix values cast to 32-bit floating point values
+		std::transform(std::begin(wvp.values), std::end(wvp.values), std::begin(objectConstants.worldViewProjection), [](const double& value) {return static_cast<float>(value); });
+		objectConstantBuffer.update(&objectConstants, sizeof(objectConstants));
 
 		// Draw
 		const sMeshResources* const mesh = renderData[i]->pMeshResources;
-		commandList->SetGraphicsRootConstantBufferView(0, objectConstantBuffer->GetGPUVirtualAddress() + (objectConstantBufferPosition * 256));
+		commandList->SetGraphicsRootConstantBufferView(0, objectConstantBuffer.GetGPUVirtualAddress());
 		commandList->IASetVertexBuffers(0, 1, &vertexBufferViewStore[mesh->vertexBufferViewHandle]);
 		commandList->IASetIndexBuffer(&indexBufferViewStore[mesh->indexBufferViewHandle]);
 		commandList->DrawIndexedInstanced(mesh->indexCount, 1, 0, 0, 0);
 
 		// Increment object constants pointer
-		objectConstantBufferPosition = (objectConstantBufferPosition + 1) % (65536 / 256);
+		objectConstantBuffer.increment();
 	}
 
 	D3D12_RESOURCE_BARRIER backBufferResourceEndTransitionBarrier = {};
@@ -862,4 +873,3 @@ void direct3d12Graphics::createIndexBufferView(const size_t indexBufferResourceH
 	indexBufferView.Format = format;
 	indexBufferView.SizeInBytes = bufferWidth;
 }
-

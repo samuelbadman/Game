@@ -6,7 +6,7 @@
 class matrix4x4
 {
 public:
-	vector4d columns[4] = { vector4d(), vector4d(), vector4d(), vector4d() };
+	double values[16] = {};
 
 public:
 	matrix4x4() = default;
@@ -15,8 +15,7 @@ public:
 	void operator=(const matrix4x4& rhs);
 
 public:
-	vector4d& operator[](const size_t index) { return columns[index]; }
-	const vector4d& operator[](const size_t index) const { return columns[index]; }
+	vector4d operator[](const size_t index) { return vector4d(values[(index * 4) + 0], values[(index * 4) + 1], values[(index * 4) + 2], values[(index * 4) + 3]); }
 	matrix4x4 operator*(const matrix4x4& rhs) const;
 
 public:

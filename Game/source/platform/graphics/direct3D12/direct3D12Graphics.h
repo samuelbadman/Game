@@ -8,6 +8,34 @@ struct sDescriptorSizes
 	UINT samplerDescriptorSize;
 };
 
+// Constant buffer implemented as a ring buffer, storing versions of constant data at 256 byte intervals
+class direct3d12ConstantBuffer
+{
+private:
+	Microsoft::WRL::ComPtr<ID3D12Resource> buffer;
+	UINT64 heapWidth = 0;
+	UINT8* bufferStartPointer = nullptr;
+	uint32_t bufferPositionIndex = 0;
+	uint32_t dataStepRate = 0; // Number of 256 byte steps to move the buffer pointer through the heap to get to the start of the next constant data version
+
+public:
+	void init(ID3D12Device8* device, const UINT64 inHeapWidth, const size_t constantDataWidth);
+	void shutdown();
+
+	// Overwrites the version of constant data currently pointed to internally
+	void update(const void* const src, const size_t size);
+
+	// Returns the gpu virtual address for the version of constant data currently pointed to internally
+	D3D12_GPU_VIRTUAL_ADDRESS GetGPUVirtualAddress();
+
+	// Moves the internal pointer to the next constant data version
+	void increment();
+
+private:
+	// Gets the amount the buffer start pointer needs to be offset into the heap to point at the start of the current constant data version
+	uint32_t getOffsetToCurrentPosition();
+};
+
 class direct3d12Graphics
 {
 private:
@@ -37,9 +65,7 @@ private:
 	static std::vector<D3D12_VERTEX_BUFFER_VIEW> vertexBufferViewStore;
 	static std::vector<D3D12_INDEX_BUFFER_VIEW> indexBufferViewStore;
 
-	static Microsoft::WRL::ComPtr<ID3D12Resource> objectConstantBuffer;
-	static UINT8* objectConstantBufferPointer;
-	static uint32_t objectConstantBufferPosition;
+	static direct3d12ConstantBuffer objectConstantBuffer;
 
 public:
 	static void init(bool useWarp, uint32_t inBackBufferCount);

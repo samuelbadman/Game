@@ -4,10 +4,10 @@
 
 static glm::mat4 asGlmMat(const matrix4x4& a)
 {
-	return glm::mat<4, 4, double, glm::packed_highp>(glm::vec<4, double, glm::packed_highp>(a.columns[0].x, a.columns[0].y, a.columns[0].z, a.columns[0].w),
-		glm::vec<4, double, glm::packed_highp>(a.columns[1].x, a.columns[1].y, a.columns[1].z, a.columns[1].w),
-		glm::vec<4, double, glm::packed_highp>(a.columns[2].x, a.columns[2].y, a.columns[2].z, a.columns[2].w),
-		glm::vec<4, double, glm::packed_highp>(a.columns[3].x, a.columns[3].y, a.columns[3].z, a.columns[3].w));
+	return glm::mat<4, 4, double, glm::packed_highp>(glm::vec<4, double, glm::packed_highp>(a.values[0], a.values[1], a.values[2], a.values[3]),
+		glm::vec<4, double, glm::packed_highp>(a.values[4], a.values[5], a.values[6], a.values[7]),
+		glm::vec<4, double, glm::packed_highp>(a.values[8], a.values[9], a.values[10], a.values[11]),
+		glm::vec<4, double, glm::packed_highp>(a.values[12], a.values[13], a.values[14], a.values[15]));
 }
 
 transform transform::toTransform(const matrix4x4& a)

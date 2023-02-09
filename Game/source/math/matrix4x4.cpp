@@ -6,10 +6,10 @@
 
 static glm::mat4 asGlmMat(const matrix4x4& a)
 {
-	return glm::mat<4, 4, double, glm::packed_highp>(glm::vec<4, double, glm::packed_highp>(a.columns[0].x, a.columns[0].y, a.columns[0].z, a.columns[0].w),
-		glm::vec<4, double, glm::packed_highp>(a.columns[1].x, a.columns[1].y, a.columns[1].z, a.columns[1].w),
-		glm::vec<4, double, glm::packed_highp>(a.columns[2].x, a.columns[2].y, a.columns[2].z, a.columns[2].w),
-		glm::vec<4, double, glm::packed_highp>(a.columns[3].x, a.columns[3].y, a.columns[3].z, a.columns[3].w));
+	return glm::mat<4, 4, double, glm::packed_highp>(glm::vec<4, double, glm::packed_highp>(a.values[0], a.values[1], a.values[2], a.values[3]),
+		glm::vec<4, double, glm::packed_highp>(a.values[4], a.values[5], a.values[6], a.values[7]),
+		glm::vec<4, double, glm::packed_highp>(a.values[8], a.values[9], a.values[10], a.values[11]),
+		glm::vec<4, double, glm::packed_highp>(a.values[12], a.values[13], a.values[14], a.values[15]));
 }
 
 static matrix4x4 asMatrix4x4(const glm::mat4& a)
@@ -22,18 +22,30 @@ static matrix4x4 asMatrix4x4(const glm::mat4& a)
 
 matrix4x4::matrix4x4(const vector4d& column0, const vector4d& column1, const vector4d& column2, const vector4d& column3)
 {
-	columns[0] = column0;
-	columns[1] = column1;
-	columns[2] = column2;
-	columns[3] = column3;
+	values[0] = column0.x;
+	values[1] = column0.y;
+	values[2] = column0.z;
+	values[3] = column0.w;
+
+	values[4] = column1.x;
+	values[5] = column1.y;
+	values[6] = column1.z;
+	values[7] = column1.w;
+
+	values[8] =  column2.x;
+	values[9] =  column2.y;
+	values[10] = column2.z;
+	values[11] = column2.w;
+
+	values[12] = column3.x;
+	values[13] = column3.y;
+	values[14] = column3.z;
+	values[15] = column3.w;
 }
 
 void matrix4x4::operator=(const matrix4x4& rhs)
 {
-	columns[0] = rhs.columns[0];
-	columns[1] = rhs.columns[1];
-	columns[2] = rhs.columns[2];
-	columns[3] = rhs.columns[3];
+	memcpy(values, rhs.values, sizeof(double) * _countof(values));
 }
 
 matrix4x4 matrix4x4::operator*(const matrix4x4& rhs) const
