@@ -660,7 +660,6 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphics
 	fatalIfFailed(graphicsCommandAllocator->Reset());
 	fatalIfFailed(graphicsCommandList->Reset(graphicsCommandAllocator, nullptr));
 
-	// Todo: Support drawing different render data to each surface
 	// For each surface
 	for(uint32_t i = 0; i < numSurfaces; ++i)
 	{
