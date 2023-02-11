@@ -3,5 +3,5 @@
 struct sRenderData
 {
 	struct sMeshResources* pMeshResources;
-	class matrix4x4* pWorldViewProjectionMatrix;
+	class matrix4x4* pWorldMatrix;
 };

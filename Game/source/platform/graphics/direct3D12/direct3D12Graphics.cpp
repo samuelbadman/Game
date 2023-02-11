@@ -18,7 +18,12 @@ using namespace Microsoft::WRL;
 
 struct sObjectConstantBuffer
 {
-	float worldViewProjection[16];
+	float world[16];
+};
+
+struct sCameraConstantBuffer
+{
+	float viewProjection[16];
 };
 
 static void enableDebugLayer()
@@ -422,7 +427,8 @@ std::vector<ComPtr<ID3D12Resource>> direct3d12Graphics::resourceStore;
 std::vector<D3D12_VERTEX_BUFFER_VIEW> direct3d12Graphics::vertexBufferViewStore;
 std::vector<D3D12_INDEX_BUFFER_VIEW> direct3d12Graphics::indexBufferViewStore;
 
-direct3d12ConstantBuffer direct3d12Graphics::objectConstantBuffer;
+direct3d12ConstantBuffer direct3d12Graphics::objectConstantBuffer = {};
+direct3d12ConstantBuffer direct3d12Graphics::cameraConstantBuffer = {};
 
 void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
@@ -456,8 +462,9 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	createDxcLibrary(dxcLibrary);
 	createDxcCompiler(dxcCompiler);
 
-	// Create object constant buffer
+	// Create constant buffer
 	objectConstantBuffer.init(device.Get(), kb_64, sizeof(objectConstantBuffer));
+	cameraConstantBuffer.init(device.Get(), kb_64, sizeof(cameraConstantBuffer));
 
 	// Input layout
 	D3D12_INPUT_ELEMENT_DESC inputLayout[] =
@@ -473,15 +480,23 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 	inputLayoutDesc.pInputElementDescs = inputLayout;
 
 	// Root signature
-	D3D12_ROOT_DESCRIPTOR rootCBDescriptor = {};
-	rootCBDescriptor.RegisterSpace = 0;
-	rootCBDescriptor.ShaderRegister = 0;
+	D3D12_ROOT_DESCRIPTOR objectRootCBDescriptor = {};
+	objectRootCBDescriptor.ShaderRegister = 0;
+	objectRootCBDescriptor.RegisterSpace = 0;
 
-	D3D12_ROOT_PARAMETER rootParameters[1];
+	D3D12_ROOT_DESCRIPTOR cameraRootCBDescriptor = {};
+	cameraRootCBDescriptor.ShaderRegister = 1;
+	cameraRootCBDescriptor.RegisterSpace = 0;
+
+	D3D12_ROOT_PARAMETER rootParameters[2];
 
 	rootParameters[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
-	rootParameters[0].Descriptor = rootCBDescriptor;
+	rootParameters[0].Descriptor = objectRootCBDescriptor;
 	rootParameters[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
+
+	rootParameters[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_CBV;
+	rootParameters[1].Descriptor = cameraRootCBDescriptor;
+	rootParameters[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_VERTEX;
 
 	D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc = {};
 	rootSignatureDesc.NumParameters = _countof(rootParameters);
@@ -551,6 +566,7 @@ void direct3d12Graphics::shutdown()
 {
 	waitForGPU();
 	//objectConstantBuffer.shutdown();
+	//cameraConstantBuffer.shutdown();
 }
 
 void direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t height, std::shared_ptr<graphicsSurface>& outSurface)
@@ -648,7 +664,7 @@ void direct3d12Graphics::resizeSurface(graphicsSurface* surface, uint32_t width,
 	}
 }
 
-void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const bool useVSync, const uint32_t renderDataCount, const struct sRenderData* const* renderData)
+void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const bool useVSync, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const matrix4x4* const viewProjection)
 {
 	// Wait for the previous frame to finish on the GPU
 	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentFrameIndex], maxFenceWaitDurationMs);
@@ -664,7 +680,7 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphics
 	for(uint32_t i = 0; i < numSurfaces; ++i)
 	{
 		const graphicsSurface* const surface = surfaces[static_cast<size_t>(i)];
-		recordSurface(surface, graphicsCommandList.Get(), renderDataCount, renderData);
+		recordSurface(surface, graphicsCommandList.Get(), renderDataCount, renderData, viewProjection);
 	}
 
 	// Stop recording command list
@@ -776,7 +792,7 @@ void direct3d12Graphics::waitForGPU()
 	}
 }
 
-void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList, const uint32_t renderDataCount, const struct sRenderData* const* renderData)
+void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12GraphicsCommandList6* commandList, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const matrix4x4* const viewProjection)
 {
 	ID3D12Resource* const backBuffer = surface->renderTargetViews[currentFrameIndex].Get();
 
@@ -808,14 +824,22 @@ void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12Gra
 	commandList->SetGraphicsRootSignature(rootSignature.Get());
 	commandList->SetPipelineState(graphicsPipelineState.Get());
 
+	// Update camera constants
+	sCameraConstantBuffer cameraConstants = {};
+	// Copy matrix values cast to 32-bit floating point values
+	std::transform(std::begin(viewProjection->values), std::end(viewProjection->values), std::begin(cameraConstants.viewProjection), [](const double& value) {return static_cast<float>(value); });
+	cameraConstantBuffer.update(&cameraConstants, sizeof(cameraConstants));
+	commandList->SetGraphicsRootConstantBufferView(1, cameraConstantBuffer.GetGPUVirtualAddress());
+	cameraConstantBuffer.increment();
+
 	// Todo: Receive as function argument an array of render data for each surface describing what to render onto each surface
 	for (uint32_t i = 0; i < renderDataCount; ++i)
 	{
 		// Update object constants
-		matrix4x4& wvp = *renderData[i]->pWorldViewProjectionMatrix;
+		matrix4x4& world = *renderData[i]->pWorldMatrix;
 		sObjectConstantBuffer objectConstants = {};
 		// Copy matrix values cast to 32-bit floating point values
-		std::transform(std::begin(wvp.values), std::end(wvp.values), std::begin(objectConstants.worldViewProjection), [](const double& value) {return static_cast<float>(value); });
+		std::transform(std::begin(world.values), std::end(world.values), std::begin(objectConstants.world), [](const double& value) {return static_cast<float>(value); });
 		objectConstantBuffer.update(&objectConstants, sizeof(objectConstants));
 
 		// Draw

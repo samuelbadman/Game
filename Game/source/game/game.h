@@ -14,8 +14,9 @@ private:
 	static double ms;
 
 	static sMeshResources triangleMeshResources;
-	static matrix4x4 triangleWorldViewProjectionMatrix;
+	static matrix4x4 triangleWorldMatrix;
 	static sRenderData triangleRenderData;
+	static matrix4x4 viewProjectionMatrix;
 
 public:
 	static void start();

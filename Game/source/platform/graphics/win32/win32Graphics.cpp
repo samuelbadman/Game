@@ -8,14 +8,14 @@ static void(*shutdown)() = nullptr;
 static void(*createSurface)(void*, uint32_t, uint32_t, std::shared_ptr<class graphicsSurface>&) = nullptr;
 static void(*destroySurface)(std::shared_ptr<class graphicsSurface>&) = nullptr;
 static void(*resizeSurface)(class graphicsSurface*, uint32_t, uint32_t) = nullptr;
-static void(*render)(const uint32_t, const class graphicsSurface* const*, const bool, const uint32_t, const struct sRenderData* const*) = nullptr;
+static void(*render)(const uint32_t, const class graphicsSurface* const*, const bool, const uint32_t, const struct sRenderData* const*, const class matrix4x4* const) = nullptr;
 static void(*loadMesh)(const size_t, const struct sVertexPos3Norm3Col4UV2* const, const size_t, const uint32_t* const, struct sMeshResources&) = nullptr;
 
 static void setFunctionPointers(void(* const inShutdown)(),
 	void(* const inCreateSurface)(void*, uint32_t, uint32_t, std::shared_ptr<class graphicsSurface>&),
 	void(* const inDestroySurface)(std::shared_ptr<class graphicsSurface>&),
 	void(* const inResizeSurface)(class graphicsSurface*, uint32_t, uint32_t),
-	void(* const inRender)(const uint32_t, const class graphicsSurface* const*, const bool, const uint32_t, const struct sRenderData* const*),
+	void(* const inRender)(const uint32_t, const class graphicsSurface* const*, const bool, const uint32_t, const struct sRenderData* const*, const class matrix4x4* const),
 	void(* const inLoadMesh)(const size_t, const struct sVertexPos3Norm3Col4UV2* const, const size_t, const uint32_t* const, struct sMeshResources&))
 {
 	shutdown = inShutdown;
@@ -82,9 +82,9 @@ void graphicsResizeSurface(class graphicsSurface* surface, uint32_t width, uint3
 	resizeSurface(surface, width, height);
 }
 
-void graphicsRender(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const bool useVSync, const uint32_t renderDataCount, const struct sRenderData* const* renderData)
+void graphicsRender(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const bool useVSync, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const class matrix4x4* const viewProjection)
 {
-	render(numSurfaces, surfaces, useVSync, renderDataCount, renderData);
+	render(numSurfaces, surfaces, useVSync, renderDataCount, renderData, viewProjection);
 }
 
 void graphicsLoadMesh(const size_t vertexCount, const struct sVertexPos3Norm3Col4UV2* const vertices, const size_t indexCount, const uint32_t* const indices, struct sMeshResources& outMeshResources)
