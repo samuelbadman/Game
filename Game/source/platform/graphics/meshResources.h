@@ -1,10 +1,11 @@
 #pragma once
 
+// Loaded mesh graphics resource handles
 struct sMeshResources
 {
-	size_t vertexBufferResourceHandle;
-	size_t vertexBufferViewHandle;
-	size_t indexBufferResourceHandle;
-	size_t indexBufferViewHandle;
-	uint32_t indexCount;
+	size_t vertexBufferResourceHandle = 0;
+	size_t vertexBufferViewHandle = 0;
+	size_t indexBufferResourceHandle = 0;
+	size_t indexBufferViewHandle = 0;
+	uint32_t indexCount = 0;
 };

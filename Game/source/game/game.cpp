@@ -236,7 +236,12 @@ void game::loadResources()
 
 	const uint32_t indices[] = { 0, 1, 2 };
 
-	graphicsLoadMesh(_countof(vertices), vertices, _countof(indices), indices, triangleMeshResources);
+	size_t loadVertexCounts[] = { _countof(vertices) };
+	const sVertexPos3Norm3Col4UV2 (*loadVertices)[] = { &vertices };
+	size_t loadIndexCounts[] = { _countof(indices) };
+	const uint32_t (*loadIndices)[] = { &indices };
+	sMeshResources* loadOutMeshResources[] = { &triangleMeshResources };
+	graphicsLoadMeshes(1, loadVertexCounts, loadVertices, loadIndexCounts, loadIndices, loadOutMeshResources);
 
 	transform(vector3d(-1.0, 0.5, 0.0), rotator(0.0, 0.0, 45.0), vector3d(1.0, 1.0, 1.0));
 	triangleWorldMatrix = matrix4x4::transpose(matrix4x4::transformation(transform(vector3d(-1.0, 0.5, 0.0), rotator(0.0, 0.0, 45.0), vector3d(1.0, 1.0, 1.0))));
