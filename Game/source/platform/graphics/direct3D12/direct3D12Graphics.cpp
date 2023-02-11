@@ -703,8 +703,7 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphics
 	fatalIfFailed(graphicsQueue->Signal(graphicsFence.Get(), graphicsFenceValues[currentFrameIndex]));
 }
 
-void direct3d12Graphics::loadMesh(const size_t vertexCount, const sVertexPos3Norm3Col4UV2* const vertices, const size_t indexCount, const uint32_t* const indices, 
-	sMeshResources& outMeshResources)
+void direct3d12Graphics::loadMesh(const size_t vertexCount, const sVertexPos3Norm3Col4UV2* const vertices, const size_t indexCount, const uint32_t* const indices, sMeshResources& outMeshResources)
 {
 	const size_t vertexBufferWidth = sizeof(sVertexPos3Norm3Col4UV2) * vertexCount;
 	const size_t indexBufferWidth = sizeof(uint32_t) * indexCount;
@@ -829,7 +828,6 @@ void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12Gra
 	commandList->SetGraphicsRootConstantBufferView(1, cameraConstantBuffer.GetGPUVirtualAddress());
 	cameraConstantBuffer.increment();
 
-	// Todo: Receive as function argument an array of render data for each surface describing what to render onto each surface
 	for (uint32_t i = 0; i < renderDataCount; ++i)
 	{
 		// Update object constants

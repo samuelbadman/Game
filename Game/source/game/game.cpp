@@ -238,10 +238,9 @@ void game::loadResources()
 
 	graphicsLoadMesh(_countof(vertices), vertices, _countof(indices), indices, triangleMeshResources);
 
-	transform triangleTransform(vector3d(-1.0, 0.5, 0.0), rotator(0.0, 0.0, 45.0), vector3d(1.0, 1.0, 1.0));
-	triangleWorldMatrix = matrix4x4::transpose(matrix4x4::transformation(triangleTransform));
+	transform(vector3d(-1.0, 0.5, 0.0), rotator(0.0, 0.0, 45.0), vector3d(1.0, 1.0, 1.0));
+	triangleWorldMatrix = matrix4x4::transpose(matrix4x4::transformation(transform(vector3d(-1.0, 0.5, 0.0), rotator(0.0, 0.0, 45.0), vector3d(1.0, 1.0, 1.0))));
 
-	// Todo: Calculate view projection inside the render function from a passed in camera
 	matrix4x4 viewMatrix = matrix4x4::transpose(matrix4x4::view(vector3d(0.0, 0.0, -5.0), rotator(0.0, 0.0, 0.0)));
 	uint32_t width, height;
 	platformGetWindowClientAreaDimensions(window.get(), width, height);
