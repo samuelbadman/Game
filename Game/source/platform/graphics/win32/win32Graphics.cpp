@@ -1,6 +1,10 @@
 #include "pch.h"
 #include "platform/graphics/graphicsApi.h"
+
+#if defined(PLATFORM_WIN32)
 #include "platform/graphics/direct3D12/direct3D12Graphics.h"
+#endif // PLATFORM_WIN32
+
 #include "platform/graphics/vulkan/vulkanGraphics.h"
 #include "platform/framework/platformMessageBox.h"
 
@@ -30,6 +34,7 @@ void graphicsInit(const eGraphicsApi graphicsApi, const bool softwareRenderer, c
 {
 	switch (graphicsApi)
 	{
+#if defined(PLATFORM_WIN32)
 	case eGraphicsApi::direct3d12:
 	{
 		setFunctionPointers(&direct3d12Graphics::shutdown,
@@ -41,6 +46,7 @@ void graphicsInit(const eGraphicsApi graphicsApi, const bool softwareRenderer, c
 		direct3d12Graphics::init(softwareRenderer, backBufferCount);
 	}
 	break;
+#endif // PLATFORM_WIN32
 
 	case eGraphicsApi::vulkan:
 	{

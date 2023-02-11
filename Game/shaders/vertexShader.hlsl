@@ -16,21 +16,17 @@ struct pixelShaderInput
 
 cbuffer objectConstants : register(b0, space0)
 {
-    float4x4 wMatrix;
+    float4x4 wvpMatrix;
 }
 
 cbuffer cameraConstants : register(b1, space0)
 {
-    float4x4 vpMatrix;
 }
 
 pixelShaderInput main(vertexShaderInput input)
 {
-    float4 worldPosition = mul(float4(input.localPosition, 1.0f), wMatrix);
-    float4 projectionPosition = mul(worldPosition, vpMatrix);
-
     pixelShaderInput output;
-    output.projectionPosition = projectionPosition;
+    output.projectionPosition = mul(float4(input.localPosition, 1.0f), wvpMatrix);
 	output.normal = input.normal;
 	output.color = input.color;
 	output.uv = input.uv;

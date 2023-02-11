@@ -18,12 +18,11 @@ using namespace Microsoft::WRL;
 
 struct sObjectConstantBuffer
 {
-	float world[16];
+	float worldViewProjectionMatrix[16];
 };
 
 struct sCameraConstantBuffer
 {
-	float viewProjection[16];
 };
 
 static void enableDebugLayer()
@@ -826,8 +825,6 @@ void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12Gra
 
 	// Update camera constants
 	sCameraConstantBuffer cameraConstants = {};
-	// Copy matrix values cast to 32-bit floating point values
-	std::transform(std::begin(viewProjection->values), std::end(viewProjection->values), std::begin(cameraConstants.viewProjection), [](const double& value) {return static_cast<float>(value); });
 	cameraConstantBuffer.update(&cameraConstants, sizeof(cameraConstants));
 	commandList->SetGraphicsRootConstantBufferView(1, cameraConstantBuffer.GetGPUVirtualAddress());
 	cameraConstantBuffer.increment();
@@ -836,21 +833,19 @@ void direct3d12Graphics::recordSurface(const graphicsSurface* surface, ID3D12Gra
 	for (uint32_t i = 0; i < renderDataCount; ++i)
 	{
 		// Update object constants
-		matrix4x4& world = *renderData[i]->pWorldMatrix;
+		matrix4x4 worldViewProjectionMatrix = *renderData[i]->pWorldMatrix * *viewProjection;
 		sObjectConstantBuffer objectConstants = {};
 		// Copy matrix values cast to 32-bit floating point values
-		std::transform(std::begin(world.values), std::end(world.values), std::begin(objectConstants.world), [](const double& value) {return static_cast<float>(value); });
+		std::transform(std::begin(worldViewProjectionMatrix.values), std::end(worldViewProjectionMatrix.values), std::begin(objectConstants.worldViewProjectionMatrix), [](const double& value) {return static_cast<float>(value); });
 		objectConstantBuffer.update(&objectConstants, sizeof(objectConstants));
+		commandList->SetGraphicsRootConstantBufferView(0, objectConstantBuffer.GetGPUVirtualAddress());
+		objectConstantBuffer.increment();
 
 		// Draw
 		const sMeshResources* const mesh = renderData[i]->pMeshResources;
-		commandList->SetGraphicsRootConstantBufferView(0, objectConstantBuffer.GetGPUVirtualAddress());
 		commandList->IASetVertexBuffers(0, 1, &vertexBufferViewStore[mesh->vertexBufferViewHandle]);
 		commandList->IASetIndexBuffer(&indexBufferViewStore[mesh->indexBufferViewHandle]);
 		commandList->DrawIndexedInstanced(mesh->indexCount, 1, 0, 0, 0);
-
-		// Increment object constants pointer
-		objectConstantBuffer.increment();
 	}
 
 	D3D12_RESOURCE_BARRIER backBufferResourceEndTransitionBarrier = {};
