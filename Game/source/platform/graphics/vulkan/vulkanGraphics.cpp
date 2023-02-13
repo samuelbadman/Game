@@ -21,6 +21,10 @@ void vulkanGraphics::resizeSurface(graphicsSurface* surface, uint32_t width, uin
 {
 }
 
+void vulkanGraphics::setSurfaceUseVSync(graphicsSurface* surface, const bool inUseVSync)
+{
+}
+
 void vulkanGraphics::beginFrame()
 {
 }

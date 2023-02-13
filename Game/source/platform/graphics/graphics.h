@@ -7,6 +7,7 @@ extern void graphicsShutdown();
 extern void graphicsCreateSurface(void* platformWindowHandle, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<class graphicsSurface>& outSurface);
 extern void graphicsDestroySurface(std::shared_ptr<class graphicsSurface>& surface);
 extern void graphicsResizeSurface(class graphicsSurface* surface, uint32_t width, uint32_t height);
+extern void graphicsSetSurfaceUseVSync(class graphicsSurface* surface, const bool inUseVSync);
 extern void graphicsBeginFrame();
 extern void graphicsRender(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const class matrix4x4* const viewProjection);
 extern void graphicsEndFrame(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces);

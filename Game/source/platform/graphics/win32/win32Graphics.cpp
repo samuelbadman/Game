@@ -12,6 +12,7 @@ static void(*shutdown)() = nullptr;
 static void(*createSurface)(void*, uint32_t, uint32_t, bool, std::shared_ptr<class graphicsSurface>&) = nullptr;
 static void(*destroySurface)(std::shared_ptr<class graphicsSurface>&) = nullptr;
 static void(*resizeSurface)(class graphicsSurface*, uint32_t, uint32_t) = nullptr;
+static void (*setSurfaceUseVSync)(class graphicsSurface*, const bool) = nullptr;
 static void (*beginFrame)() = nullptr;
 static void(*render)(const uint32_t, const class graphicsSurface* const*, const uint32_t, const struct sRenderData* const*, const class matrix4x4* const) = nullptr;
 static void (*endFrame)(const uint32_t, const class graphicsSurface* const*) = nullptr;
@@ -22,6 +23,7 @@ static void setFunctionPointers(void(* const inShutdown)(),
 	void(* const inCreateSurface)(void*, uint32_t, uint32_t, bool, std::shared_ptr<class graphicsSurface>&),
 	void(* const inDestroySurface)(std::shared_ptr<class graphicsSurface>&),
 	void(* const inResizeSurface)(class graphicsSurface*, uint32_t, uint32_t),
+	void(* const inSetSurfaceUseVSync)(class graphicsSurface*, const bool),
 	void(* const inBeginFrame)(),
 	void(* const inRender)(const uint32_t, const class graphicsSurface* const*, const uint32_t, const struct sRenderData* const*, const class matrix4x4* const),
 	void(* const inEndFrame)(const uint32_t, const class graphicsSurface* const*),
@@ -32,6 +34,7 @@ static void setFunctionPointers(void(* const inShutdown)(),
 	createSurface = inCreateSurface;
 	destroySurface = inDestroySurface;
 	resizeSurface = inResizeSurface;
+	setSurfaceUseVSync = inSetSurfaceUseVSync;
 	beginFrame = inBeginFrame;
 	render = inRender;
 	endFrame = inEndFrame;
@@ -50,6 +53,7 @@ void graphicsInit(const eGraphicsApi graphicsApi, const bool softwareRenderer, c
 			&direct3d12Graphics::createSurface,
 			&direct3d12Graphics::destroySurface,
 			&direct3d12Graphics::resizeSurface,
+			&direct3d12Graphics::setSurfaceUseVSync,
 			&direct3d12Graphics::beginFrame,
 			&direct3d12Graphics::render,
 			&direct3d12Graphics::endFrame,
@@ -66,6 +70,7 @@ void graphicsInit(const eGraphicsApi graphicsApi, const bool softwareRenderer, c
 			&vulkanGraphics::createSurface,
 			&vulkanGraphics::destroySurface,
 			&vulkanGraphics::resizeSurface,
+			&vulkanGraphics::setSurfaceUseVSync,
 			&vulkanGraphics::beginFrame,
 			&vulkanGraphics::render,
 			&vulkanGraphics::endFrame,
@@ -101,6 +106,11 @@ void graphicsDestroySurface(std::shared_ptr<class graphicsSurface>& surface)
 void graphicsResizeSurface(class graphicsSurface* surface, uint32_t width, uint32_t height)
 {
 	resizeSurface(surface, width, height);
+}
+
+void graphicsSetSurfaceUseVSync(class graphicsSurface* surface, const bool inUseVSync)
+{
+	setSurfaceUseVSync(surface, inUseVSync);
 }
 
 void graphicsBeginFrame()

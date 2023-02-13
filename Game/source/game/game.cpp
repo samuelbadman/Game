@@ -133,6 +133,7 @@ void game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
 	if (inWindow == window.get())
 	{
 		graphicsResizeSurface(surface.get(), evt.newClientWidth, evt.newClientHeight);
+		updateViewProjectionMatrix();
 	}
 }
 
@@ -245,20 +246,14 @@ void game::loadResources()
 
 	transform(vector3d(-1.0, 0.5, 0.0), rotator(0.0, 0.0, 45.0), vector3d(1.0, 1.0, 1.0));
 	triangleWorldMatrix = matrix4x4::transpose(matrix4x4::transformation(transform(vector3d(-1.0, 0.5, 0.0), rotator(0.0, 0.0, 45.0), vector3d(1.0, 1.0, 1.0))));
-
-	matrix4x4 viewMatrix = matrix4x4::transpose(matrix4x4::view(vector3d(0.0, 0.0, -5.0), rotator(0.0, 0.0, 0.0)));
-	uint32_t width, height;
-	platformGetWindowClientAreaDimensions(window.get(), width, height);
-	matrix4x4 projectionMatrix = matrix4x4::transpose(matrix4x4::orthographic(static_cast<double>(width) * 0.002, static_cast<double>(height) * 0.002, 0.1, 100.0));
-	//matrix4x4 projectionMatrix = matrix4x4::transpose(matrix4x4::perspective(45.0, static_cast<double>(width), static_cast<double>(height), 0.1, 100.0));
-	viewProjectionMatrix = viewMatrix * projectionMatrix;
-
+	
 	triangleRenderData.pMeshResources = &triangleMeshResources;
 	triangleRenderData.pWorldMatrix = &triangleWorldMatrix;
 }
 
 void game::begin()
 {
+	updateViewProjectionMatrix();
 }
 
 void game::tick(float deltaSeconds)
@@ -279,4 +274,15 @@ void game::render()
 	graphicsRender(_countof(surfaces), surfaces, _countof(renderDatas), renderDatas, &viewProjectionMatrix);
 
 	graphicsEndFrame(_countof(surfaces), surfaces);
+}
+
+void game::updateViewProjectionMatrix()
+{
+	matrix4x4 viewMatrix = matrix4x4::transpose(matrix4x4::view(vector3d(0.0, 0.0, -5.0), rotator(0.0, 0.0, 0.0)));
+	uint32_t width, height;
+	platformGetWindowClientAreaDimensions(window.get(), width, height);
+	static const double orthoZoom = 0.002;
+	matrix4x4 projectionMatrix = matrix4x4::transpose(matrix4x4::orthographic(static_cast<double>(width) * orthoZoom, static_cast<double>(height) * orthoZoom, 0.1, 100.0));
+	//matrix4x4 projectionMatrix = matrix4x4::transpose(matrix4x4::perspective(45.0, static_cast<double>(width), static_cast<double>(height), 0.1, 100.0));
+	viewProjectionMatrix = viewMatrix * projectionMatrix;
 }

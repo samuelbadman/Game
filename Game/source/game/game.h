@@ -48,4 +48,6 @@ private:
 	static void tick(float deltaSeconds);
 	static void fixedTick(float fixedStep);
 	static void render();
+
+	static void updateViewProjectionMatrix();
 };

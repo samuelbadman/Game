@@ -8,6 +8,7 @@ public:
 	static void createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<class graphicsSurface>& outSurface);
 	static void destroySurface(std::shared_ptr<class graphicsSurface>& surface);
 	static void resizeSurface(class graphicsSurface* surface, uint32_t width, uint32_t height);
+	static void setSurfaceUseVSync(class graphicsSurface* surface, const bool inUseVSync);
 	static void beginFrame();
 	static void render(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const class matrix4x4* const viewProjection);
 	static void endFrame(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces);

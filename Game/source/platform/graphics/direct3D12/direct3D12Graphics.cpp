@@ -665,6 +665,11 @@ void direct3d12Graphics::resizeSurface(graphicsSurface* surface, uint32_t width,
 	}
 }
 
+void direct3d12Graphics::setSurfaceUseVSync(graphicsSurface* surface, const bool inUseVSync)
+{
+	surface->useVSync = inUseVSync;
+}
+
 void direct3d12Graphics::beginFrame()
 {
 	// Wait for the previous frame to finish on the GPU
