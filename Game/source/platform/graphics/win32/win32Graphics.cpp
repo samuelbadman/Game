@@ -123,9 +123,9 @@ void graphicsRender(const uint32_t numSurfaces, const class graphicsSurface* con
 	render(numSurfaces, surfaces, renderDataCount, renderData, viewProjection);
 }
 
-void graphicsEndFrame(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces)
+void graphicsEndFrame(const uint32_t numRenderedSurfaces, const class graphicsSurface* const* renderedSurfaces)
 {
-	endFrame(numSurfaces, surfaces);
+	endFrame(numRenderedSurfaces, renderedSurfaces);
 }
 
 //void graphicsLoadMesh(const size_t vertexCount, const struct sVertexPos3Norm3Col4UV2* const vertices, const size_t indexCount, const uint32_t* const indices, struct sMeshResources& outMeshResources)

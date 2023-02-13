@@ -693,7 +693,7 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphics
 	}
 }
 
-void direct3d12Graphics::endFrame(const uint32_t numSurfaces, const graphicsSurface* const* surfaces)
+void direct3d12Graphics::endFrame(const uint32_t numRenderedSurfaces, const graphicsSurface* const* renderedSurfaces)
 {
 	// Stop recording command list
 	fatalIfFailed(graphicsCommandList->Close());
@@ -704,9 +704,9 @@ void direct3d12Graphics::endFrame(const uint32_t numSurfaces, const graphicsSurf
 
 	// Present each surface
 	static bool tearingSupported = checkTearingSupport(dxgiFactory.Get());
-	for (uint32_t i = 0; i < numSurfaces; ++i)
+	for (uint32_t i = 0; i < numRenderedSurfaces; ++i)
 	{
-		const graphicsSurface* surface = surfaces[static_cast<size_t>(i)];
+		const graphicsSurface* surface = renderedSurfaces[static_cast<size_t>(i)];
 		presentSurface(surface, surface->useVSync, tearingSupported);
 	}
 

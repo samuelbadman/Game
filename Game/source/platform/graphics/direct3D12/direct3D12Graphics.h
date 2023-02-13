@@ -77,7 +77,7 @@ public:
 	static void setSurfaceUseVSync(class graphicsSurface* surface, const bool inUseVSync);
 	static void beginFrame();
 	static void render(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const class matrix4x4* const viewProjection);
-	static void endFrame(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces);
+	static void endFrame(const uint32_t numRenderedSurfaces, const class graphicsSurface* const* renderedSurfaces);
 
 	//static void loadMesh(const size_t vertexCount, const struct sVertexPos3Norm3Col4UV2* const vertices, const size_t indexCount, const uint32_t* const indices, struct sMeshResources& outMeshResource);
 	static void loadMeshes(const uint32_t meshCount, const size_t* vertexCounts, const struct sVertexPos3Norm3Col4UV2(*vertices)[], const size_t* const indexCounts, const uint32_t(*indices)[], struct sMeshResources** const outMeshResources);
