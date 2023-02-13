@@ -74,6 +74,7 @@ void game::start()
 	parseCommandLineArgs();
 	initializeWindow();
 	initializeGraphics();
+	platformShowWindow(window.get());
 	initializeAudio();
 
 	loadResources();
@@ -253,7 +254,6 @@ void game::loadResources()
 
 void game::begin()
 {
-	updateViewProjectionMatrix();
 }
 
 void game::tick(float deltaSeconds)

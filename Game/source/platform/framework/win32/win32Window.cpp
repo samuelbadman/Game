@@ -49,6 +49,11 @@ int8_t platformSetWindowStyle(platformWindow* inPlatformWindow, eWindowStyle inS
 	return inPlatformWindow->setStyle(inStyle);
 }
 
+bool platformShowWindow(platformWindow* inPlatformWindow)
+{
+	return inPlatformWindow->show();
+}
+
 int8_t platformGetWindowClientAreaDimensions(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
 {
 	return inPlatformWindow->getClientAreaDimensions(x, y);
@@ -314,6 +319,16 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			case SIZE_RESTORED:
 			{
+				// Window restored
+				if (!window->inSizeMove)
+				{
+					sResizedEvent resize = {};
+					resize.newClientWidth = LOWORD(lparam);
+					resize.newClientHeight = HIWORD(lparam);
+
+					game::onWindowResized(window, resize);
+				}
+
 				return 0;
 			}
 			}
@@ -323,7 +338,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 		case WM_ENTERSIZEMOVE:
 		{
-			window->setInSizeMove(true);
+			window->inSizeMove = true;
 
 			sEnterSizeMoveEvent evt = {};
 
@@ -333,7 +348,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 		case WM_EXITSIZEMOVE:
 		{
-			window->setInSizeMove(false);
+			window->inSizeMove = false;
 
 			sExitSizeMoveEvent evt = {};
 
@@ -469,9 +484,6 @@ void platformWindow::init(const sWindowDesc& desc)
 			// Failed to register raw input devices
 			platformMessageBoxFatal("win32Window::init failed to register raw input devices.");
 		}
-
-		// Show the window
-		ShowWindow(hwnd, SW_SHOW);
 	}
 	else
 	{
@@ -625,6 +637,12 @@ int8_t platformWindow::setStyle(eWindowStyle inStyle)
 	ShowWindow(hwnd, SW_SHOW);
 
 	return 0;
+}
+
+bool platformWindow::show()
+{
+	// Show the window
+	return (ShowWindow(hwnd, SW_SHOW) != 0);
 }
 
 int8_t platformWindow::getClientAreaDimensions(uint32_t& x, uint32_t& y) const

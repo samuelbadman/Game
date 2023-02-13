@@ -20,6 +20,7 @@ private:
 	// Stores whether the window is in fullscreen
 	bool inFullscreen = false;
 
+public:
 	// Stores whether the window is in a size move
 	bool inSizeMove = false;
 
@@ -34,8 +35,8 @@ public:
 	int8_t setPosition(uint32_t x, uint32_t y);
 	// Returns non-zero if the function fails
 	int8_t setStyle(eWindowStyle inStyle);
-	void setInSizeMove(bool inInSizeMove) { inSizeMove = inInSizeMove; }
-	bool getInSizeMove() const { return inSizeMove; }
+	// Returns true if the window was previously visible and false if the window was previously hidden
+	bool show();
 
 	// Returns non-zero if the function fails
 	int8_t getClientAreaDimensions(uint32_t& x, uint32_t& y) const;

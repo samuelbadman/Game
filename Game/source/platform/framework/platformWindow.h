@@ -35,7 +35,9 @@ extern int8_t platformExitWindowFullscreen(platformWindow* inPlatformWindow);
 extern int8_t platformSetWindowPosition(platformWindow* inPlatformWindow, uint32_t x, uint32_t y);
 // Returns non-zero if the function fails
 extern int8_t platformSetWindowStyle(platformWindow* inPlatformWindow, eWindowStyle inStyle);
- 
+// Returns true if the window was previously visible and false if the window was previously hidden
+extern bool platformShowWindow(platformWindow* inPlatformWindow);
+
 // Returns non-zero if the function fails
 extern int8_t platformGetWindowClientAreaDimensions(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y);
 // Returns non-zero if the function fails
