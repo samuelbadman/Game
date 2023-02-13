@@ -213,7 +213,7 @@ void game::initializeGraphics()
 	}
 	
 	graphicsInit(sGameSettings::graphicsApi, false, sGameSettings::enableTripleBuffering ? 3 : 2);
-	graphicsCreateSurface(platformGetWindowHandle(window.get()), width, height, surface);
+	graphicsCreateSurface(platformGetWindowHandle(window.get()), width, height, sGameSettings::enableVSync, surface);
 }
 
 void game::shutdownGraphics()
@@ -271,7 +271,12 @@ void game::fixedTick(float fixedStep)
 
 void game::render()
 {
-	const graphicsSurface* const surfaces[] = { surface.get() };
-	const sRenderData* const renderDatas[] = { &triangleRenderData };
-	graphicsRender(_countof(surfaces), surfaces, sGameSettings::enableVSync, _countof(renderDatas), renderDatas, &viewProjectionMatrix);
+	static const graphicsSurface* const surfaces[] = { surface.get() };
+
+	graphicsBeginFrame();
+
+	static const sRenderData* const renderDatas[] = { &triangleRenderData };
+	graphicsRender(_countof(surfaces), surfaces, _countof(renderDatas), renderDatas, &viewProjectionMatrix);
+
+	graphicsEndFrame(_countof(surfaces), surfaces);
 }

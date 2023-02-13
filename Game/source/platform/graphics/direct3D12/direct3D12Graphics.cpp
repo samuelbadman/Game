@@ -568,7 +568,7 @@ void direct3d12Graphics::shutdown()
 	//cameraConstantBuffer.shutdown();
 }
 
-void direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t height, std::shared_ptr<graphicsSurface>& outSurface)
+void direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<graphicsSurface>& outSurface)
 {
 	outSurface = std::make_shared<graphicsSurface>();
 	createSwapChain(dxgiFactory.Get(), graphicsQueue.Get(), static_cast<HWND>(hwnd), width, height, backBufferCount, outSurface->swapChain);
@@ -596,6 +596,8 @@ void direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t heig
 	outScissorRect.left = 0;
 	outScissorRect.right = width;
 	outScissorRect.bottom = height;
+
+	outSurface->useVSync = vsync;
 }
 
 void direct3d12Graphics::destroySurface(std::shared_ptr<graphicsSurface>& surface)
@@ -663,7 +665,7 @@ void direct3d12Graphics::resizeSurface(graphicsSurface* surface, uint32_t width,
 	}
 }
 
-void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const bool useVSync, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const matrix4x4* const viewProjection)
+void direct3d12Graphics::beginFrame()
 {
 	// Wait for the previous frame to finish on the GPU
 	waitForFence(graphicsFence.Get(), eventHandle, graphicsFenceValues[currentFrameIndex], maxFenceWaitDurationMs);
@@ -674,14 +676,20 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphics
 	// Start recording command list
 	fatalIfFailed(graphicsCommandAllocator->Reset());
 	fatalIfFailed(graphicsCommandList->Reset(graphicsCommandAllocator, nullptr));
+}
 
+void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const matrix4x4* const viewProjection)
+{
 	// For each surface
 	for(uint32_t i = 0; i < numSurfaces; ++i)
 	{
 		const graphicsSurface* const surface = surfaces[static_cast<size_t>(i)];
 		recordSurface(surface, graphicsCommandList.Get(), renderDataCount, renderData, viewProjection);
 	}
+}
 
+void direct3d12Graphics::endFrame(const uint32_t numSurfaces, const graphicsSurface* const* surfaces)
+{
 	// Stop recording command list
 	fatalIfFailed(graphicsCommandList->Close());
 
@@ -694,7 +702,7 @@ void direct3d12Graphics::render(const uint32_t numSurfaces, const class graphics
 	for (uint32_t i = 0; i < numSurfaces; ++i)
 	{
 		const graphicsSurface* surface = surfaces[static_cast<size_t>(i)];
-		presentSurface(surface, useVSync, tearingSupported);
+		presentSurface(surface, surface->useVSync, tearingSupported);
 	}
 
 	// Signal end frame. Must be done after present as flip discard swap effect is being used and this presents without blocking CPU thread

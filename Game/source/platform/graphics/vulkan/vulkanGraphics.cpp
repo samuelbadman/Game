@@ -9,7 +9,7 @@ void vulkanGraphics::shutdown()
 {
 }
 
-void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, std::shared_ptr<class graphicsSurface>& outSurface)
+void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<class graphicsSurface>& outSurface)
 {
 }
 
@@ -21,7 +21,15 @@ void vulkanGraphics::resizeSurface(graphicsSurface* surface, uint32_t width, uin
 {
 }
 
-void vulkanGraphics::render(const uint32_t numSurfaces, const graphicsSurface* const* surfaces, const bool useVSync, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const class matrix4x4* const viewProjection)
+void vulkanGraphics::beginFrame()
+{
+}
+
+void vulkanGraphics::render(const uint32_t numSurfaces, const graphicsSurface* const* surfaces, const uint32_t renderDataCount, const sRenderData* const* renderData, const matrix4x4* const viewProjection)
+{
+}
+
+void vulkanGraphics::endFrame(const uint32_t numSurfaces, const graphicsSurface* const* surfaces)
 {
 }
 

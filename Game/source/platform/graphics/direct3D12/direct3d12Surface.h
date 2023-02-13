@@ -10,4 +10,5 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
 	D3D12_VIEWPORT viewport = {};
 	D3D12_RECT scissorRect = {};
+	bool useVSync = false;
 };
