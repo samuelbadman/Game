@@ -202,7 +202,7 @@ void game::initializeWindow()
 	windowDesc.width = sGameSettings::windowDimensions[0];
 	windowDesc.height = sGameSettings::windowDimensions[1];
 
-	platformOpenWindow(windowDesc, window);
+	platformCreateWindow(windowDesc, window);
 }
 
 void game::initializeGraphics()

@@ -17,7 +17,7 @@
 #include "platform/events/exitFullScreenEvent.h"
 #include "game/game.h"
 
-void platformOpenWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
+void platformCreateWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
 {
 	outPlatformWindow = std::make_shared<platformWindow>();
 	outPlatformWindow->init(desc);

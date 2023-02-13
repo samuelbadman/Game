@@ -25,7 +25,7 @@ struct sWindowDesc
 
 class platformWindow;
 
-extern void platformOpenWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow);
+extern void platformCreateWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow);
 extern void platformDestroyWindow(std::shared_ptr<platformWindow>& outPlatformWindow);
 // Returns non-zero if the function fails
 extern int8_t platformMakeWindowFullscreen(platformWindow* inPlatformWindow);
