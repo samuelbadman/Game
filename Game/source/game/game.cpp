@@ -62,7 +62,7 @@ matrix4x4 game::triangleWorldMatrix;
 sRenderData game::triangleRenderData = {};
 matrix4x4 game::viewProjectionMatrix;
 
-void game::start()
+bool game::start()
 {
 	running = true;
 
@@ -112,6 +112,8 @@ void game::start()
 	}
 
 	shutdownGraphics();
+
+	return true;
 }
 
 void game::exit()

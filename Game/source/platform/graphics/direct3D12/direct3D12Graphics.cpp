@@ -454,7 +454,8 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 
 	createFence(device.Get(), graphicsFence);
 	graphicsFenceValue = 0;
-	graphicsFenceValues.resize(static_cast<size_t>(backBufferCount), graphicsFenceValue);
+	graphicsFenceValues.resize(static_cast<size_t>(backBufferCount));
+	std::fill(graphicsFenceValues.begin(), graphicsFenceValues.end(), graphicsFenceValue);
 
 	createEventHandle(eventHandle);
 
