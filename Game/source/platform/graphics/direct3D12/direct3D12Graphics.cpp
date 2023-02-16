@@ -377,6 +377,7 @@ void direct3d12ConstantBuffer::init(ID3D12Device8* device, const UINT64 inHeapWi
 void direct3d12ConstantBuffer::shutdown()
 {
 	buffer->Unmap(0, nullptr);
+	buffer.Reset();
 	*this = {};
 }
 
@@ -431,6 +432,8 @@ direct3d12ConstantBuffer direct3d12Graphics::cameraConstantBuffer = {};
 
 void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
+	waitForGPU();
+
 	backBufferCount = inBackBufferCount;
 
 	enableDebugLayer();
@@ -565,8 +568,11 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 void direct3d12Graphics::shutdown()
 {
 	waitForGPU();
-	//objectConstantBuffer.shutdown();
-	//cameraConstantBuffer.shutdown();
+	objectConstantBuffer.shutdown();
+	cameraConstantBuffer.shutdown();
+	resourceStore.clear();
+	vertexBufferViewStore.clear();
+	indexBufferViewStore.clear();
 }
 
 void direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<graphicsSurface>& outSurface)
@@ -700,7 +706,7 @@ void direct3d12Graphics::endFrame(const uint32_t numRenderedSurfaces, const grap
 	fatalIfFailed(graphicsCommandList->Close());
 
 	// Execute command lists
-	ID3D12CommandList* graphicsExecuteLists[1] = { graphicsCommandList.Get() };
+	ID3D12CommandList* graphicsExecuteLists[] = { graphicsCommandList.Get() };
 	graphicsQueue->ExecuteCommandLists(_countof(graphicsExecuteLists), graphicsExecuteLists);
 
 	// Present each surface

@@ -3,11 +3,7 @@
 
 static int initGame()
 {
-	bool restart = true;
-	while (restart)
-	{
-		restart = game::start();
-	}
+	game::start();
 	return EXIT_SUCCESS;
 }
 

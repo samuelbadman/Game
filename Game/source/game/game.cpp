@@ -62,7 +62,7 @@ matrix4x4 game::triangleWorldMatrix;
 sRenderData game::triangleRenderData = {};
 matrix4x4 game::viewProjectionMatrix;
 
-bool game::start()
+void game::start()
 {
 	running = true;
 
@@ -111,15 +111,14 @@ bool game::start()
 		platformUpdateTiming(fps, ms);
 	}
 
+	graphicsDestroySurface(surface);
 	shutdownGraphics();
-
-	return true;
+	platformDestroyWindow(window);
 }
 
 void game::exit()
 {
 	running = false;
-	platformDestroyWindow(window);
 }
 
 void game::onInputEvent(platformWindow* inWindow, const sInputEvent& evt)

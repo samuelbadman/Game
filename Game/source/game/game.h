@@ -19,7 +19,7 @@ private:
 	static matrix4x4 viewProjectionMatrix;
 
 public:
-	static bool start();
+	static void start();
 	static void exit();
 	/* Called when the platform layer generates an input event.
 	   inWindow acts as an id to identify the window that generated the event
