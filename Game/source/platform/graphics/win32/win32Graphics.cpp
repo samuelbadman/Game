@@ -91,6 +91,7 @@ void graphicsInit(const eGraphicsApi graphicsApi, const bool softwareRenderer, c
 void graphicsShutdown()
 {
 	shutdown();
+	setFunctionPointers(nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr, nullptr);
 }
 
 void graphicsCreateSurface(void* platformWindowHandle, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<class graphicsSurface>& outSurface)

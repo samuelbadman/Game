@@ -12,6 +12,7 @@ private:
 	static std::shared_ptr<class graphicsSurface> surface;
 	static int64_t fps;
 	static double ms;
+	static bool graphicsInitialized;
 
 	static sMeshResources triangleMeshResources;
 	static matrix4x4 triangleWorldMatrix;

@@ -1,6 +1,5 @@
 #include "pch.h"
 #include "game.h"
-
 #include "platform/framework/platformConsole.h"
 #include "platform/framework/platformCommandLine.h"
 #include "platform/framework/platformWindow.h"
@@ -56,6 +55,7 @@ std::shared_ptr<platformWindow> game::window;
 std::shared_ptr<graphicsSurface> game::surface;
 int64_t game::fps = 0;
 double game::ms = 0.0;
+bool game::graphicsInitialized = false;
 
 sMeshResources game::triangleMeshResources = {};
 matrix4x4 game::triangleWorldMatrix;
@@ -76,8 +76,6 @@ void game::start()
 	initializeGraphics();
 	platformShowWindow(window.get());
 	initializeAudio();
-
-	loadResources();
 
 	// Initialize game loop
 	begin();
@@ -105,13 +103,15 @@ void game::start()
 			accumulator -= fixedTimeSliceMs;
 		}
 
-		render();
+		if (graphicsInitialized)
+		{
+			render();
+		}
 
 		// Update frame timing
 		platformUpdateTiming(fps, ms);
 	}
 
-	graphicsDestroySurface(surface);
 	shutdownGraphics();
 	platformDestroyWindow(window);
 }
@@ -123,7 +123,6 @@ void game::exit()
 
 void game::onInputEvent(platformWindow* inWindow, const sInputEvent& evt)
 {
-
 }
 
 void game::onWindowMaximized(platformWindow* inWindow, const struct sMaximizedEvent& evt)
@@ -217,11 +216,18 @@ void game::initializeGraphics()
 	
 	graphicsInit(sGameSettings::graphicsApi, false, sGameSettings::enableTripleBuffering ? 3 : 2);
 	graphicsCreateSurface(platformGetWindowHandle(window.get()), width, height, sGameSettings::enableVSync, surface);
+
+	loadResources();
+
+	graphicsInitialized = true;
 }
 
 void game::shutdownGraphics()
 {
+	graphicsDestroySurface(surface);
 	graphicsShutdown();
+
+	graphicsInitialized = false;
 }
 
 void game::initializeAudio()
@@ -267,11 +273,11 @@ void game::fixedTick(float fixedStep)
 
 void game::render()
 {
-	static const graphicsSurface* const surfaces[] = { surface.get() };
+	const graphicsSurface* const surfaces[] = { surface.get() };
 
 	graphicsBeginFrame();
 
-	static const sRenderData* const renderDatas[] = { &triangleRenderData };
+	const sRenderData* const renderDatas[] = { &triangleRenderData };
 	graphicsRender(_countof(surfaces), surfaces, _countof(renderDatas), renderDatas, &viewProjectionMatrix);
 
 	graphicsEndFrame(_countof(surfaces), surfaces);

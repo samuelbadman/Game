@@ -9,9 +9,6 @@
 #include "math/matrix4x4.h"
 #include "platform/graphics/renderData.h"
 
-#include "platform/framework/platformConsole.h"
-#include "stringHelper.h"
-
 using namespace Microsoft::WRL;
 
 #define fatalIfFailed(x) if(FAILED(x)) platformMessageBoxFatal("hresult failed.");
@@ -568,11 +565,35 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 void direct3d12Graphics::shutdown()
 {
 	waitForGPU();
+
 	objectConstantBuffer.shutdown();
 	cameraConstantBuffer.shutdown();
 	resourceStore.clear();
 	vertexBufferViewStore.clear();
 	indexBufferViewStore.clear();
+
+	backBufferCount = 0;
+	dxgiFactory.Reset();
+	adapter.Reset();
+	device.Reset();
+	graphicsQueue.Reset();
+	computeQueue.Reset();
+	copyQueue.Reset();
+	descriptorSizes = {};
+	graphicsCommandAllocators.clear();
+	graphicsCommandList.Reset();
+	graphicsFence.Reset();
+	graphicsFenceValue = 0;
+	graphicsFenceValues.clear();
+	CloseHandle(eventHandle);
+	currentFrameIndex = 0;
+
+	dxcLibrary.Reset();
+	dxcCompiler.Reset();
+
+	rootSignature.Reset();
+	graphicsPipelineState.Reset();
+
 }
 
 void direct3d12Graphics::createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<graphicsSurface>& outSurface)
