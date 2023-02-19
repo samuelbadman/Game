@@ -40,6 +40,10 @@
 
 #endif // PLATFORM_WIN32
 
+// Vulkan
+#pragma comment(lib, "vulkan-1.lib")
+#include "platform/graphics/vulkan/vendor/Include/vulkan/vulkan.h"
+
 // glm maths library
 #define GLM_FORCE_RADIANS
 #define GLM_FORCE_DEPTH_ZERO_TO_ONE
