@@ -191,7 +191,7 @@
     <ClInclude Include="source\fileIO\fileIO.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\graphics\direct3D12\d3dx12.h">
+    <ClInclude Include="source\platform\graphics\direct3D12\vendor\d3dx12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\graphics\meshResources.h">

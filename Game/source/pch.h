@@ -34,7 +34,7 @@
 #pragma comment(lib, "dxguid.lib")
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxcompiler.lib")
-#include "platform/graphics/direct3D12/d3dx12.h"
+#include "platform/graphics/direct3D12/vendor/d3dx12.h"
 
 #include <xaudio2.h>
 
@@ -42,7 +42,7 @@
 
 // Vulkan
 #pragma comment(lib, "vulkan-1.lib")
-#include "platform/graphics/vulkan/vendor/Include/vulkan/vulkan.h"
+#include "platform/graphics/vulkan/vendor/include/vulkan/vulkan.h"
 
 // glm maths library
 #define GLM_FORCE_RADIANS
