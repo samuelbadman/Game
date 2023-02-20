@@ -42,7 +42,7 @@
 
 // Vulkan
 #pragma comment(lib, "vulkan-1.lib")
-#include "platform/graphics/vulkan/vendor/include/vulkan/vulkan.h"
+#include "platform/graphics/vulkan/vendor/include/vulkan/vulkan.hpp"
 
 // glm maths library
 #define GLM_FORCE_RADIANS

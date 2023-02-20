@@ -66,10 +66,10 @@ void game::start()
 {
 	running = true;
 
-	//if (platformInitConsole() != 0)
-	//{
-	//	platformMessageBoxFatal("game::start: failed to initialize platform console.");
-	//}
+	if (platformInitConsole() != 0)
+	{
+		platformMessageBoxFatal("game::start: failed to initialize platform console.");
+	}
 
 	parseCommandLineArgs();
 	initializeWindow();

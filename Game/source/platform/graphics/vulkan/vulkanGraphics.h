@@ -2,6 +2,9 @@
 
 class vulkanGraphics
 {
+private:
+	static vk::Instance instance;
+
 public:
 	static void init(bool useWarp, uint32_t inBackBufferCount);
 	static void shutdown();
