@@ -38,7 +38,7 @@
 
 #include <xaudio2.h>
 
-#endif // PLATFORM_WIN32
+#endif // defined(PLATFORM_WIN32)
 
 // Vulkan
 #pragma comment(lib, "vulkan-1.lib")

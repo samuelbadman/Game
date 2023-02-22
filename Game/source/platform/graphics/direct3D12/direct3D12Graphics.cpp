@@ -29,7 +29,7 @@ static void enableDebugLayer()
 	ComPtr<ID3D12Debug> debugInterface;
 	fatalIfFailed(D3D12GetDebugInterface(IID_PPV_ARGS(&debugInterface)));
 	debugInterface->EnableDebugLayer();
-#endif // _DEBUG
+#endif // defined(_DEBUG)
 }
 
 static void createDxgiFactory(ComPtr<IDXGIFactory7>& outFactory)
@@ -37,7 +37,7 @@ static void createDxgiFactory(ComPtr<IDXGIFactory7>& outFactory)
 	UINT createFactoryFlags = 0;
 #if defined(_DEBUG)
 	createFactoryFlags |= DXGI_CREATE_FACTORY_DEBUG;
-#endif // _DEBUG
+#endif // defined(_DEBUG)
 
 	fatalIfFailed(CreateDXGIFactory2(createFactoryFlags, IID_PPV_ARGS(&outFactory)));
 }
@@ -109,7 +109,7 @@ static void createDevice(IDXGIAdapter4* adapter, ComPtr<ID3D12Device8>& outDevic
 	{
 		platformMessageBoxFatal("direct3d12Graphics::createDevice: failed to push queue filter. Could not enable device debug info.");
 	}
-#endif //_DEBUG
+#endif // defined(_DEBUG)
 }
 
 static sDescriptorSizes getDescriptorSizes(ID3D12Device8* device)

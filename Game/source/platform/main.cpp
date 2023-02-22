@@ -14,6 +14,8 @@ int WINAPI wWinMain(_In_ HINSTANCE hInstance, _In_opt_ HINSTANCE hPrevInstance, 
 	return initGame();
 }
 
- #elif defined(0)
+#else
 
-#endif // PLATFORM_WIN32
+unsupported platform
+
+#endif // defined(PLATFORM_WIN32)

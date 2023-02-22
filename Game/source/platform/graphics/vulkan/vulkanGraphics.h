@@ -4,6 +4,8 @@ class vulkanGraphics
 {
 private:
 	static vk::Instance instance;
+	static vk::DebugUtilsMessengerEXT debugMessenger;
+	static vk::DispatchLoaderDynamic dldi;
 
 public:
 	static void init(bool useWarp, uint32_t inBackBufferCount);
