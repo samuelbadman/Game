@@ -137,8 +137,11 @@ static void makeDebugMessenger(const vk::Instance& instance, const vk::DispatchL
 }
 
 vk::Instance vulkanGraphics::instance = {};
+
+#if defined(_DEBUG)
 vk::DebugUtilsMessengerEXT vulkanGraphics::debugMessenger = nullptr;
 vk::DispatchLoaderDynamic vulkanGraphics::dldi;
+#endif // defined(_DEBUG)
 
 void vulkanGraphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
