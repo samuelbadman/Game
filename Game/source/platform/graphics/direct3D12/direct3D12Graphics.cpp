@@ -53,7 +53,7 @@ static void getAdapter(IDXGIFactory7* dxgiFactory, bool useWarp, ComPtr<IDXGIAda
 	}
 	else
 	{
-		// Get hardware adapters in descending order of performance. Highest performance adapter is the first loop iteration.
+		// Get adapters in descending order of performance. Highest performance adapter is the first loop iteration.
 		for (UINT i = 0; dxgiFactory->EnumAdapterByGpuPreference(i, DXGI_GPU_PREFERENCE_HIGH_PERFORMANCE, IID_PPV_ARGS(&outAdapter)) != DXGI_ERROR_NOT_FOUND; ++i)
 		{
 			// Select the first adapter that supports the minimum feature level.

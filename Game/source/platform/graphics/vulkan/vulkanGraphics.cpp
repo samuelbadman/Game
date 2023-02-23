@@ -4,63 +4,68 @@
 #include "stringHelper.h"
 #include "platform/framework/platformConsole.h"
 
-static bool checkLayersAndExtensionsConfigurationSupported(const std::vector<const char*>& layers, const std::vector<const char*>& extensions)
+#define VULKAN_VALIDATION_LAYER_NAME "VK_LAYER_KHRONOS_validation"
+
+#if defined(PLATFORM_WIN32)
+#define VULKAN_WIN32_SURFACE_EXTENSION_NAME "VK_KHR_win32_surface"
+#endif // defined(PLATFORM_WIN32)
+
+static bool checkInstanceLayersAndExtensionsConfigurationSupported(const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
+	const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames)
 {
 	// Get supported layers and extensions
 	std::vector<vk::ExtensionProperties> supportedExtensions = vk::enumerateInstanceExtensionProperties();
 	platformConsolePrint("supported instance extensions:");
 	for (const vk::ExtensionProperties& extensionProperty : supportedExtensions)
 	{
-		platformConsolePrint(extensionProperty.extensionName);
+		platformConsolePrint(stringHelper::printf("    %s", extensionProperty.extensionName));
 	}
-	platformConsolePrint("===============================");
 
 	std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 	platformConsolePrint("supported instance layers:");
 	for (const vk::LayerProperties& layerProperty : supportedLayers)
 	{
-		platformConsolePrint(layerProperty.layerName);
+		platformConsolePrint(stringHelper::printf("    %s", layerProperty.layerName));
 	}
-	platformConsolePrint("===============================");
 
 	// Check extensions
-	for (const char* extension : extensions)
+	for (uint32_t i = 0; i < enabledExtensionCount; ++i)
 	{
 		bool found = false;
 		for (const vk::ExtensionProperties& extensionProperty : supportedExtensions)
 		{
-			if (strcmp(extension, extensionProperty.extensionName) == 0)
+			if (strcmp(enabledExtensionNames[i], extensionProperty.extensionName) == 0)
 			{
 				found = true;
-				platformConsolePrint(stringHelper::printf("requested %s instance extension enabled", extension));
+				platformConsolePrint(stringHelper::printf("requested %s instance extension is supported", enabledExtensionNames[i]));
 				break;
 			}
 		}
 
 		if (!found)
 		{
-			platformConsolePrint(stringHelper::printf("requested %s instance extension is not supported", extension));
+			platformConsolePrint(stringHelper::printf("requested %s instance extension is not supported", enabledExtensionNames[i]));
 			return false;
 		}
 	}
 
 	// Check layers
-	for (const char* layer : layers)
+	for (uint32_t i = 0; i < enabledLayerCount; ++i)
 	{
 		bool found = false;
 		for (const vk::LayerProperties& layerProperty : supportedLayers)
 		{
-			if (strcmp(layer, layerProperty.layerName) == 0)
+			if (strcmp(enabledLayerNames[i], layerProperty.layerName) == 0)
 			{
 				found = true;
-				platformConsolePrint(stringHelper::printf("requested %s instance layer enabled", layer));
+				platformConsolePrint(stringHelper::printf("requested %s instance layer is supported", enabledLayerNames[i]));
 				break;
 			}
 		}
 
 		if (!found)
 		{
-			platformConsolePrint(stringHelper::printf("requested %s instance layer is not supported", layer));
+			platformConsolePrint(stringHelper::printf("requested %s instance layer is not supported", enabledLayerNames[i]));
 			return false;
 		}
 	}
@@ -68,21 +73,74 @@ static bool checkLayersAndExtensionsConfigurationSupported(const std::vector<con
 	return true;
 }
 
-static void createInstanceLayersAndExtensionsConfiguration(std::vector<const char*>& outEnabledLayerNames, std::vector<const char*>& outEnabledExtensionNames)
+static bool checkDeviceLayersAndExtensionsConfigurationSupported(const vk::PhysicalDevice& device, const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
+	const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames)
 {
-#if defined(_DEBUG)
-	outEnabledLayerNames.emplace_back("VK_LAYER_KHRONOS_validation");
+	// Get device properties
+	vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
 
-	outEnabledExtensionNames.emplace_back("VK_EXT_debug_utils");
-#endif // defined(_DEBUG)
+	// Get supported layers and extensions
+	std::vector<vk::ExtensionProperties> supportedExtensions = device.enumerateDeviceExtensionProperties();
+	platformConsolePrint(stringHelper::printf("supported extensions by physical device (%s):", deviceProperties.deviceName));
+	for (const vk::ExtensionProperties& extensionProperty : supportedExtensions)
+	{
+		platformConsolePrint(stringHelper::printf("    %s", extensionProperty.extensionName));
+	}
 
-	outEnabledExtensionNames.emplace_back("VK_KHR_surface");
-#if defined(PLATFORM_WIN32)
-	outEnabledExtensionNames.emplace_back("VK_KHR_win32_surface");
-#endif // defined(PLATFORM_WIN32)
+	std::vector<vk::LayerProperties> supportedLayers = device.enumerateDeviceLayerProperties();
+	platformConsolePrint(stringHelper::printf("supported layers by physical device (%s):", deviceProperties.deviceName));
+	for (const vk::LayerProperties& layerProperty : supportedLayers)
+	{
+		platformConsolePrint(stringHelper::printf("    %s", layerProperty.layerName));
+	}
+
+	// Check extensions
+	for (uint32_t i = 0; i < enabledExtensionCount; ++i)
+	{
+		bool found = false;
+		for (const vk::ExtensionProperties& extensionProperty : supportedExtensions)
+		{
+			if (strcmp(enabledExtensionNames[i], extensionProperty.extensionName) == 0)
+			{
+				found = true;
+				platformConsolePrint(stringHelper::printf("requested %s device extension is supported", enabledExtensionNames[i]));
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			platformConsolePrint(stringHelper::printf("requested %s device extension is not supported", enabledExtensionNames[i]));
+			return false;
+		}
+	}
+
+	// Check layers
+	for (uint32_t i = 0; i < enabledLayerCount; ++i)
+	{
+		bool found = false;
+		for (const vk::LayerProperties& layerProperty : supportedLayers)
+		{
+			if (strcmp(enabledLayerNames[i], layerProperty.layerName) == 0)
+			{
+				found = true;
+				platformConsolePrint(stringHelper::printf("requested %s device layer is supported", enabledLayerNames[i]));
+				break;
+			}
+		}
+
+		if (!found)
+		{
+			platformConsolePrint(stringHelper::printf("requested %s device layer is not supported", enabledLayerNames[i]));
+			return false;
+		}
+	}
+
+	return true;
 }
 
-static void createVulkanInstance(vk::Instance& outInstance)
+static void createVulkanInstance(const uint32_t enabledLayerCount, const char* const* enabledLayerNames, const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames,
+	vk::Instance& outInstance)
 {
 	// Enumerate vulkan api version
 	uint32_t apiVersion;
@@ -100,68 +158,47 @@ static void createVulkanInstance(vk::Instance& outInstance)
 	// Create application info
 	vk::ApplicationInfo applicationInfo = vk::ApplicationInfo("vulkanGraphics", apiVersion, "vulkanEngine", apiVersion, apiVersion);
 
-	// Create layers and extensions configuration and check it is supported by the system
-	std::vector<const char*> enabledLayerNames;
-	std::vector<const char*> enabledExtensionNames;
-	createInstanceLayersAndExtensionsConfiguration(enabledLayerNames, enabledExtensionNames);
-
-	if (!checkLayersAndExtensionsConfigurationSupported(enabledLayerNames, enabledExtensionNames))
+	// Create instance create info
+	if (!checkInstanceLayersAndExtensionsConfigurationSupported(enabledLayerCount, enabledLayerNames, enabledExtensionCount, enabledExtensionNames))
 	{
 		platformMessageBoxFatal("vulkanGraphics::createVulkanInstance: layer extension configuration is not supported");
 	}
 
-	// Create instance create info
 	vk::InstanceCreateInfo instanceCreateInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &applicationInfo,
-		static_cast<uint32_t>(enabledLayerNames.size()), enabledLayerNames.data(), static_cast<uint32_t>(enabledExtensionNames.size()), enabledExtensionNames.data(), nullptr);
+		enabledLayerCount, enabledLayerNames, enabledExtensionCount, enabledExtensionNames, nullptr);
 
 	// Create instance
 	outInstance = vk::createInstance(instanceCreateInfo);
 }
 
-static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
-	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
-{
-	platformConsolePrint(stringHelper::printf("vulkan validation layer: %s", pCallbackData->pMessage));
-	return VK_FALSE;
-}
-
-static void makeDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi, vk::DebugUtilsMessengerEXT& outDebugMessenger)
+static void makeDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi, PFN_vkDebugUtilsMessengerCallbackEXT userCallback, vk::DebugUtilsMessengerEXT& outDebugMessenger)
 {
 	vk::DebugUtilsMessengerCreateInfoEXT createInfo = vk::DebugUtilsMessengerCreateInfoEXT(vk::DebugUtilsMessengerCreateFlagBitsEXT(),
 		vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
 		vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding,
-		debugCallback,
+		userCallback,
 		nullptr);
 
 	outDebugMessenger = instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
 }
 
 vk::Instance vulkanGraphics::instance = {};
-
 #if defined(_DEBUG)
 vk::DebugUtilsMessengerEXT vulkanGraphics::debugMessenger = nullptr;
 vk::DispatchLoaderDynamic vulkanGraphics::dldi;
 #endif // defined(_DEBUG)
 
+vk::PhysicalDevice vulkanGraphics::physicalDevice = nullptr;
+
 void vulkanGraphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
-	createVulkanInstance(instance);
-
-#if defined(_DEBUG)
-	dldi = vk::DispatchLoaderDynamic(instance, vkGetInstanceProcAddr);
-	makeDebugMessenger(instance, dldi, debugMessenger);
-#endif // defined(_DEBUG)
-
-
+	makeInstance();
+	makeDevice();
 }
 
 void vulkanGraphics::shutdown()
 {
-#if defined(_DEBUG)
-	instance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr, dldi);
-#endif // defined(_DEBUG)
-
-	instance.destroy();
+	destroyInstance();
 }
 
 void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<class graphicsSurface>& outSurface)
@@ -198,4 +235,101 @@ void vulkanGraphics::endFrame(const uint32_t numSurfaces, const graphicsSurface*
 
 void vulkanGraphics::loadMeshes(const uint32_t meshCount, const size_t* vertexCounts, const sVertexPos3Norm3Col4UV2(* const vertices)[], const size_t* const indexCounts, const uint32_t(* const indices)[], sMeshResources** const outMeshResources)
 {
+}
+
+void vulkanGraphics::createInstanceLayersAndExtensionsConfiguration(std::vector<const char*>& outEnabledLayerNames, std::vector<const char*>& outEnabledExtensionNames)
+{
+#if defined(_DEBUG)
+	outEnabledLayerNames.emplace_back(VULKAN_VALIDATION_LAYER_NAME);
+	outEnabledExtensionNames.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+#endif // defined(_DEBUG)
+
+	outEnabledExtensionNames.emplace_back(VK_KHR_SURFACE_EXTENSION_NAME);
+
+#if defined(PLATFORM_WIN32)
+	outEnabledExtensionNames.emplace_back(VULKAN_WIN32_SURFACE_EXTENSION_NAME);
+#endif // defined(PLATFORM_WIN32)
+}
+
+void vulkanGraphics::createDeviceLayersAndExtensionsConfiguration(std::vector<const char*>& outEnabledLayerNames, std::vector<const char*>& outEnabledExtensionNames)
+{
+#if defined(_DEBUG)
+	outEnabledExtensionNames.reserve(1);
+	outEnabledLayerNames.emplace_back(VULKAN_VALIDATION_LAYER_NAME);
+#endif // defined(_DEBUG)
+
+	outEnabledExtensionNames.reserve(1);
+	outEnabledExtensionNames.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
+}
+
+#if defined(_DEBUG)
+VKAPI_ATTR VkBool32 VKAPI_CALL vulkanGraphics::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+{
+	platformConsolePrint(stringHelper::printf("vulkan validation layer: %s", pCallbackData->pMessage));
+
+#if defined(PLATFORM_WIN32)
+	DebugBreak();
+#endif // defined(PLATFORM_WIN32)
+
+	return VK_FALSE;
+}
+#endif // defined(_DEBUG)
+
+void vulkanGraphics::choosePhysicalDevice(const vk::Instance& instance, const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
+	const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames, vk::PhysicalDevice& outPhysicalDevice)
+{
+	// Get available physical devices
+	std::vector<vk::PhysicalDevice> availableDevices = instance.enumeratePhysicalDevices();
+
+	// Todo: Find best suitable physical device from available devices
+	// Choose first available physical device that supports the requested layers and extensions
+	for (const vk::PhysicalDevice& device : availableDevices)
+	{
+		vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
+		vk::PhysicalDeviceMemoryProperties deviceMemoryProperties = device.getMemoryProperties();
+		vk::PhysicalDeviceFeatures deviceFeatures = device.getFeatures();
+
+		if (checkDeviceLayersAndExtensionsConfigurationSupported(device, enabledLayerCount, enabledLayerNames, enabledExtensionCount, enabledExtensionNames) &&
+			deviceMemoryProperties.memoryHeapCount != 0)
+		{
+			outPhysicalDevice = device;
+			platformConsolePrint(stringHelper::printf("selected physical device: (%s)", deviceProperties.deviceName));
+			return;
+		}
+	}
+
+	platformMessageBoxFatal("vulkanGraphics::choosePhysicalDevice: could not find a suitable physical device.");
+}
+
+void vulkanGraphics::makeInstance()
+{
+	std::vector<const char*> enabledLayerNames;
+	std::vector<const char*> enabledExtensionNames;
+	createInstanceLayersAndExtensionsConfiguration(enabledLayerNames, enabledExtensionNames);
+	createVulkanInstance(static_cast<uint32_t>(enabledLayerNames.size()), enabledLayerNames.data(), static_cast<uint32_t>(enabledExtensionNames.size()), enabledExtensionNames.data(), instance);
+
+#if defined(_DEBUG)
+	dldi = vk::DispatchLoaderDynamic(instance, vkGetInstanceProcAddr);
+	makeDebugMessenger(instance, dldi, debugCallback, debugMessenger);
+#endif // defined(_DEBUG)
+}
+
+void vulkanGraphics::destroyInstance()
+{
+#if defined(_DEBUG)
+	instance.destroyDebugUtilsMessengerEXT(debugMessenger, nullptr, dldi);
+#endif // defined(_DEBUG)
+
+	instance.destroy();
+}
+
+void vulkanGraphics::makeDevice()
+{
+	std::vector<const char*> enabledLayerNames;
+	std::vector<const char*> enabledExtensionNames;
+	createDeviceLayersAndExtensionsConfiguration(enabledLayerNames, enabledExtensionNames);
+
+	choosePhysicalDevice(instance, static_cast<uint32_t>(enabledLayerNames.size()), enabledLayerNames.data(), static_cast<uint32_t>(enabledExtensionNames.size()), enabledExtensionNames.data(), physicalDevice);
+
+
 }
