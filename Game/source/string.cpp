@@ -1,7 +1,7 @@
 #include "pch.h"
-#include "stringHelper.h"
+#include "string.h"
 
-std::string stringHelper::printf(const char* format, ...)
+std::string sString::printf(const char* format, ...)
 {
 	va_list args;
 	va_start(args, format);
@@ -22,4 +22,9 @@ std::string stringHelper::printf(const char* format, ...)
 	va_end(args);
 
 	return buf;
+}
+
+sString::sString(const char* string)
+	: internalString(string)
+{
 }

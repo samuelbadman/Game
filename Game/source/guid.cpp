@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "guid.h"
 #include "math/mathLibrary.h"
-#include "stringHelper.h"
+#include "string.h"
 
 guid::guid()
 {
@@ -27,5 +27,5 @@ void guid::reset()
 std::string guid::toString() const
 {
     // Convert guid to string representation
-    return stringHelper::printf("%d,%d,%d,%d", a, b, c, d);
+    return sString::printf("%d,%d,%d,%d", a, b, c, d);
 }

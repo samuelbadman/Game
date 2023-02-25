@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "vector4d.h"
-#include "stringHelper.h"
+#include "string.h"
 
 vector4d vector4d::normalize(const vector4d& a)
 {
@@ -10,5 +10,5 @@ vector4d vector4d::normalize(const vector4d& a)
 
 std::string vector4d::toString() const
 {
-    return stringHelper::printf("[x: %f, y: %f, z: %f, w: %f]", x, y, z, w);
+    return sString::printf("[x: %f, y: %f, z: %f, w: %f]", x, y, z, w);
 }

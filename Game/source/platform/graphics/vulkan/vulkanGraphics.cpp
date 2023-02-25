@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "vulkanGraphics.h"
 #include "platform/framework/platformMessageBox.h"
-#include "stringHelper.h"
+#include "string.h"
 #include "platform/framework/platformConsole.h"
 
 #define VULKAN_VALIDATION_LAYER_NAME "VK_LAYER_KHRONOS_validation"
@@ -18,14 +18,14 @@ static bool checkInstanceLayersAndExtensionsConfigurationSupported(const uint32_
 	platformConsolePrint("supported instance extensions:");
 	for (const vk::ExtensionProperties& extensionProperty : supportedExtensions)
 	{
-		platformConsolePrint(stringHelper::printf("    %s", extensionProperty.extensionName));
+		platformConsolePrint(sString::printf("    %s", extensionProperty.extensionName));
 	}
 
 	std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
 	platformConsolePrint("supported instance layers:");
 	for (const vk::LayerProperties& layerProperty : supportedLayers)
 	{
-		platformConsolePrint(stringHelper::printf("    %s", layerProperty.layerName));
+		platformConsolePrint(sString::printf("    %s", layerProperty.layerName));
 	}
 
 	// Check extensions
@@ -37,14 +37,14 @@ static bool checkInstanceLayersAndExtensionsConfigurationSupported(const uint32_
 			if (strcmp(enabledExtensionNames[i], extensionProperty.extensionName) == 0)
 			{
 				found = true;
-				platformConsolePrint(stringHelper::printf("requested %s instance extension is supported.", enabledExtensionNames[i]));
+				platformConsolePrint(sString::printf("requested %s instance extension is supported.", enabledExtensionNames[i]));
 				break;
 			}
 		}
 
 		if (!found)
 		{
-			platformConsolePrint(stringHelper::printf("requested %s instance extension is not supported.", enabledExtensionNames[i]));
+			platformConsolePrint(sString::printf("requested %s instance extension is not supported.", enabledExtensionNames[i]));
 			return false;
 		}
 	}
@@ -58,14 +58,14 @@ static bool checkInstanceLayersAndExtensionsConfigurationSupported(const uint32_
 			if (strcmp(enabledLayerNames[i], layerProperty.layerName) == 0)
 			{
 				found = true;
-				platformConsolePrint(stringHelper::printf("requested %s instance layer is supported.", enabledLayerNames[i]));
+				platformConsolePrint(sString::printf("requested %s instance layer is supported.", enabledLayerNames[i]));
 				break;
 			}
 		}
 
 		if (!found)
 		{
-			platformConsolePrint(stringHelper::printf("requested %s instance layer is not supported.", enabledLayerNames[i]));
+			platformConsolePrint(sString::printf("requested %s instance layer is not supported.", enabledLayerNames[i]));
 			return false;
 		}
 	}
@@ -81,17 +81,17 @@ static bool checkDeviceLayersAndExtensionsConfigurationSupported(const vk::Physi
 
 	// Get supported layers and extensions
 	std::vector<vk::ExtensionProperties> supportedExtensions = device.enumerateDeviceExtensionProperties();
-	platformConsolePrint(stringHelper::printf("supported extensions by physical device (%s):", deviceProperties.deviceName));
+	platformConsolePrint(sString::printf("supported extensions by physical device (%s):", deviceProperties.deviceName));
 	for (const vk::ExtensionProperties& extensionProperty : supportedExtensions)
 	{
-		platformConsolePrint(stringHelper::printf("    %s", extensionProperty.extensionName));
+		platformConsolePrint(sString::printf("    %s", extensionProperty.extensionName));
 	}
 
 	std::vector<vk::LayerProperties> supportedLayers = device.enumerateDeviceLayerProperties();
-	platformConsolePrint(stringHelper::printf("supported layers by physical device (%s):", deviceProperties.deviceName));
+	platformConsolePrint(sString::printf("supported layers by physical device (%s):", deviceProperties.deviceName));
 	for (const vk::LayerProperties& layerProperty : supportedLayers)
 	{
-		platformConsolePrint(stringHelper::printf("    %s", layerProperty.layerName));
+		platformConsolePrint(sString::printf("    %s", layerProperty.layerName));
 	}
 
 	// Check extensions
@@ -103,14 +103,14 @@ static bool checkDeviceLayersAndExtensionsConfigurationSupported(const vk::Physi
 			if (strcmp(enabledExtensionNames[i], extensionProperty.extensionName) == 0)
 			{
 				found = true;
-				platformConsolePrint(stringHelper::printf("requested %s device extension is supported.", enabledExtensionNames[i]));
+				platformConsolePrint(sString::printf("requested %s device extension is supported.", enabledExtensionNames[i]));
 				break;
 			}
 		}
 
 		if (!found)
 		{
-			platformConsolePrint(stringHelper::printf("requested %s device extension is not supported.", enabledExtensionNames[i]));
+			platformConsolePrint(sString::printf("requested %s device extension is not supported.", enabledExtensionNames[i]));
 			return false;
 		}
 	}
@@ -124,14 +124,14 @@ static bool checkDeviceLayersAndExtensionsConfigurationSupported(const vk::Physi
 			if (strcmp(enabledLayerNames[i], layerProperty.layerName) == 0)
 			{
 				found = true;
-				platformConsolePrint(stringHelper::printf("requested %s device layer is supported.", enabledLayerNames[i]));
+				platformConsolePrint(sString::printf("requested %s device layer is supported.", enabledLayerNames[i]));
 				break;
 			}
 		}
 
 		if (!found)
 		{
-			platformConsolePrint(stringHelper::printf("requested %s device layer is not supported.", enabledLayerNames[i]));
+			platformConsolePrint(sString::printf("requested %s device layer is not supported.", enabledLayerNames[i]));
 			return false;
 		}
 	}
@@ -146,13 +146,13 @@ static void createVulkanInstance(const uint32_t enabledLayerCount, const char* c
 	uint32_t apiVersion;
 	vkEnumerateInstanceVersion(&apiVersion);
 
-	platformConsolePrint(stringHelper::printf("system supported vulkan api version: %d.%d.%d.%d.",
+	platformConsolePrint(sString::printf("system supported vulkan api version: %d.%d.%d.%d.",
 		VK_API_VERSION_VARIANT(apiVersion), VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion)));
 
 	// Zero-out api patch version
 	apiVersion &= ~(0xfffu);
 
-	platformConsolePrint(stringHelper::printf("creating vulkan instance with vulkan api version: %d.%d.%d.%d.",
+	platformConsolePrint(sString::printf("creating vulkan instance with vulkan api version: %d.%d.%d.%d.",
 		VK_API_VERSION_VARIANT(apiVersion), VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion)));
 
 	// Create application info
@@ -217,7 +217,7 @@ static void getPhysicalDevice(const vk::Instance& instance, const uint32_t enabl
 			deviceMemoryProperties.memoryHeapCount != 0)
 		{
 			outPhysicalDevice = device;
-			platformConsolePrint(stringHelper::printf("selected physical device: (%s)", deviceProperties.deviceName));
+			platformConsolePrint(sString::printf("selected physical device: (%s)", deviceProperties.deviceName));
 			return;
 		}
 	}
@@ -230,7 +230,7 @@ static void findQueueFamilies(const vk::PhysicalDevice& physicalDevice, sQueueFa
 	std::vector<vk::QueueFamilyProperties> queueFamilies = physicalDevice.getQueueFamilyProperties();
 
 	vk::PhysicalDeviceProperties deviceProperties = physicalDevice.getProperties();
-	platformConsolePrint(stringHelper::printf("physical device (%s) supports %d queue families.", deviceProperties.deviceName, queueFamilies.size()));
+	platformConsolePrint(sString::printf("physical device (%s) supports %d queue families.", deviceProperties.deviceName, queueFamilies.size()));
 
 	uint32_t i = 0;
 	for (const vk::QueueFamilyProperties& queueFamily : queueFamilies)
@@ -238,17 +238,17 @@ static void findQueueFamilies(const vk::PhysicalDevice& physicalDevice, sQueueFa
 		if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
 		{
 			outQueueFamilyIndices.graphicsFamily = i;
-			platformConsolePrint(stringHelper::printf("index %d set for graphics queue family.", i));
+			platformConsolePrint(sString::printf("index %d set for graphics queue family.", i));
 		}
 		else if (queueFamily.queueFlags & vk::QueueFlagBits::eCompute)
 		{
 			outQueueFamilyIndices.computeFamily = i;
-			platformConsolePrint(stringHelper::printf("index %d set for compute queue family.", i));
+			platformConsolePrint(sString::printf("index %d set for compute queue family.", i));
 		}
 		else if (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
 		{
 			outQueueFamilyIndices.transferFamily = i;
-			platformConsolePrint(stringHelper::printf("index %d set for transfer queue family.", i));
+			platformConsolePrint(sString::printf("index %d set for transfer queue family.", i));
 		}
 
 		if (outQueueFamilyIndices.isComplete())
@@ -261,7 +261,7 @@ static void findQueueFamilies(const vk::PhysicalDevice& physicalDevice, sQueueFa
 
 	if (!outQueueFamilyIndices.isComplete())
 	{
-		platformMessageBoxFatal(stringHelper::printf("vulkanGraphics::findQueueFamilies: Physical device (%s) does not support all required queue families."));
+		platformMessageBoxFatal(sString::printf("vulkanGraphics::findQueueFamilies: Physical device (%s) does not support all required queue families."));
 	}
 }
 
@@ -310,7 +310,7 @@ static void getQueue(const vk::Device& device, const uint32_t queueFamilyIndex, 
 	}
 	catch (vk::SystemError err)
 	{
-		platformMessageBoxFatal(stringHelper::printf("vulkanGraphics::getQueue: Failed to get queue with index %d from queue family index %d.", queueIndex, queueFamilyIndex));
+		platformMessageBoxFatal(sString::printf("vulkanGraphics::getQueue: Failed to get queue with index %d from queue family index %d.", queueIndex, queueFamilyIndex));
 	}
 }
 
@@ -410,7 +410,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vulkanGraphics::debugCallback(VkDebugUtilsMessage
 {
 	if (messageSeverity >= debugCallbackMinSeverityConsolePrint)
 	{
-		platformConsolePrint(stringHelper::printf("vulkan debug callback: %s", pCallbackData->pMessage));
+		platformConsolePrint(sString::printf("vulkan debug callback: %s", pCallbackData->pMessage));
 	}
 
 #if defined(PLATFORM_WIN32)

@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "vector3d.h"
-#include "stringHelper.h"
+#include "string.h"
 
 void vector3d::operator=(const vector3d& rhs)
 {
@@ -45,7 +45,7 @@ void vector3d::normalizeInPlace()
 
 std::string vector3d::toString() const
 {
-    return stringHelper::printf("[x: %f, y: %f, z: %f]", x, y, z);
+    return sString::printf("[x: %f, y: %f, z: %f]", x, y, z);
 }
 
 vector3d operator*(const double lhs, const vector3d& rhs)

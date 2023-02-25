@@ -1,8 +1,8 @@
 #include "pch.h"
 #include "vector2d.h"
-#include "stringHelper.h"
+#include "string.h"
 
 std::string vector2d::toString() const
 {
-	return stringHelper::printf("[%f, %f]", x, y);
+	return sString::printf("[%f, %f]", x, y);
 }
