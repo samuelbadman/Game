@@ -225,11 +225,11 @@ static void getPhysicalDevice(const vk::Instance& instance, const uint32_t enabl
 	platformMessageBoxFatal("vulkanGraphics::getPhysicalDevice: could not find a suitable physical device.");
 }
 
-static void findQueueFamilies(const vk::PhysicalDevice& device, sQueueFamilyIndices& outQueueFamilyIndices)
+static void findQueueFamilies(const vk::PhysicalDevice& physicalDevice, sQueueFamilyIndices& outQueueFamilyIndices)
 {
-	std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
+	std::vector<vk::QueueFamilyProperties> queueFamilies = physicalDevice.getQueueFamilyProperties();
 
-	vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
+	vk::PhysicalDeviceProperties deviceProperties = physicalDevice.getProperties();
 	platformConsolePrint(stringHelper::printf("physical device (%s) supports %d queue families.", deviceProperties.deviceName, queueFamilies.size()));
 
 	uint32_t i = 0;
@@ -267,8 +267,11 @@ static void findQueueFamilies(const vk::PhysicalDevice& device, sQueueFamilyIndi
 
 static void createLogicalDevice(const vk::PhysicalDevice& physicalDevice, 
 	const sQueueFamilyIndices& queueFamilyIndices, 
+	const uint32_t graphicsQueueCount,
 	const float graphicsQueuePriority,
-	const float computeQueuePriority, 
+	const uint32_t computeQueueCount,
+	const float computeQueuePriority,
+	const uint32_t transferQueueCount,
 	const float transferQueuePriority,
 	const std::vector<const char*>& enabledLayerNames, 
 	const std::vector<const char*>& enabledExtensionNames,
@@ -281,9 +284,9 @@ static void createLogicalDevice(const vk::PhysicalDevice& physicalDevice,
 	// Create device queue create info for each queue family
 	std::vector<vk::DeviceQueueCreateInfo> deviceQueueCreateInfos;
 	deviceQueueCreateInfos.resize(3);
-	deviceQueueCreateInfos[0] = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), queueFamilyIndices.graphicsFamily.value(), 1, &graphicsQueuePriority);
-	deviceQueueCreateInfos[1] = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), queueFamilyIndices.computeFamily.value(), 1, &computeQueuePriority);
-	deviceQueueCreateInfos[2] = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), queueFamilyIndices.transferFamily.value(), 1, &transferQueuePriority);
+	deviceQueueCreateInfos[0] = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), queueFamilyIndices.graphicsFamily.value(), graphicsQueueCount, &graphicsQueuePriority);
+	deviceQueueCreateInfos[1] = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), queueFamilyIndices.computeFamily.value(), computeQueueCount, &computeQueuePriority);
+	deviceQueueCreateInfos[2] = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), queueFamilyIndices.transferFamily.value(), transferQueueCount, &transferQueuePriority);
 
 	// Create device create info
 	vk::DeviceCreateInfo deviceCreateInfo = vk::DeviceCreateInfo(vk::DeviceCreateFlags(), deviceQueueCreateInfos, enabledLayerNames, enabledExtensionNames, &deviceFeatures);
@@ -299,16 +302,32 @@ static void createLogicalDevice(const vk::PhysicalDevice& physicalDevice,
 	}
 }
 
+static void getQueue(const vk::Device& device, const uint32_t queueFamilyIndex, const uint32_t queueIndex, vk::Queue& outQueue)
+{
+	try
+	{
+		outQueue = device.getQueue(queueFamilyIndex, queueIndex);
+	}
+	catch (vk::SystemError err)
+	{
+		platformMessageBoxFatal(stringHelper::printf("vulkanGraphics::getQueue: Failed to get queue with index %d from queue family index %d.", queueIndex, queueFamilyIndex));
+	}
+}
+
 #if defined(_DEBUG)
-vk::DebugUtilsMessengerEXT vulkanGraphics::debugMessenger = nullptr;
-vk::DispatchLoaderDynamic vulkanGraphics::dldi;
+vk::DebugUtilsMessengerEXT vulkanGraphics::debugMessenger = {};
+vk::DispatchLoaderDynamic vulkanGraphics::dldi = {};
 #endif // defined(_DEBUG)
 
 vk::Instance vulkanGraphics::instance = {};
 
-vk::PhysicalDevice vulkanGraphics::physicalDevice = nullptr;
+vk::PhysicalDevice vulkanGraphics::physicalDevice = {};
 sQueueFamilyIndices vulkanGraphics::queueFamilyIndices = {};
-vk::Device vulkanGraphics::device;
+vk::Device vulkanGraphics::device = {};
+
+vk::Queue vulkanGraphics::graphicsQueue = {};
+vk::Queue vulkanGraphics::computeQueue = {};
+vk::Queue vulkanGraphics::transferQueue = {};
 
 void vulkanGraphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
@@ -447,7 +466,12 @@ void vulkanGraphics::makeDevice()
 	findQueueFamilies(physicalDevice, queueFamilyIndices);
 
 	// Create logical device
-	createLogicalDevice(physicalDevice, queueFamilyIndices, 1.0f, 1.0f, 1.0f, enabledLayerNames, enabledExtensionNames, device);
+	createLogicalDevice(physicalDevice, queueFamilyIndices, 1, 1.0f, 1, 1.0f, 1, 1.0f, enabledLayerNames, enabledExtensionNames, device);
+
+	// Get queues
+	getQueue(device, queueFamilyIndices.graphicsFamily.value(), 0, graphicsQueue);
+	getQueue(device, queueFamilyIndices.computeFamily.value(), 0, computeQueue);
+	getQueue(device, queueFamilyIndices.transferFamily.value(), 0, transferQueue);
 }
 
 void vulkanGraphics::destroyDevice()

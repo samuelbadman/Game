@@ -27,6 +27,10 @@ private:
 	static sQueueFamilyIndices queueFamilyIndices;
 	static vk::Device device;
 
+	static vk::Queue graphicsQueue;
+	static vk::Queue computeQueue;
+	static vk::Queue transferQueue;
+
 public:
 	static void init(bool useWarp, uint32_t inBackBufferCount);
 	static void shutdown();
