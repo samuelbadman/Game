@@ -171,11 +171,14 @@ static void createVulkanInstance(const uint32_t enabledLayerCount, const char* c
 	outInstance = vk::createInstance(instanceCreateInfo);
 }
 
-static void makeDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi, PFN_vkDebugUtilsMessengerCallbackEXT userCallback, vk::DebugUtilsMessengerEXT& outDebugMessenger)
+static void makeDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi, PFN_vkDebugUtilsMessengerCallbackEXT userCallback,
+	vk::DebugUtilsMessengerEXT& outDebugMessenger)
 {
 	vk::DebugUtilsMessengerCreateInfoEXT createInfo = vk::DebugUtilsMessengerCreateInfoEXT(vk::DebugUtilsMessengerCreateFlagBitsEXT(),
-		vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning | vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
-		vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding,
+		vk::DebugUtilsMessageSeverityFlagBitsEXT::eVerbose | vk::DebugUtilsMessageSeverityFlagBitsEXT::eInfo | vk::DebugUtilsMessageSeverityFlagBitsEXT::eWarning |
+		vk::DebugUtilsMessageSeverityFlagBitsEXT::eError,
+		vk::DebugUtilsMessageTypeFlagBitsEXT::eGeneral | vk::DebugUtilsMessageTypeFlagBitsEXT::eValidation | vk::DebugUtilsMessageTypeFlagBitsEXT::ePerformance | 
+		vk::DebugUtilsMessageTypeFlagBitsEXT::eDeviceAddressBinding,
 		userCallback,
 		nullptr);
 
@@ -221,7 +224,8 @@ void vulkanGraphics::beginFrame()
 {
 }
 
-void vulkanGraphics::render(const uint32_t numSurfaces, const graphicsSurface* const* surfaces, const uint32_t renderDataCount, const sRenderData* const* renderData, const matrix4x4* const viewProjection)
+void vulkanGraphics::render(const uint32_t numSurfaces, const graphicsSurface* const* surfaces, const uint32_t renderDataCount, const sRenderData* const* renderData, 
+	const matrix4x4* const viewProjection)
 {
 }
 
@@ -233,7 +237,8 @@ void vulkanGraphics::endFrame(const uint32_t numSurfaces, const graphicsSurface*
 //{
 //}
 
-void vulkanGraphics::loadMeshes(const uint32_t meshCount, const size_t* vertexCounts, const sVertexPos3Norm3Col4UV2(* const vertices)[], const size_t* const indexCounts, const uint32_t(* const indices)[], sMeshResources** const outMeshResources)
+void vulkanGraphics::loadMeshes(const uint32_t meshCount, const size_t* vertexCounts, const sVertexPos3Norm3Col4UV2(* const vertices)[], 
+	const size_t* const indexCounts, const uint32_t(* const indices)[], sMeshResources** const outMeshResources)
 {
 }
 
@@ -263,7 +268,8 @@ void vulkanGraphics::createDeviceLayersAndExtensionsConfiguration(std::vector<co
 }
 
 #if defined(_DEBUG)
-VKAPI_ATTR VkBool32 VKAPI_CALL vulkanGraphics::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+VKAPI_ATTR VkBool32 VKAPI_CALL vulkanGraphics::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
+	VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
 	platformConsolePrint(stringHelper::printf("vulkan validation layer: %s", pCallbackData->pMessage));
 
@@ -275,14 +281,14 @@ VKAPI_ATTR VkBool32 VKAPI_CALL vulkanGraphics::debugCallback(VkDebugUtilsMessage
 }
 #endif // defined(_DEBUG)
 
-void vulkanGraphics::choosePhysicalDevice(const vk::Instance& instance, const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
+void vulkanGraphics::getPhysicalDevice(const vk::Instance& instance, const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
 	const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames, vk::PhysicalDevice& outPhysicalDevice)
 {
 	// Get available physical devices
 	std::vector<vk::PhysicalDevice> availableDevices = instance.enumeratePhysicalDevices();
 
 	// Todo: Find best suitable physical device from available devices
-	// Choose first available physical device that supports the requested layers and extensions
+	// Get first available physical device that supports the requested layers and extensions
 	for (const vk::PhysicalDevice& device : availableDevices)
 	{
 		vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
@@ -298,7 +304,7 @@ void vulkanGraphics::choosePhysicalDevice(const vk::Instance& instance, const ui
 		}
 	}
 
-	platformMessageBoxFatal("vulkanGraphics::choosePhysicalDevice: could not find a suitable physical device.");
+	platformMessageBoxFatal("vulkanGraphics::getPhysicalDevice: could not find a suitable physical device.");
 }
 
 void vulkanGraphics::makeInstance()
@@ -306,7 +312,8 @@ void vulkanGraphics::makeInstance()
 	std::vector<const char*> enabledLayerNames;
 	std::vector<const char*> enabledExtensionNames;
 	createInstanceLayersAndExtensionsConfiguration(enabledLayerNames, enabledExtensionNames);
-	createVulkanInstance(static_cast<uint32_t>(enabledLayerNames.size()), enabledLayerNames.data(), static_cast<uint32_t>(enabledExtensionNames.size()), enabledExtensionNames.data(), instance);
+	createVulkanInstance(static_cast<uint32_t>(enabledLayerNames.size()), enabledLayerNames.data(), 
+		static_cast<uint32_t>(enabledExtensionNames.size()), enabledExtensionNames.data(), instance);
 
 #if defined(_DEBUG)
 	dldi = vk::DispatchLoaderDynamic(instance, vkGetInstanceProcAddr);
@@ -329,7 +336,7 @@ void vulkanGraphics::makeDevice()
 	std::vector<const char*> enabledExtensionNames;
 	createDeviceLayersAndExtensionsConfiguration(enabledLayerNames, enabledExtensionNames);
 
-	choosePhysicalDevice(instance, static_cast<uint32_t>(enabledLayerNames.size()), enabledLayerNames.data(), static_cast<uint32_t>(enabledExtensionNames.size()), enabledExtensionNames.data(), physicalDevice);
-
+	getPhysicalDevice(instance, static_cast<uint32_t>(enabledLayerNames.size()), enabledLayerNames.data(),
+		static_cast<uint32_t>(enabledExtensionNames.size()), enabledExtensionNames.data(), physicalDevice);
 
 }

@@ -33,7 +33,7 @@ private:
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 #endif // defined(_DEBUG)
 
-	static void choosePhysicalDevice(const vk::Instance& instance, const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
+	static void getPhysicalDevice(const vk::Instance& instance, const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
 		const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames, vk::PhysicalDevice& outPhysicalDevice);
 
 	static void makeInstance();
