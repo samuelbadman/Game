@@ -1,5 +1,14 @@
 #pragma once
 
+struct sQueueFamilyIndices
+{
+	std::optional<uint32_t> graphicsFamily;
+	std::optional<uint32_t> computeFamily;
+	std::optional<uint32_t> transferFamily;
+
+	bool isComplete() { return graphicsFamily.has_value() && computeFamily.has_value() && transferFamily.has_value(); }
+};
+
 class vulkanGraphics
 {
 private:
@@ -10,6 +19,7 @@ private:
 #endif // defined(DEBUG)
 
 	static vk::PhysicalDevice physicalDevice;
+	static sQueueFamilyIndices queueFamilyIndices;
 
 public:
 	static void init(bool useWarp, uint32_t inBackBufferCount);
@@ -35,6 +45,8 @@ private:
 
 	static void getPhysicalDevice(const vk::Instance& instance, const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
 		const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames, vk::PhysicalDevice& outPhysicalDevice);
+
+	static void findQueueFamilies(const vk::PhysicalDevice& device, sQueueFamilyIndices& outQueueFamilyIndices);
 
 	static void makeInstance();
 	static void destroyInstance();

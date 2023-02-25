@@ -13,6 +13,7 @@
 #include <filesystem>
 #include <fstream>
 #include <random>
+#include <optional>
 
 #if defined(PLATFORM_WIN32)
 
