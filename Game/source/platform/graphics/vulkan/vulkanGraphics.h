@@ -12,14 +12,20 @@ struct sQueueFamilyIndices
 class vulkanGraphics
 {
 private:
-	static vk::Instance instance;
 #if defined(_DEBUG)
+	static constexpr bool breakOnDebugCallback = true;
+	static constexpr VkDebugUtilsMessageSeverityFlagBitsEXT breakOnDebugCallbackMinSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+	static constexpr VkDebugUtilsMessageSeverityFlagBitsEXT debugCallbackMinSeverityConsolePrint = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+
 	static vk::DebugUtilsMessengerEXT debugMessenger;
 	static vk::DispatchLoaderDynamic dldi;
-#endif // defined(DEBUG)
+#endif // defined(_DEBUG)
+
+	static vk::Instance instance;
 
 	static vk::PhysicalDevice physicalDevice;
 	static sQueueFamilyIndices queueFamilyIndices;
+	static vk::Device device;
 
 public:
 	static void init(bool useWarp, uint32_t inBackBufferCount);
@@ -43,13 +49,9 @@ private:
 		const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData);
 #endif // defined(_DEBUG)
 
-	static void getPhysicalDevice(const vk::Instance& instance, const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
-		const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames, vk::PhysicalDevice& outPhysicalDevice);
-
-	static void findQueueFamilies(const vk::PhysicalDevice& device, sQueueFamilyIndices& outQueueFamilyIndices);
-
 	static void makeInstance();
 	static void destroyInstance();
 
 	static void makeDevice();
+	static void destroyDevice();
 };

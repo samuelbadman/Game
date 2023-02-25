@@ -161,14 +161,21 @@ static void createVulkanInstance(const uint32_t enabledLayerCount, const char* c
 	// Create instance create info
 	if (!checkInstanceLayersAndExtensionsConfigurationSupported(enabledLayerCount, enabledLayerNames, enabledExtensionCount, enabledExtensionNames))
 	{
-		platformMessageBoxFatal("vulkanGraphics::createVulkanInstance: layer extension configuration is not supported.");
+		platformMessageBoxFatal("vulkanGraphics::createVulkanInstance: Layer extension configuration is not supported.");
 	}
 
 	vk::InstanceCreateInfo instanceCreateInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &applicationInfo,
 		enabledLayerCount, enabledLayerNames, enabledExtensionCount, enabledExtensionNames, nullptr);
 
 	// Create instance
-	outInstance = vk::createInstance(instanceCreateInfo);
+	try
+	{
+		outInstance = vk::createInstance(instanceCreateInfo);
+	}
+	catch (vk::SystemError err)
+	{
+		platformMessageBoxFatal("vulkanGraphics::createVulkanInstance: Failed to create vulkan instance.");
+	}
 }
 
 static void makeDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi, PFN_vkDebugUtilsMessengerCallbackEXT userCallback,
@@ -182,21 +189,126 @@ static void makeDebugMessenger(const vk::Instance& instance, const vk::DispatchL
 		userCallback,
 		nullptr);
 
-	outDebugMessenger = instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
+	try
+	{
+		outDebugMessenger = instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
+	}
+	catch (vk::SystemError err)
+	{
+		platformMessageBoxFatal("vulkanGraphics::makeDebugMessenger: Failed to create debug messenger.");
+	}
 }
 
-#if defined(_DEBUG)
-static constexpr bool breakOnDebugCallback = true;
-#endif // defined(_DEBUG)
+static void getPhysicalDevice(const vk::Instance& instance, const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
+	const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames, vk::PhysicalDevice& outPhysicalDevice)
+{
+	// Get available physical devices
+	std::vector<vk::PhysicalDevice> availableDevices = instance.enumeratePhysicalDevices();
 
-vk::Instance vulkanGraphics::instance = {};
+	// Todo: Find best suitable physical device from available devices
+	// Get first available physical device that supports the requested layers and extensions
+	for (const vk::PhysicalDevice& device : availableDevices)
+	{
+		vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
+		vk::PhysicalDeviceMemoryProperties deviceMemoryProperties = device.getMemoryProperties();
+		vk::PhysicalDeviceFeatures deviceFeatures = device.getFeatures();
+
+		if (checkDeviceLayersAndExtensionsConfigurationSupported(device, enabledLayerCount, enabledLayerNames, enabledExtensionCount, enabledExtensionNames) &&
+			deviceMemoryProperties.memoryHeapCount != 0)
+		{
+			outPhysicalDevice = device;
+			platformConsolePrint(stringHelper::printf("selected physical device: (%s)", deviceProperties.deviceName));
+			return;
+		}
+	}
+
+	platformMessageBoxFatal("vulkanGraphics::getPhysicalDevice: could not find a suitable physical device.");
+}
+
+static void findQueueFamilies(const vk::PhysicalDevice& device, sQueueFamilyIndices& outQueueFamilyIndices)
+{
+	std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
+
+	vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
+	platformConsolePrint(stringHelper::printf("physical device (%s) supports %d queue families.", deviceProperties.deviceName, queueFamilies.size()));
+
+	uint32_t i = 0;
+	for (const vk::QueueFamilyProperties& queueFamily : queueFamilies)
+	{
+		if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
+		{
+			outQueueFamilyIndices.graphicsFamily = i;
+			platformConsolePrint(stringHelper::printf("index %d set for graphics queue family.", i));
+		}
+		else if (queueFamily.queueFlags & vk::QueueFlagBits::eCompute)
+		{
+			outQueueFamilyIndices.computeFamily = i;
+			platformConsolePrint(stringHelper::printf("index %d set for compute queue family.", i));
+		}
+		else if (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
+		{
+			outQueueFamilyIndices.transferFamily = i;
+			platformConsolePrint(stringHelper::printf("index %d set for transfer queue family.", i));
+		}
+
+		if (outQueueFamilyIndices.isComplete())
+		{
+			break;
+		}
+
+		++i;
+	}
+
+	if (!outQueueFamilyIndices.isComplete())
+	{
+		platformMessageBoxFatal(stringHelper::printf("vulkanGraphics::findQueueFamilies: Physical device (%s) does not support all required queue families."));
+	}
+}
+
+static void createLogicalDevice(const vk::PhysicalDevice& physicalDevice, 
+	const sQueueFamilyIndices& queueFamilyIndices, 
+	const float graphicsQueuePriority,
+	const float computeQueuePriority, 
+	const float transferQueuePriority,
+	const std::vector<const char*>& enabledLayerNames, 
+	const std::vector<const char*>& enabledExtensionNames,
+	vk::Device& outDevice
+)
+{
+	// Get physical device features
+	vk::PhysicalDeviceFeatures deviceFeatures = physicalDevice.getFeatures();
+
+	// Create device queue create info for each queue family
+	std::vector<vk::DeviceQueueCreateInfo> deviceQueueCreateInfos;
+	deviceQueueCreateInfos.resize(3);
+	deviceQueueCreateInfos[0] = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), queueFamilyIndices.graphicsFamily.value(), 1, &graphicsQueuePriority);
+	deviceQueueCreateInfos[1] = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), queueFamilyIndices.computeFamily.value(), 1, &computeQueuePriority);
+	deviceQueueCreateInfos[2] = vk::DeviceQueueCreateInfo(vk::DeviceQueueCreateFlags(), queueFamilyIndices.transferFamily.value(), 1, &transferQueuePriority);
+
+	// Create device create info
+	vk::DeviceCreateInfo deviceCreateInfo = vk::DeviceCreateInfo(vk::DeviceCreateFlags(), deviceQueueCreateInfos, enabledLayerNames, enabledExtensionNames, &deviceFeatures);
+
+	// Create logical device
+	try 
+	{
+		outDevice = physicalDevice.createDevice(deviceCreateInfo);
+	}
+	catch (vk::SystemError err)
+	{
+		platformMessageBoxFatal("vulkanGraphics::createLogicalDevice: Failed to create device.");
+	}
+}
+
 #if defined(_DEBUG)
 vk::DebugUtilsMessengerEXT vulkanGraphics::debugMessenger = nullptr;
 vk::DispatchLoaderDynamic vulkanGraphics::dldi;
 #endif // defined(_DEBUG)
 
+vk::Instance vulkanGraphics::instance = {};
+
 vk::PhysicalDevice vulkanGraphics::physicalDevice = nullptr;
 sQueueFamilyIndices vulkanGraphics::queueFamilyIndices = {};
+vk::Device vulkanGraphics::device;
 
 void vulkanGraphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
@@ -206,6 +318,7 @@ void vulkanGraphics::init(bool useWarp, uint32_t inBackBufferCount)
 
 void vulkanGraphics::shutdown()
 {
+	destroyDevice();
 	destroyInstance();
 }
 
@@ -276,45 +389,25 @@ void vulkanGraphics::createDeviceLayersAndExtensionsConfiguration(std::vector<co
 VKAPI_ATTR VkBool32 VKAPI_CALL vulkanGraphics::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
 	VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
-	platformConsolePrint(stringHelper::printf("vulkan debug callback: %s", pCallbackData->pMessage));
+	if (messageSeverity >= debugCallbackMinSeverityConsolePrint)
+	{
+		platformConsolePrint(stringHelper::printf("vulkan debug callback: %s", pCallbackData->pMessage));
+	}
 
 #if defined(PLATFORM_WIN32)
 	if constexpr (breakOnDebugCallback)
 	{
-		// Note: Debug callback has been triggered. See message in console window
-		DebugBreak();
+		if (messageSeverity >= breakOnDebugCallbackMinSeverity)
+		{
+			DebugBreak();
+		}
 	}
 #endif // defined(PLATFORM_WIN32)
 
+	// Note: Debug callback has likely been triggered. See message in console window
 	return VK_FALSE;
 }
 #endif // defined(_DEBUG)
-
-void vulkanGraphics::getPhysicalDevice(const vk::Instance& instance, const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
-	const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames, vk::PhysicalDevice& outPhysicalDevice)
-{
-	// Get available physical devices
-	std::vector<vk::PhysicalDevice> availableDevices = instance.enumeratePhysicalDevices();
-
-	// Todo: Find best suitable physical device from available devices
-	// Get first available physical device that supports the requested layers and extensions
-	for (const vk::PhysicalDevice& device : availableDevices)
-	{
-		vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
-		vk::PhysicalDeviceMemoryProperties deviceMemoryProperties = device.getMemoryProperties();
-		vk::PhysicalDeviceFeatures deviceFeatures = device.getFeatures();
-
-		if (checkDeviceLayersAndExtensionsConfigurationSupported(device, enabledLayerCount, enabledLayerNames, enabledExtensionCount, enabledExtensionNames) &&
-			deviceMemoryProperties.memoryHeapCount != 0)
-		{
-			outPhysicalDevice = device;
-			platformConsolePrint(stringHelper::printf("selected physical device: (%s)", deviceProperties.deviceName));
-			return;
-		}
-	}
-
-	platformMessageBoxFatal("vulkanGraphics::getPhysicalDevice: could not find a suitable physical device.");
-}
 
 void vulkanGraphics::makeInstance()
 {
@@ -328,41 +421,6 @@ void vulkanGraphics::makeInstance()
 	dldi = vk::DispatchLoaderDynamic(instance, vkGetInstanceProcAddr);
 	makeDebugMessenger(instance, dldi, debugCallback, debugMessenger);
 #endif // defined(_DEBUG)
-}
-
-void vulkanGraphics::findQueueFamilies(const vk::PhysicalDevice& device, sQueueFamilyIndices& outQueueFamilyIndices)
-{
-	std::vector<vk::QueueFamilyProperties> queueFamilies = device.getQueueFamilyProperties();
-
-	vk::PhysicalDeviceProperties deviceProperties = device.getProperties();
-	platformConsolePrint(stringHelper::printf("physical device (%s) supports %d queue families.", deviceProperties.deviceName, queueFamilies.size()));
-
-	uint32_t i = 0;
-	for (const vk::QueueFamilyProperties& queueFamily : queueFamilies)
-	{
-		if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
-		{
-			outQueueFamilyIndices.graphicsFamily = i;
-			platformConsolePrint(stringHelper::printf("index %d set for graphics queue family.", i));
-		}
-		else if (queueFamily.queueFlags & vk::QueueFlagBits::eCompute)
-		{
-			outQueueFamilyIndices.computeFamily = i;
-			platformConsolePrint(stringHelper::printf("index %d set for compute queue family.", i));
-		}
-		else if (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
-		{
-			outQueueFamilyIndices.transferFamily = i;
-			platformConsolePrint(stringHelper::printf("index %d set for transfer queue family.", i));
-		}
-
-		if (outQueueFamilyIndices.isComplete())
-		{
-			break;
-		}
-
-		++i;
-	}
 }
 
 void vulkanGraphics::destroyInstance()
@@ -388,5 +446,12 @@ void vulkanGraphics::makeDevice()
 	// Find queue family indices for physical device
 	findQueueFamilies(physicalDevice, queueFamilyIndices);
 
-
+	// Create logical device
+	createLogicalDevice(physicalDevice, queueFamilyIndices, 1.0f, 1.0f, 1.0f, enabledLayerNames, enabledExtensionNames, device);
 }
+
+void vulkanGraphics::destroyDevice()
+{
+	device.destroy();
+}
+
