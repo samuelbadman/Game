@@ -24,7 +24,17 @@ std::string sString::printf(const char* format, ...)
 	return buf;
 }
 
+sString::sString(const std::string& string)
+	: internalString(string)
+{
+}
+
 sString::sString(const char* string)
 	: internalString(string)
+{
+}
+
+sString::sString(const sString& string)
+	: internalString(string.internalString)
 {
 }
