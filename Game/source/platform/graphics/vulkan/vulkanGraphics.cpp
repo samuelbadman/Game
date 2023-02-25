@@ -185,6 +185,10 @@ static void makeDebugMessenger(const vk::Instance& instance, const vk::DispatchL
 	outDebugMessenger = instance.createDebugUtilsMessengerEXT(createInfo, nullptr, dldi);
 }
 
+#if defined(_DEBUG)
+static constexpr bool breakOnDebugCallback = true;
+#endif // defined(_DEBUG)
+
 vk::Instance vulkanGraphics::instance = {};
 #if defined(_DEBUG)
 vk::DebugUtilsMessengerEXT vulkanGraphics::debugMessenger = nullptr;
@@ -271,10 +275,14 @@ void vulkanGraphics::createDeviceLayersAndExtensionsConfiguration(std::vector<co
 VKAPI_ATTR VkBool32 VKAPI_CALL vulkanGraphics::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
 	VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
 {
-	platformConsolePrint(stringHelper::printf("vulkan validation layer: %s", pCallbackData->pMessage));
+	platformConsolePrint(stringHelper::printf("vulkan debug callback: %s", pCallbackData->pMessage));
 
 #if defined(PLATFORM_WIN32)
-	DebugBreak();
+	if constexpr (breakOnDebugCallback)
+	{
+		// Note: Debug callback has been triggered. See message in console window
+		DebugBreak();
+	}
 #endif // defined(PLATFORM_WIN32)
 
 	return VK_FALSE;
