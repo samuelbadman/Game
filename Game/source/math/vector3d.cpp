@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "vector3d.h"
-#include "string.h"
+#include "sString.h"
 
 void vector3d::operator=(const vector3d& rhs)
 {

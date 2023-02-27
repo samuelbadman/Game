@@ -42,6 +42,10 @@
 #endif // defined(PLATFORM_WIN32)
 
 // Vulkan
+#if defined(PLATFORM_WIN32)
+#define VK_USE_PLATFORM_WIN32_KHR
+#endif // defined(PLATFORM_WIN32
+
 #pragma comment(lib, "vulkan-1.lib")
 #include "platform/graphics/vulkan/vendor/include/vulkan/vulkan.hpp"
 

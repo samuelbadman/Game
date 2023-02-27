@@ -27,7 +27,7 @@
     <ClCompile Include="source\platform\framework\win32\win32Console.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\string.cpp">
+    <ClCompile Include="source\sString.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\pch.cpp">
@@ -137,7 +137,7 @@
     <ClInclude Include="source\platform\events\exitFullScreenEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\string.h">
+    <ClInclude Include="source\sString.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\pch.h">

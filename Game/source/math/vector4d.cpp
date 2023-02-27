@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "vector4d.h"
-#include "string.h"
+#include "sString.h"
 
 vector4d vector4d::normalize(const vector4d& a)
 {

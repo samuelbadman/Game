@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "vector2d.h"
-#include "string.h"
+#include "sString.h"
 
 std::string vector2d::toString() const
 {

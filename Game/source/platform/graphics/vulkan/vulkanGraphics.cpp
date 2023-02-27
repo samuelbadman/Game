@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "vulkanGraphics.h"
 #include "platform/framework/platformMessageBox.h"
-#include "string.h"
+#include "sString.h"
 #include "platform/framework/platformConsole.h"
 
 #define VULKAN_VALIDATION_LAYER_NAME "VK_LAYER_KHRONOS_validation"

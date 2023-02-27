@@ -47,7 +47,7 @@ struct sGameSettings
 	// Render settings
 	static constexpr bool enableVSync = false;
 	static constexpr bool enableTripleBuffering = false;
-	static constexpr eGraphicsApi graphicsApi = eGraphicsApi::vulkan;
+	static constexpr eGraphicsApi graphicsApi = eGraphicsApi::direct3d12;
 };
 
 bool game::running = false;

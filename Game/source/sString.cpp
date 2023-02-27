@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "string.h"
+#include "sString.h"
 
 std::string sString::printf(const char* format, ...)
 {

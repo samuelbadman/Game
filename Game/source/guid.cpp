@@ -1,7 +1,7 @@
 #include "pch.h"
 #include "guid.h"
 #include "math/mathLibrary.h"
-#include "string.h"
+#include "sString.h"
 
 guid::guid()
 {
