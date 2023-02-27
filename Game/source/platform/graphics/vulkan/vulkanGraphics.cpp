@@ -10,6 +10,10 @@
 #define VULKAN_WIN32_SURFACE_EXTENSION_NAME "VK_KHR_win32_surface"
 #endif // defined(PLATFORM_WIN32)
 
+static constexpr bool breakOnDebugCallback = true;
+static constexpr VkDebugUtilsMessageSeverityFlagBitsEXT breakOnDebugCallbackMinSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
+static constexpr VkDebugUtilsMessageSeverityFlagBitsEXT debugCallbackMinSeverityConsolePrint = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+
 static bool checkInstanceLayersAndExtensionsConfigurationSupported(const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
 	const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames)
 {
@@ -178,6 +182,30 @@ static void createVulkanInstance(const uint32_t enabledLayerCount, const char* c
 	}
 }
 
+#if defined(_DEBUG)
+static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+	const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
+{
+	if (messageSeverity >= debugCallbackMinSeverityConsolePrint)
+	{
+		platformConsolePrint(sString::printf("vulkan debug callback: %s", pCallbackData->pMessage));
+	}
+
+#if defined(PLATFORM_WIN32)
+	if constexpr (breakOnDebugCallback)
+	{
+		if (messageSeverity >= breakOnDebugCallbackMinSeverity)
+		{
+			DebugBreak();
+		}
+	}
+#endif // defined(PLATFORM_WIN32)
+
+	// Note: Debug callback has likely been triggered. See message in console window
+	return VK_FALSE;
+}
+#endif // defined(_DEBUG)
+
 static void makeDebugMessenger(const vk::Instance& instance, const vk::DispatchLoaderDynamic& dldi, PFN_vkDebugUtilsMessengerCallbackEXT userCallback,
 	vk::DebugUtilsMessengerEXT& outDebugMessenger)
 {
@@ -314,21 +342,6 @@ static void getQueue(const vk::Device& device, const uint32_t queueFamilyIndex, 
 	}
 }
 
-#if defined(_DEBUG)
-vk::DebugUtilsMessengerEXT vulkanGraphics::debugMessenger = {};
-vk::DispatchLoaderDynamic vulkanGraphics::dldi = {};
-#endif // defined(_DEBUG)
-
-vk::Instance vulkanGraphics::instance = {};
-
-vk::PhysicalDevice vulkanGraphics::physicalDevice = {};
-sQueueFamilyIndices vulkanGraphics::queueFamilyIndices = {};
-vk::Device vulkanGraphics::device = {};
-
-vk::Queue vulkanGraphics::graphicsQueue = {};
-vk::Queue vulkanGraphics::computeQueue = {};
-vk::Queue vulkanGraphics::transferQueue = {};
-
 void vulkanGraphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
 	makeInstance();
@@ -403,30 +416,6 @@ void vulkanGraphics::createDeviceLayersAndExtensionsConfiguration(std::vector<co
 	outEnabledExtensionNames.reserve(1);
 	outEnabledExtensionNames.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME);
 }
-
-#if defined(_DEBUG)
-VKAPI_ATTR VkBool32 VKAPI_CALL vulkanGraphics::debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity, 
-	VkDebugUtilsMessageTypeFlagsEXT messageType, const VkDebugUtilsMessengerCallbackDataEXT* pCallbackData, void* pUserData)
-{
-	if (messageSeverity >= debugCallbackMinSeverityConsolePrint)
-	{
-		platformConsolePrint(sString::printf("vulkan debug callback: %s", pCallbackData->pMessage));
-	}
-
-#if defined(PLATFORM_WIN32)
-	if constexpr (breakOnDebugCallback)
-	{
-		if (messageSeverity >= breakOnDebugCallbackMinSeverity)
-		{
-			DebugBreak();
-		}
-	}
-#endif // defined(PLATFORM_WIN32)
-
-	// Note: Debug callback has likely been triggered. See message in console window
-	return VK_FALSE;
-}
-#endif // defined(_DEBUG)
 
 void vulkanGraphics::makeInstance()
 {

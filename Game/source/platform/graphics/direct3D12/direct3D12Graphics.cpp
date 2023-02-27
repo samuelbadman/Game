@@ -398,35 +398,6 @@ uint32_t direct3d12ConstantBuffer::getOffsetToCurrentPosition()
 	return (bufferPositionIndex * constantBufferDataStepSize);
 }
 
-uint32_t direct3d12Graphics::backBufferCount = 0;
-ComPtr<IDXGIFactory7> direct3d12Graphics::dxgiFactory;
-ComPtr<IDXGIAdapter4> direct3d12Graphics::adapter;
-ComPtr<ID3D12Device8> direct3d12Graphics::device;
-ComPtr<ID3D12CommandQueue> direct3d12Graphics::graphicsQueue;
-ComPtr<ID3D12CommandQueue> direct3d12Graphics::computeQueue;
-ComPtr<ID3D12CommandQueue> direct3d12Graphics::copyQueue;
-sDescriptorSizes direct3d12Graphics::descriptorSizes = {};
-std::vector<ComPtr<ID3D12CommandAllocator>> direct3d12Graphics::graphicsCommandAllocators;
-ComPtr<ID3D12GraphicsCommandList6> direct3d12Graphics::graphicsCommandList;
-ComPtr<ID3D12Fence> direct3d12Graphics::graphicsFence;
-uint64_t direct3d12Graphics::graphicsFenceValue = 0;
-std::vector<uint64_t> direct3d12Graphics::graphicsFenceValues;
-HANDLE direct3d12Graphics::eventHandle = nullptr;
-uint32_t direct3d12Graphics::currentFrameIndex = 0;
-
-ComPtr<IDxcLibrary> direct3d12Graphics::dxcLibrary;
-ComPtr<IDxcCompiler> direct3d12Graphics::dxcCompiler;
-
-ComPtr<ID3D12RootSignature> direct3d12Graphics::rootSignature;
-ComPtr<ID3D12PipelineState> direct3d12Graphics::graphicsPipelineState;
-
-std::vector<ComPtr<ID3D12Resource>> direct3d12Graphics::resourceStore;
-std::vector<D3D12_VERTEX_BUFFER_VIEW> direct3d12Graphics::vertexBufferViewStore;
-std::vector<D3D12_INDEX_BUFFER_VIEW> direct3d12Graphics::indexBufferViewStore;
-
-direct3d12ConstantBuffer direct3d12Graphics::objectConstantBuffer = {};
-direct3d12ConstantBuffer direct3d12Graphics::cameraConstantBuffer = {};
-
 void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
 	waitForGPU();

@@ -1,3 +1,7 @@
 #pragma once
 
-class graphicsSurface;
+class graphicsSurface
+{
+public:
+	virtual ~graphicsSurface() = default;
+};

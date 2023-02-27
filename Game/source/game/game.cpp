@@ -52,6 +52,7 @@ struct sGameSettings
 
 bool game::running = false;
 std::shared_ptr<platformWindow> game::window;
+std::shared_ptr<graphics> game::graphicsEngine;
 std::shared_ptr<graphicsSurface> game::surface;
 int64_t game::fps = 0;
 double game::ms = 0.0;
@@ -133,7 +134,7 @@ void game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
 {
 	if (inWindow == window.get())
 	{
-		graphicsResizeSurface(surface.get(), evt.newClientWidth, evt.newClientHeight);
+		graphicsEngine->resizeSurface(surface.get(), evt.newClientWidth, evt.newClientHeight);
 		updateViewProjectionMatrix();
 	}
 }
@@ -214,8 +215,9 @@ void game::initializeGraphics()
 		platformMessageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
 	}
 	
-	graphicsInit(sGameSettings::graphicsApi, false, sGameSettings::enableTripleBuffering ? 3 : 2);
-	graphicsCreateSurface(platformGetWindowHandle(window.get()), width, height, sGameSettings::enableVSync, surface);
+	graphics::create(sGameSettings::graphicsApi, graphicsEngine);
+	graphicsEngine->init(false, sGameSettings::enableTripleBuffering ? 3 : 2);
+	graphicsEngine->createSurface(platformGetWindowHandle(window.get()), width, height, sGameSettings::enableVSync, surface);
 
 	loadResources();
 
@@ -224,8 +226,8 @@ void game::initializeGraphics()
 
 void game::shutdownGraphics()
 {
-	graphicsDestroySurface(surface);
-	graphicsShutdown();
+	graphicsEngine->destroySurface(surface);
+	graphicsEngine->shutdown();
 
 	graphicsInitialized = false;
 }
@@ -250,7 +252,7 @@ void game::loadResources()
 	size_t loadIndexCounts[] = { _countof(indices) };
 	const uint32_t (*loadIndices)[] = { &indices };
 	sMeshResources* loadOutMeshResources[] = { &triangleMeshResources };
-	graphicsLoadMeshes(1, loadVertexCounts, loadVertices, loadIndexCounts, loadIndices, loadOutMeshResources);
+	graphicsEngine->loadMeshes(1, loadVertexCounts, loadVertices, loadIndexCounts, loadIndices, loadOutMeshResources);
 
 	transform(vector3d(-1.0, 0.5, 0.0), rotator(0.0, 0.0, 45.0), vector3d(1.0, 1.0, 1.0));
 	triangleWorldMatrix = matrix4x4::transpose(matrix4x4::transformation(transform(vector3d(-1.0, 0.5, 0.0), rotator(0.0, 0.0, 45.0), vector3d(1.0, 1.0, 1.0))));
@@ -275,12 +277,12 @@ void game::render()
 {
 	const graphicsSurface* const surfaces[] = { surface.get() };
 
-	graphicsBeginFrame();
+	graphicsEngine->beginFrame();
 
 	const sRenderData* const renderDatas[] = { &triangleRenderData };
-	graphicsRender(_countof(surfaces), surfaces, _countof(renderDatas), renderDatas, &viewProjectionMatrix);
+	graphicsEngine->render(_countof(surfaces), surfaces, _countof(renderDatas), renderDatas, &viewProjectionMatrix);
 
-	graphicsEndFrame(_countof(surfaces), surfaces);
+	graphicsEngine->endFrame(_countof(surfaces), surfaces);
 }
 
 void game::updateViewProjectionMatrix()

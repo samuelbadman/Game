@@ -256,14 +256,9 @@ del "$(OutDir)shaders\*.bin"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
+    <ClCompile Include="source\platform\graphics\graphics.cpp" />
     <ClCompile Include="source\platform\graphics\vertexPos3Norm3Col4UV2.cpp" />
     <ClCompile Include="source\platform\graphics\vulkan\vulkanGraphics.cpp" />
-    <ClCompile Include="source\platform\graphics\win32\win32Graphics.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='releaseWin32|x64'">false</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="source\sString.cpp" />
     <ClCompile Include="source\platform\framework\win32\win32Console.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>

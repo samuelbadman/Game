@@ -1,6 +1,8 @@
 #pragma once
 
-class graphicsSurface
+#include "platform/graphics/graphicsSurface.h"
+
+class direct3d12Surface : public graphicsSurface
 {
 public:
 	Microsoft::WRL::ComPtr<IDXGISwapChain4> swapChain;
