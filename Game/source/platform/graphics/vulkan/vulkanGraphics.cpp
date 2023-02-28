@@ -3,6 +3,7 @@
 #include "platform/framework/platformMessageBox.h"
 #include "sString.h"
 #include "platform/framework/platformConsole.h"
+#include "vulkanSurface.h"
 
 #define VULKAN_VALIDATION_LAYER_NAME "VK_LAYER_KHRONOS_validation"
 
@@ -354,12 +355,34 @@ void vulkanGraphics::shutdown()
 	destroyInstance();
 }
 
-void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<class graphicsSurface>& outSurface)
+void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<graphicsSurface>& outSurface)
 {
+	outSurface = std::make_shared<vulkanSurface>();
+	outSurface->setApi(eGraphicsApi::vulkan);
+	vulkanSurface* apiSurface = outSurface->as<vulkanSurface>();
+
+#if defined(PLATFORM_WIN32)
+	VkWin32SurfaceCreateInfoKHR win32SurfaceCreateInfo = {};
+	win32SurfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
+	win32SurfaceCreateInfo.hwnd = static_cast<HWND>(hwnd);
+	win32SurfaceCreateInfo.hinstance = GetModuleHandle(nullptr);
+
+	VkSurfaceKHR cSurface;
+	if(vkCreateWin32SurfaceKHR(instance, &win32SurfaceCreateInfo, nullptr, &cSurface) != VK_SUCCESS)
+	{
+		platformMessageBoxFatal("vulkanGraphics::createSurface: Failed to create win32 surface.");
+	}
+
+	apiSurface->surface = cSurface;
+#endif // defined(PLATFORM_WIN32)
 }
 
-void vulkanGraphics::destroySurface(std::shared_ptr<class graphicsSurface>& surface)
+void vulkanGraphics::destroySurface(std::shared_ptr<graphicsSurface>& surface)
 {
+	assert(surface->getApi() == eGraphicsApi::vulkan);
+
+	vulkanSurface* apiSurface = surface->as<vulkanSurface>();
+	instance.destroySurfaceKHR(apiSurface->surface);
 }
 
 void vulkanGraphics::resizeSurface(graphicsSurface* surface, uint32_t width, uint32_t height)

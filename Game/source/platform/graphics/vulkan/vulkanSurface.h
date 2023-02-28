@@ -5,5 +5,5 @@
 class vulkanSurface : public graphicsSurface
 {
 public:
-
+	vk::SurfaceKHR surface = {};
 };
