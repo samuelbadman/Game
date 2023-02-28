@@ -15,6 +15,16 @@ static constexpr bool breakOnDebugCallback = true;
 static constexpr VkDebugUtilsMessageSeverityFlagBitsEXT breakOnDebugCallbackMinSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT;
 static constexpr VkDebugUtilsMessageSeverityFlagBitsEXT debugCallbackMinSeverityConsolePrint = VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
 
+struct swapchainSupportDetails
+{
+	vk::SurfaceCapabilitiesKHR capabilities = {};
+	std::vector<vk::SurfaceFormatKHR> formats;
+	std::vector<vk::PresentModeKHR> presentModes;
+
+	bool isPresentModeSupported(const vk::PresentModeKHR& requestedPresentMode) const { return std::find(presentModes.begin(), presentModes.end(), requestedPresentMode) != presentModes.end(); }
+	bool isFormatSupported(const vk::SurfaceFormatKHR& requestedSurfaceFormat) const { return std::find(formats.begin(), formats.end(), requestedSurfaceFormat) != formats.end(); }
+};
+
 static bool checkInstanceLayersAndExtensionsConfigurationSupported(const uint32_t enabledLayerCount, const char* const* enabledLayerNames,
 	const uint32_t enabledExtensionCount, const char* const* enabledExtensionNames)
 {
@@ -343,8 +353,47 @@ static void getQueue(const vk::Device& device, const uint32_t queueFamilyIndex, 
 	}
 }
 
+static swapchainSupportDetails getSwapchainSupportDetails(const vk::PhysicalDevice& physicalDevice, const vk::SurfaceKHR& surface)
+{
+	swapchainSupportDetails out = {};
+	out.capabilities = physicalDevice.getSurfaceCapabilitiesKHR(surface);
+	out.formats = physicalDevice.getSurfaceFormatsKHR(surface);
+	out.presentModes = physicalDevice.getSurfacePresentModesKHR(surface);
+	return out;
+}
+
+static void createSwapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const uint32_t imageCount, const vk::PresentModeKHR& presentMode, const vk::SurfaceKHR& surface, const vk::SurfaceFormatKHR& surfaceFormat, const vk::Extent2D& extent, vk::SwapchainKHR& outSwapchain)
+{
+	// Describe swap chain create info
+	vk::SwapchainCreateInfoKHR createInfo = vk::SwapchainCreateInfoKHR(
+		vk::SwapchainCreateFlagsKHR(),
+		surface, imageCount,
+		surfaceFormat.format, surfaceFormat.colorSpace,
+		extent, 1,
+		vk::ImageUsageFlagBits::eColorAttachment
+	);
+
+	createInfo.imageSharingMode = vk::SharingMode::eExclusive;
+	createInfo.preTransform = vk::SurfaceTransformFlagBitsKHR::eIdentity;
+	createInfo.compositeAlpha = vk::CompositeAlphaFlagBitsKHR::eOpaque;
+	createInfo.presentMode = presentMode;
+	createInfo.clipped = VK_TRUE;
+	createInfo.oldSwapchain = vk::SwapchainKHR(nullptr);
+
+	// Create the swap chain
+	try
+	{
+		outSwapchain = device.createSwapchainKHR(createInfo);
+	}
+	catch (vk::SystemError err)
+	{
+		platformMessageBoxFatal("vulkanGraphics::createSwapchain: Failed to create swap chain.");
+	}
+}
+
 void vulkanGraphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
+	backBufferCount = inBackBufferCount;
 	makeInstance();
 	makeDevice();
 }
@@ -361,6 +410,7 @@ void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, 
 	outSurface->setApi(eGraphicsApi::vulkan);
 	vulkanSurface* apiSurface = outSurface->as<vulkanSurface>();
 
+	// Create surface for platform
 #if defined(PLATFORM_WIN32)
 	VkWin32SurfaceCreateInfoKHR win32SurfaceCreateInfo = {};
 	win32SurfaceCreateInfo.sType = VK_STRUCTURE_TYPE_WIN32_SURFACE_CREATE_INFO_KHR;
@@ -375,6 +425,59 @@ void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, 
 
 	apiSurface->surface = cSurface;
 #endif // defined(PLATFORM_WIN32)
+
+	// Get swap chain support details
+	swapchainSupportDetails supportDetails = getSwapchainSupportDetails(physicalDevice, apiSurface->surface);
+
+	// Get swap chain present mode
+	vk::PresentModeKHR swapchainPresentMode = vsync ? vk::PresentModeKHR::eFifo : vk::PresentModeKHR::eMailbox;
+	if (!(supportDetails.isPresentModeSupported(swapchainPresentMode)))
+	{
+		platformMessageBox(eMessageLevel::warning, sString::printf( "vulkanGraphics::createSurface: present mode (%s) is not supported by the physical device. Falling back on Fifo present mode.", vk::to_string(swapchainPresentMode)));
+
+		swapchainPresentMode = vk::PresentModeKHR::eFifo;
+	}
+
+	// Get swap chain format
+	vk::SurfaceFormatKHR swapchainFormat = vk::SurfaceFormatKHR(vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear);
+	if (!(supportDetails.isFormatSupported(swapchainFormat)))
+	{
+		platformMessageBox(eMessageLevel::warning, sString::printf(
+			"vulkanGraphics::createSurface: surface format (%s, %s) is not supported by the physical device. Falling back on first available format (%s, %s)", 
+			vk::to_string(swapchainFormat.format), vk::to_string(swapchainFormat.colorSpace), vk::to_string(supportDetails.formats[0].format), vk::to_string(supportDetails.formats[0].colorSpace)));
+
+		swapchainFormat = supportDetails.formats[0];
+	}
+
+	// Get swap chain extent
+	vk::Extent2D swapchainExtent = vk::Extent2D(width, height);
+
+	// Get swap chain image count
+	uint32_t swapchainImageCount = backBufferCount;
+
+	// Check if the surface supports the requested amount of images
+	if (swapchainImageCount < supportDetails.capabilities.minImageCount + 1)
+	{
+		swapchainImageCount = supportDetails.capabilities.minImageCount + 1;
+	}
+
+	// Check if the max image count needs to be checked as a max image count of 0 can be an unlimited amount of swapchain images
+	if (supportDetails.capabilities.maxImageCount > 0)
+	{
+		if (swapchainImageCount > supportDetails.capabilities.maxImageCount)
+		{
+			swapchainImageCount = supportDetails.capabilities.maxImageCount;
+		}
+	}
+
+	// Create swap chain
+	createSwapchain(device, physicalDevice, backBufferCount, swapchainPresentMode, apiSurface->surface, swapchainFormat, swapchainExtent, apiSurface->swapchain);
+
+	// Get swap chain images and store format and extent in the surface
+	apiSurface->images = device.getSwapchainImagesKHR(apiSurface->swapchain);
+
+	// Create image views for swap chain images
+
 }
 
 void vulkanGraphics::destroySurface(std::shared_ptr<graphicsSurface>& surface)
@@ -382,7 +485,11 @@ void vulkanGraphics::destroySurface(std::shared_ptr<graphicsSurface>& surface)
 	assert(surface->getApi() == eGraphicsApi::vulkan);
 
 	vulkanSurface* apiSurface = surface->as<vulkanSurface>();
+	apiSurface->images.clear();
+	device.destroySwapchainKHR(apiSurface->swapchain);
 	instance.destroySurfaceKHR(apiSurface->surface);
+
+	surface.reset();
 }
 
 void vulkanGraphics::resizeSurface(graphicsSurface* surface, uint32_t width, uint32_t height)

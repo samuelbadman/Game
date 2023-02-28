@@ -6,4 +6,6 @@ class vulkanSurface : public graphicsSurface
 {
 public:
 	vk::SurfaceKHR surface = {};
+	vk::SwapchainKHR swapchain = {};
+	std::vector<vk::Image> images = {};
 };

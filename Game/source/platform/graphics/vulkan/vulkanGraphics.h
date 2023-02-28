@@ -19,6 +19,8 @@ private:
 	vk::DispatchLoaderDynamic dldi = {};
 #endif // defined(_DEBUG)
 
+	uint32_t backBufferCount = 0;
+
 	vk::Instance instance = {};
 
 	vk::PhysicalDevice physicalDevice = {};
