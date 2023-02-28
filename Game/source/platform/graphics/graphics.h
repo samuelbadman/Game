@@ -1,14 +1,14 @@
 #pragma once
 
-#include "graphicsApi.h"
+#include "graphicsObject.h"
 
-class graphics
+class graphics : public graphicsObject
 {
 public:
 	static void create(const eGraphicsApi graphicsApi, std::shared_ptr<graphics>& outGraphics);
 
 public:
-	virtual ~graphics() = default;
+	~graphics() override = default;
 
 public:
 	virtual void init(const bool softwareRenderer, const uint32_t backBufferCount) = 0;

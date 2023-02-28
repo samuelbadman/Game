@@ -1,7 +1,7 @@
 #pragma once
 
-class graphicsSurface
+#include "graphicsObject.h"
+
+class graphicsSurface : public graphicsObject
 {
-public:
-	virtual ~graphicsSurface() = default;
 };

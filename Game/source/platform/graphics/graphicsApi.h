@@ -2,6 +2,7 @@
 
 enum class eGraphicsApi
 {
-	direct3d12,
-	vulkan
+	direct3d12 = 0,
+	vulkan,
+	apiCount
 };

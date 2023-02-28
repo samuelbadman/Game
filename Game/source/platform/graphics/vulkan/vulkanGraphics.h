@@ -30,6 +30,9 @@ private:
 	vk::Queue transferQueue = {};
 
 public:
+	~vulkanGraphics() final = default;
+
+public:
 	// Graphics interface
 	void init(bool useWarp, uint32_t inBackBufferCount) final;
 	void shutdown() final;

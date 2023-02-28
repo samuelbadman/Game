@@ -329,6 +329,7 @@ del "$(OutDir)shaders\*.bin"</Command>
     </ClInclude>
     <ClInclude Include="source\platform\graphics\graphics.h" />
     <ClInclude Include="source\platform\graphics\graphicsApi.h" />
+    <ClInclude Include="source\platform\graphics\graphicsObject.h" />
     <ClInclude Include="source\platform\graphics\graphicsSurface.h" />
     <ClInclude Include="source\platform\graphics\meshResources.h" />
     <ClInclude Include="source\platform\graphics\renderData.h" />
