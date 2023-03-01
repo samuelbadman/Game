@@ -17,61 +17,64 @@
 #include "platform/events/exitFullScreenEvent.h"
 #include "game/game.h"
 
-void platformCreateWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
+namespace platformLayer
 {
-	outPlatformWindow = std::make_shared<platformWindow>();
-	outPlatformWindow->init(desc);
-}
+	void createWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
+	{
+		outPlatformWindow = std::make_shared<platformWindow>();
+		outPlatformWindow->init(desc);
+	}
 
-void platformDestroyWindow(std::shared_ptr<platformWindow>& outPlatformWindow)
-{
-	outPlatformWindow->destroy();
-	outPlatformWindow.reset();
-}
+	void destroyWindow(std::shared_ptr<platformWindow>& outPlatformWindow)
+	{
+		outPlatformWindow->destroy();
+		outPlatformWindow.reset();
+	}
 
-int8_t platformMakeWindowFullscreen(platformWindow* inPlatformWindow)
-{
-	return inPlatformWindow->enterFullScreen();
-}
+	int8_t makeWindowFullscreen(platformWindow* inPlatformWindow)
+	{
+		return inPlatformWindow->enterFullScreen();
+	}
 
-int8_t platformExitWindowFullscreen(platformWindow* inPlatformWindow)
-{
-	return inPlatformWindow->exitFullScreen();
-}
+	int8_t exitWindowFullscreen(platformWindow* inPlatformWindow)
+	{
+		return inPlatformWindow->exitFullScreen();
+	}
 
-int8_t platformSetWindowPosition(platformWindow* inPlatformWindow, uint32_t x, uint32_t y)
-{
-	return inPlatformWindow->setPosition(x, y);
-}
+	int8_t setWindowPosition(platformWindow* inPlatformWindow, uint32_t x, uint32_t y)
+	{
+		return inPlatformWindow->setPosition(x, y);
+	}
 
-int8_t platformSetWindowStyle(platformWindow* inPlatformWindow, eWindowStyle inStyle)
-{
-	return inPlatformWindow->setStyle(inStyle);
-}
+	int8_t setWindowStyle(platformWindow* inPlatformWindow, eWindowStyle inStyle)
+	{
+		return inPlatformWindow->setStyle(inStyle);
+	}
 
-bool platformShowWindow(platformWindow* inPlatformWindow)
-{
-	return inPlatformWindow->show();
-}
+	bool showWindow(platformWindow* inPlatformWindow)
+	{
+		return inPlatformWindow->show();
+	}
 
-int8_t platformGetWindowClientAreaDimensions(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
-{
-	return inPlatformWindow->getClientAreaDimensions(x, y);
-}
+	int8_t getWindowClientAreaDimensions(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
+	{
+		return inPlatformWindow->getClientAreaDimensions(x, y);
+	}
 
-int8_t platformGetWindowPosition(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
-{
-	return inPlatformWindow->getPosition(x, y);
-}
+	int8_t getWindowPosition(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
+	{
+		return inPlatformWindow->getPosition(x, y);
+	}
 
-bool platformIsWindowFullscreen(platformWindow* inPlatformWindow)
-{
-	return inPlatformWindow->isFullScreen();
-}
+	bool isWindowFullscreen(platformWindow* inPlatformWindow)
+	{
+		return inPlatformWindow->isFullScreen();
+	}
 
-void* platformGetWindowHandle(platformWindow* inPlatformWindow)
-{
-	return static_cast<void*>(inPlatformWindow->getHwnd());
+	void* getWindowHandle(platformWindow* inPlatformWindow)
+	{
+		return static_cast<void*>(inPlatformWindow->getHwnd());
+	}
 }
 
 static DWORD styleToDword(const eWindowStyle inStyle)
@@ -108,7 +111,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Mouse wheel up
 				sInputEvent evt = {};
 				evt.repeatedKey = false;
-				evt.input = platformKeyCodes::Mouse_Wheel_Up;
+				evt.input = platformLayer::keyCodes::Mouse_Wheel_Up;
 				evt.port = 0;
 				evt.data = 1.f;
 
@@ -119,7 +122,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Mouse wheel down
 				sInputEvent evt = {};
 				evt.repeatedKey = false;
-				evt.input = platformKeyCodes::Mouse_Wheel_Down;
+				evt.input = platformLayer::keyCodes::Mouse_Wheel_Down;
 				evt.port = 0;
 				evt.data = 1.f;
 
@@ -166,7 +169,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			// Raw mouse delta
 			sInputEvent evtX = {};
 			evtX.repeatedKey = false;
-			evtX.input = platformKeyCodes::Mouse_X;
+			evtX.input = platformLayer::keyCodes::Mouse_X;
 			evtX.port = 0;
 			evtX.data = static_cast<float>(raw->data.mouse.lLastX);
 
@@ -174,7 +177,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			sInputEvent evtY = {};
 			evtY.repeatedKey = false;
-			evtY.input = platformKeyCodes::Mouse_Y;
+			evtY.input = platformLayer::keyCodes::Mouse_Y;
 			evtY.port = 0;
 			evtY.data = static_cast<float>(raw->data.mouse.lLastY);
 
@@ -186,7 +189,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = platformKeyCodes::Left_Mouse_Button;
+			evt.input = platformLayer::keyCodes::Left_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
@@ -198,7 +201,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = platformKeyCodes::Right_Mouse_Button;
+			evt.input = platformLayer::keyCodes::Right_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
@@ -210,7 +213,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = platformKeyCodes::Middle_Mouse_Button;
+			evt.input = platformLayer::keyCodes::Middle_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
@@ -222,7 +225,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = platformKeyCodes::Left_Mouse_Button;
+			evt.input = platformLayer::keyCodes::Left_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
@@ -234,7 +237,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = platformKeyCodes::Right_Mouse_Button;
+			evt.input = platformLayer::keyCodes::Right_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
@@ -246,7 +249,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			sInputEvent evt = {};
 			evt.repeatedKey = false;
-			evt.input = platformKeyCodes::Middle_Mouse_Button;
+			evt.input = platformLayer::keyCodes::Middle_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
@@ -260,7 +263,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			// Handle alt+f4 exit shortcut
 			bool altBit = false;
 			altBit = (lparam & (1 << 29)) != 0;
-			if (altBit && (static_cast<int16_t>(wparam) == platformKeyCodes::F4))
+			if (altBit && (static_cast<int16_t>(wparam) == platformLayer::keyCodes::F4))
 			{
 				SendMessage(hwnd, WM_CLOSE, 0, 0);
 				return 0;
@@ -463,7 +466,7 @@ void platformWindow::init(const sWindowDesc& desc)
 	if (!(RegisterClassExW(&windowClass) > 0))
 	{
 		// Failed to register window class
-		platformMessageBoxFatal("win32Window::init failed to register window class.");
+		platformLayer::messageBoxFatal("win32Window::init failed to register window class.");
 	}
 
 	// Create the window and store a handle to it
@@ -482,13 +485,13 @@ void platformWindow::init(const sWindowDesc& desc)
 		if (!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
 		{
 			// Failed to register raw input devices
-			platformMessageBoxFatal("win32Window::init failed to register raw input devices.");
+			platformLayer::messageBoxFatal("win32Window::init failed to register raw input devices.");
 		}
 	}
 	else
 	{
 		// Failed to create window
-		platformMessageBoxFatal("win32Window::init failed to create window.");
+		platformLayer::messageBoxFatal("win32Window::init failed to create window.");
 	}
 }
 
@@ -497,7 +500,7 @@ void platformWindow::destroy()
 	// Destroy the window instance
 	if (DestroyWindow(hwnd) == 0)
 	{
-		platformMessageBoxFatal("win32Window::destroy: failed to destroy window.");
+		platformLayer::messageBoxFatal("win32Window::destroy: failed to destroy window.");
 	}
 
 	// Get handle to the executable 
@@ -506,7 +509,7 @@ void platformWindow::destroy()
 	// Unregister the window class
 	if (!UnregisterClassW(windowClassName.c_str(), hInstance))
 	{
-		platformMessageBoxFatal("win32Window::destroy failed to unregister class.");
+		platformLayer::messageBoxFatal("win32Window::destroy failed to unregister class.");
 	}
 }
 

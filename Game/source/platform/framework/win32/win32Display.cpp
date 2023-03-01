@@ -2,44 +2,46 @@
 
 #include "platform/framework/platformDisplay.h"
 
-uint32_t platformGetConnectedDisplayCount()
+namespace platformLayer
 {
-	return GetSystemMetrics(SM_CMONITORS);
-}
-
-sDisplayDesc platformGetInfoForDisplayAtIndex(const uint32_t displayIndex)
-{
-	if (displayIndex < platformGetConnectedDisplayCount())
+	uint32_t getConnectedDisplayCount()
 	{
-		return sDisplayDesc{};
+		return GetSystemMetrics(SM_CMONITORS);
 	}
 
-	// Initialize property structure
-	sDisplayDesc info = {};
+	sDisplayDesc getInfoForDisplayAtIndex(const uint32_t displayIndex)
+	{
+		if (displayIndex < getConnectedDisplayCount())
+		{
+			return sDisplayDesc{};
+		}
 
-	// Initialize the DISPLAY_DEVICE structure
-	DISPLAY_DEVICE displayDevice = {};
-	displayDevice.cb = sizeof(DISPLAY_DEVICE);
+		// Initialize property structure
+		sDisplayDesc info = {};
 
-	// Enumerate display device
-	EnumDisplayDevices(NULL, displayIndex, &displayDevice,
-		EDD_GET_DEVICE_INTERFACE_NAME);
+		// Initialize the DISPLAY_DEVICE structure
+		DISPLAY_DEVICE displayDevice = {};
+		displayDevice.cb = sizeof(DISPLAY_DEVICE);
 
-	// Enumerate the display device's settings
-	DEVMODEW displaySettings = {};
-	EnumDisplaySettings(displayDevice.DeviceName, ENUM_CURRENT_SETTINGS,
-		&displaySettings);
+		// Enumerate display device
+		EnumDisplayDevices(NULL, displayIndex, &displayDevice,
+			EDD_GET_DEVICE_INTERFACE_NAME);
 
-	// Fill in hardware properties info with the device's details
-	info.name = displayDevice.DeviceName;
-	info.adapterName = displayDevice.DeviceString;
-	info.topLeftX = displaySettings.dmPosition.x;
-	info.topLeftY = displaySettings.dmPosition.y;
-	info.width = displaySettings.dmPelsWidth;
-	info.height = displaySettings.dmPelsHeight;
-	info.verticalRefreshRateHertz = displaySettings.dmDisplayFrequency;
+		// Enumerate the display device's settings
+		DEVMODEW displaySettings = {};
+		EnumDisplaySettings(displayDevice.DeviceName, ENUM_CURRENT_SETTINGS,
+			&displaySettings);
 
-	// Return the hardware property info
-	return info;
+		// Fill in hardware properties info with the device's details
+		info.name = displayDevice.DeviceName;
+		info.adapterName = displayDevice.DeviceString;
+		info.topLeftX = displaySettings.dmPosition.x;
+		info.topLeftY = displaySettings.dmPosition.y;
+		info.width = displaySettings.dmPelsWidth;
+		info.height = displaySettings.dmPelsHeight;
+		info.verticalRefreshRateHertz = displaySettings.dmDisplayFrequency;
+
+		// Return the hardware property info
+		return info;
+	}
 }
-

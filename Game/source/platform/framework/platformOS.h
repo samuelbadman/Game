@@ -1,3 +1,6 @@
 #pragma once
 
-extern void platformPollOS();
+namespace platformLayer
+{
+	extern void pollOS();
+}

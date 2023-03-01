@@ -5,26 +5,29 @@
 static Microsoft::WRL::ComPtr<IXAudio2> xAudio2;
 static IXAudio2MasteringVoice* masterVoice = nullptr;
 
-void platformInitAudio()
+namespace platformLayer
 {
-	HRESULT hr;
-
-	if (FAILED(hr = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
+	void initAudio()
 	{
-		platformMessageBoxFatal("xAudio2Audio::init failed to create xAudio2 instance.");
+		HRESULT hr;
+
+		if (FAILED(hr = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
+		{
+			platformLayer::messageBoxFatal("xAudio2Audio::init failed to create xAudio2 instance.");
+		}
+
+		if (FAILED(hr = xAudio2->CreateMasteringVoice(&masterVoice)))
+		{
+			platformLayer::messageBoxFatal("xAudio2Audio::init failed to create mastering voice.");
+		}
 	}
 
-	if (FAILED(hr = xAudio2->CreateMasteringVoice(&masterVoice)))
+	void shutdownAudio()
 	{
-		platformMessageBoxFatal("xAudio2Audio::init failed to create mastering voice.");
+		if (masterVoice)
+		{
+			masterVoice->DestroyVoice();
+		}
+		masterVoice = nullptr;
 	}
-}
-
-void platformShutdownAudio()
-{
-	if (masterVoice)
-	{
-		masterVoice->DestroyVoice();
-	}
-	masterVoice = nullptr;
 }

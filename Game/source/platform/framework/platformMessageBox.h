@@ -7,6 +7,9 @@ enum class eMessageLevel : uint8_t
 	error = 2
 };
 
-extern void platformMessageBox(const eMessageLevel level, const std::string& message);
-// Shows a message box and immediately exits the application
-extern void platformMessageBoxFatal(const std::string& message);
+namespace platformLayer
+{
+	extern void messageBox(const eMessageLevel level, const std::string& message);
+	// Shows a message box and immediately exits the application
+	extern void messageBoxFatal(const std::string& message);
+}

@@ -1,4 +1,7 @@
 #pragma once
 
-extern void platformInitAudio();
-extern void platformShutdownAudio();
+namespace platformLayer
+{
+	extern void initAudio();
+	extern void shutdownAudio();
+}

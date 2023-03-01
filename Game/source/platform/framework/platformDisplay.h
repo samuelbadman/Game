@@ -11,9 +11,12 @@ struct sDisplayDesc
 	uint32_t verticalRefreshRateHertz = 0;
 };
 
-// Retrieves the number of displays connected to the device
-extern uint32_t platformGetConnectedDisplayCount();
+namespace platformLayer
+{
+	// Retrieves the number of displays connected to the device
+	extern uint32_t getConnectedDisplayCount();
 
-// Creates a property structure for the monitor at the specified index. The primary display is at index 0.
-// Index must be smaller than the number of monitors connected to the device
-extern sDisplayDesc platformGetInfoForDisplayAtIndex(const uint32_t displayIndex);
+	// Creates a property structure for the monitor at the specified index. The primary display is at index 0.
+	// Index must be smaller than the number of monitors connected to the device
+	extern sDisplayDesc getInfoForDisplayAtIndex(const uint32_t displayIndex);
+}

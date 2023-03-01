@@ -68,20 +68,20 @@ static void pollButton(const XINPUT_STATE& state, const XINPUT_STATE& prevState,
 
 static void pollButtons(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
 {
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Bottom);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Top);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Left);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Face_Button_Right);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Down);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Up);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Left);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_D_Pad_Right);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Special_Left);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Special_Right);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Left_Shoulder);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Right_Shoulder);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Left_Thumbstick_Button);
-	pollButton(state, prevState, port, platformKeyCodes::Gamepad_Right_Thumbstick_Button);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_Face_Button_Bottom);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_Face_Button_Top);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_Face_Button_Left);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_Face_Button_Right);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_D_Pad_Down);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_D_Pad_Up);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_D_Pad_Left);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_D_Pad_Right);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_Special_Left);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_Special_Right);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_Left_Shoulder);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_Right_Shoulder);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_Left_Thumbstick_Button);
+	pollButton(state, prevState, port, platformLayer::keyCodes::Gamepad_Right_Thumbstick_Button);
 }
 
 static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevState, uint32_t port)
@@ -100,7 +100,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 	// Submit inputs for the stick
 	sInputEvent leftXAxisEvent = {};
 	leftXAxisEvent.repeatedKey = false;
-	leftXAxisEvent.input = platformKeyCodes::Gamepad_Left_Thumbstick_X_Axis;
+	leftXAxisEvent.input = platformLayer::keyCodes::Gamepad_Left_Thumbstick_X_Axis;
 	leftXAxisEvent.port = port;
 	leftXAxisEvent.data = thumbLX;
 
@@ -108,7 +108,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 
 	sInputEvent leftYAxisEvent = {};
 	leftYAxisEvent.repeatedKey = false;
-	leftYAxisEvent.input = platformKeyCodes::Gamepad_Left_Thumbstick_Y_Axis;
+	leftYAxisEvent.input = platformLayer::keyCodes::Gamepad_Left_Thumbstick_Y_Axis;
 	leftYAxisEvent.port = port;
 	leftYAxisEvent.data = thumbLY;
 
@@ -131,7 +131,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			// Submit input
 			sInputEvent leftThumbstickRightEvent = {};
 			leftThumbstickRightEvent.repeatedKey = false;
-			leftThumbstickRightEvent.input = platformKeyCodes::Gamepad_Left_Thumbstick_Right;
+			leftThumbstickRightEvent.input = platformLayer::keyCodes::Gamepad_Left_Thumbstick_Right;
 			leftThumbstickRightEvent.port = port;
 			leftThumbstickRightEvent.data = 1.0f;
 
@@ -143,7 +143,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			// Submit input
 			sInputEvent leftThumbstickLeftEvent = {};
 			leftThumbstickLeftEvent.repeatedKey = false;
-			leftThumbstickLeftEvent.input = platformKeyCodes::Gamepad_Left_Thumbstick_Left;
+			leftThumbstickLeftEvent.input = platformLayer::keyCodes::Gamepad_Left_Thumbstick_Left;
 			leftThumbstickLeftEvent.port = port;
 			leftThumbstickLeftEvent.data = 1.0f;
 
@@ -160,7 +160,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			// Submit input
 			sInputEvent leftThumbstickUpEvent = {};
 			leftThumbstickUpEvent.repeatedKey = false;
-			leftThumbstickUpEvent.input = platformKeyCodes::Gamepad_Left_Thumbstick_Up;
+			leftThumbstickUpEvent.input = platformLayer::keyCodes::Gamepad_Left_Thumbstick_Up;
 			leftThumbstickUpEvent.port = port;
 			leftThumbstickUpEvent.data = 1.0f;
 
@@ -172,7 +172,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			// Submit input
 			sInputEvent leftThumbstickDownEvent = {};
 			leftThumbstickDownEvent.repeatedKey = false;
-			leftThumbstickDownEvent.input = platformKeyCodes::Gamepad_Left_Thumbstick_Down;
+			leftThumbstickDownEvent.input = platformLayer::keyCodes::Gamepad_Left_Thumbstick_Down;
 			leftThumbstickDownEvent.port = port;
 			leftThumbstickDownEvent.data = 1.0f;
 
@@ -194,7 +194,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 	// Submit inputs for the stick
 	sInputEvent rightXAxisEvent = {};
 	rightXAxisEvent.repeatedKey = false;
-	rightXAxisEvent.input =	platformKeyCodes::Gamepad_Right_Thumbstick_X_Axis;
+	rightXAxisEvent.input = platformLayer::keyCodes::Gamepad_Right_Thumbstick_X_Axis;
 	rightXAxisEvent.port = port;
 	rightXAxisEvent.data = thumbRX;
 
@@ -202,7 +202,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 
 	sInputEvent rightYAxisEvent = {};
 	rightYAxisEvent.repeatedKey = false;
-	rightYAxisEvent.input = platformKeyCodes::Gamepad_Right_Thumbstick_Y_Axis;
+	rightYAxisEvent.input = platformLayer::keyCodes::Gamepad_Right_Thumbstick_Y_Axis;
 	rightYAxisEvent.port = port;
 	rightYAxisEvent.data = thumbRY;
 
@@ -225,7 +225,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			// Submit input
 			sInputEvent rightThumbstickRightEvent = {};
 			rightThumbstickRightEvent.repeatedKey = false;
-			rightThumbstickRightEvent.input = platformKeyCodes::Gamepad_Right_Thumbstick_Right;
+			rightThumbstickRightEvent.input = platformLayer::keyCodes::Gamepad_Right_Thumbstick_Right;
 			rightThumbstickRightEvent.port = port;
 			rightThumbstickRightEvent.data = 1.0f;
 
@@ -237,7 +237,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			// Submit input
 			sInputEvent rightThumbstickLeftEvent = {};
 			rightThumbstickLeftEvent.repeatedKey = false;
-			rightThumbstickLeftEvent.input = platformKeyCodes::Gamepad_Right_Thumbstick_Left;
+			rightThumbstickLeftEvent.input = platformLayer::keyCodes::Gamepad_Right_Thumbstick_Left;
 			rightThumbstickLeftEvent.port = port;
 			rightThumbstickLeftEvent.data = 1.0f;
 
@@ -254,7 +254,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			// Submit input
 			sInputEvent rightThumbstickUpEvent = {};
 			rightThumbstickUpEvent.repeatedKey = false;
-			rightThumbstickUpEvent.input = platformKeyCodes::Gamepad_Right_Thumbstick_Up;
+			rightThumbstickUpEvent.input = platformLayer::keyCodes::Gamepad_Right_Thumbstick_Up;
 			rightThumbstickUpEvent.port = port;
 			rightThumbstickUpEvent.data = 1.0f;
 
@@ -266,7 +266,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			// Submit input
 			sInputEvent rightThumbstickDownEvent = {};
 			rightThumbstickDownEvent.repeatedKey = false;
-			rightThumbstickDownEvent.input = platformKeyCodes::Gamepad_Right_Thumbstick_Down;
+			rightThumbstickDownEvent.input = platformLayer::keyCodes::Gamepad_Right_Thumbstick_Down;
 			rightThumbstickDownEvent.port = port;
 			rightThumbstickDownEvent.data = 1.0f;
 
@@ -285,7 +285,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 	{
 		sInputEvent leftActionEvent = {};
 		leftActionEvent.repeatedKey = false;
-		leftActionEvent.input = platformKeyCodes::Gamepad_Left_Trigger;
+		leftActionEvent.input = platformLayer::keyCodes::Gamepad_Left_Trigger;
 		leftActionEvent.port = port;
 		leftActionEvent.data = static_cast<float>(currL);
 
@@ -299,7 +299,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 	{
 		sInputEvent rightActionEvent = {};
 		rightActionEvent.repeatedKey = false;
-		rightActionEvent.input = platformKeyCodes::Gamepad_Right_Trigger;
+		rightActionEvent.input = platformLayer::keyCodes::Gamepad_Right_Trigger;
 		rightActionEvent.port = port;
 		rightActionEvent.data = static_cast<float>(currR);
 
@@ -310,7 +310,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 	// Left
 	sInputEvent leftAxisEvent = {};
 	leftAxisEvent.repeatedKey = false;
-	leftAxisEvent.input = platformKeyCodes::Gamepad_Left_Trigger_Axis;
+	leftAxisEvent.input = platformLayer::keyCodes::Gamepad_Left_Trigger_Axis;
 	leftAxisEvent.port = port;
 	leftAxisEvent.data = static_cast<float>(state.Gamepad.bLeftTrigger) / static_cast<float>(gamepadMaxTriggerMagnitude);
 
@@ -319,42 +319,45 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 	// Right
 	sInputEvent rightAxisEvent = {};
 	rightAxisEvent.repeatedKey = false;
-	rightAxisEvent.input = platformKeyCodes::Gamepad_Right_Trigger_Axis;
+	rightAxisEvent.input = platformLayer::keyCodes::Gamepad_Right_Trigger_Axis;
 	rightAxisEvent.port = port;
-	rightAxisEvent.data = static_cast<float>(state.Gamepad.bRightTrigger) /	static_cast<float>(gamepadMaxTriggerMagnitude);
+	rightAxisEvent.data = static_cast<float>(state.Gamepad.bRightTrigger) / static_cast<float>(gamepadMaxTriggerMagnitude);
 
 	game::onInputEvent(nullptr, rightAxisEvent);
 }
 
-void platformPollGamepads()
+namespace platformLayer
 {
-	for (uint32_t i = 0; i < XUSER_MAX_COUNT; ++i)
+	void pollGamepads()
 	{
-		XINPUT_STATE state;
-		if (XInputGetState(static_cast<DWORD>(i), &state) != ERROR_SUCCESS)
+		for (uint32_t i = 0; i < XUSER_MAX_COUNT; ++i)
 		{
-			continue;
+			XINPUT_STATE state;
+			if (XInputGetState(static_cast<DWORD>(i), &state) != ERROR_SUCCESS)
+			{
+				continue;
+			}
+
+			pollButtons(state, prevStates[i], i);
+			pollThumbsticks(state, prevStates[i], i);
+			pollTriggers(state, prevStates[i], i);
+
+			prevStates[i] = state;
+		}
+	}
+
+	int8_t setGamepadVibration(const uint32_t port, const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
+	{
+		XINPUT_VIBRATION vibration = {};
+		vibration.wLeftMotorSpeed = leftMotorSpeed;
+		vibration.wRightMotorSpeed = rightMotorSpeed;
+		const DWORD setStateResult = XInputSetState(static_cast<DWORD>(port), &vibration);
+
+		if (setStateResult == ERROR_DEVICE_NOT_CONNECTED)
+		{
+			return 1;
 		}
 
-		pollButtons(state, prevStates[i], i);
-		pollThumbsticks(state, prevStates[i], i);
-		pollTriggers(state, prevStates[i], i);
-
-		prevStates[i] = state;
+		return (setStateResult == ERROR_SUCCESS) ? 0 : 2;
 	}
-}
-
-int8_t platformSetGamepadVibration(const uint32_t port, const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
-{
-	XINPUT_VIBRATION vibration = {};
-	vibration.wLeftMotorSpeed = leftMotorSpeed;
-	vibration.wRightMotorSpeed = rightMotorSpeed;
-	const DWORD setStateResult = XInputSetState(static_cast<DWORD>(port), &vibration);
-
-	if (setStateResult == ERROR_DEVICE_NOT_CONNECTED)
-	{
-		return 1;
-	}
-
-	return (setStateResult == ERROR_SUCCESS) ? 0 : 2;
 }

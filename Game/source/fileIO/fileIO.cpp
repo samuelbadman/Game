@@ -45,7 +45,7 @@ void fileIO::writeSerializedBuffer(const std::string& file, const std::vector<ui
     std::ofstream ofStream(file, std::ios::out | std::ios::binary);
     if (!ofStream)
     {
-        platformMessageBox(eMessageLevel::error, "fileIO::writeSerializedBuffer: Failed to write serialized buffer to " + file + '.');
+        platformLayer::messageBox(eMessageLevel::error, "fileIO::writeSerializedBuffer: Failed to write serialized buffer to " + file + '.');
         return;
     }
 
@@ -59,7 +59,7 @@ void fileIO::readSerializedBuffer(const std::string& file, std::vector<uint8_t>&
 
     if (!ifStream.good())
     {
-        platformMessageBox(eMessageLevel::error, "fileIO::readSerializedBuffer: Failed to read serialized buffer from " + file + '.');
+        platformLayer::messageBox(eMessageLevel::error, "fileIO::readSerializedBuffer: Failed to read serialized buffer from " + file + '.');
         return;
     }
 

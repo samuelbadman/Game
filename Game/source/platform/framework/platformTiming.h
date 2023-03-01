@@ -1,3 +1,6 @@
 #pragma once
 
-extern void platformUpdateTiming(int64_t& outFps, double& outMs);
+namespace platformLayer
+{
+	extern void updateTiming(int64_t& outFps, double& outMs);
+}

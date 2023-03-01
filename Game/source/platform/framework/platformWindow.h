@@ -25,22 +25,25 @@ struct sWindowDesc
 
 class platformWindow;
 
-extern void platformCreateWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow);
-extern void platformDestroyWindow(std::shared_ptr<platformWindow>& outPlatformWindow);
-// Returns non-zero if the function fails
-extern int8_t platformMakeWindowFullscreen(platformWindow* inPlatformWindow);
-// Returns non-zero if the function fails
-extern int8_t platformExitWindowFullscreen(platformWindow* inPlatformWindow);
-// Returns non-zero if the function fails
-extern int8_t platformSetWindowPosition(platformWindow* inPlatformWindow, uint32_t x, uint32_t y);
-// Returns non-zero if the function fails
-extern int8_t platformSetWindowStyle(platformWindow* inPlatformWindow, eWindowStyle inStyle);
-// Returns true if the window was previously visible and false if the window was previously hidden
-extern bool platformShowWindow(platformWindow* inPlatformWindow);
+namespace platformLayer
+{
+	extern void createWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow);
+	extern void destroyWindow(std::shared_ptr<platformWindow>& outPlatformWindow);
+	// Returns non-zero if the function fails
+	extern int8_t makeWindowFullscreen(platformWindow* inPlatformWindow);
+	// Returns non-zero if the function fails
+	extern int8_t exitWindowFullscreen(platformWindow* inPlatformWindow);
+	// Returns non-zero if the function fails
+	extern int8_t setWindowPosition(platformWindow* inPlatformWindow, uint32_t x, uint32_t y);
+	// Returns non-zero if the function fails
+	extern int8_t setWindowStyle(platformWindow* inPlatformWindow, eWindowStyle inStyle);
+	// Returns true if the window was previously visible and false if the window was previously hidden
+	extern bool showWindow(platformWindow* inPlatformWindow);
 
-// Returns non-zero if the function fails
-extern int8_t platformGetWindowClientAreaDimensions(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y);
-// Returns non-zero if the function fails
-extern int8_t platformGetWindowPosition(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y);
-extern bool platformIsWindowFullscreen(platformWindow* inPlatformWindow);
-extern void* platformGetWindowHandle(platformWindow* inPlatformWindow);
+	// Returns non-zero if the function fails
+	extern int8_t getWindowClientAreaDimensions(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y);
+	// Returns non-zero if the function fails
+	extern int8_t getWindowPosition(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y);
+	extern bool isWindowFullscreen(platformWindow* inPlatformWindow);
+	extern void* getWindowHandle(platformWindow* inPlatformWindow);
+}
