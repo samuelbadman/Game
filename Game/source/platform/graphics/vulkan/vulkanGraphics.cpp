@@ -474,10 +474,26 @@ void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, 
 	createSwapchain(device, physicalDevice, backBufferCount, swapchainPresentMode, apiSurface->surface, swapchainFormat, swapchainExtent, apiSurface->swapchain);
 
 	// Get swap chain images and store format and extent in the surface
+	apiSurface->images.reserve(static_cast<size_t>(swapchainImageCount));
 	apiSurface->images = device.getSwapchainImagesKHR(apiSurface->swapchain);
 
 	// Create image views for swap chain images
+	apiSurface->imageViews.reserve(static_cast<size_t>(swapchainImageCount));
+	for (const vk::Image& image : apiSurface->images)
+	{
+		vk::ImageViewCreateInfo imageViewCreateInfo = vk::ImageViewCreateInfo(vk::ImageViewCreateFlags(),
+			image, vk::ImageViewType::e2D, swapchainFormat.format, vk::ComponentMapping(),
+			vk::ImageSubresourceRange(vk::ImageAspectFlagBits::eColor, 0, 1, 0, 1), nullptr);
 
+		try
+		{
+			apiSurface->imageViews.emplace_back(device.createImageView(imageViewCreateInfo));
+		}
+		catch (vk::SystemError err)
+		{
+			platformMessageBoxFatal("vulkanGraphics::createSurface: Failed to create swap chain image view.");
+		}
+	}
 }
 
 void vulkanGraphics::destroySurface(std::shared_ptr<graphicsSurface>& surface)
@@ -485,10 +501,22 @@ void vulkanGraphics::destroySurface(std::shared_ptr<graphicsSurface>& surface)
 	assert(surface->getApi() == eGraphicsApi::vulkan);
 
 	vulkanSurface* apiSurface = surface->as<vulkanSurface>();
-	apiSurface->images.clear();
+
+	// Destroy image views
+	for (const vk::ImageView& imageView : apiSurface->imageViews)
+	{
+		device.destroyImageView(imageView);
+	}
+	apiSurface->imageViews.clear();
+
+	// Destroy swap chain and images
 	device.destroySwapchainKHR(apiSurface->swapchain);
+	apiSurface->images.clear();
+
+	// Destroy vulkan surface
 	instance.destroySurfaceKHR(apiSurface->surface);
 
+	// Reset graphics surface
 	surface.reset();
 }
 
