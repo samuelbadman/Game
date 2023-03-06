@@ -52,10 +52,8 @@ struct sGameSettings
 
 bool game::running = false;
 std::shared_ptr<platformWindow> game::window;
-std::shared_ptr<platformWindow> game::window2;
 std::shared_ptr<graphics> game::graphicsContext;
 std::shared_ptr<graphicsSurface> game::surface;
-std::shared_ptr<graphicsSurface> game::surface2;
 int64_t game::fps = 0;
 double game::ms = 0.0;
 bool game::graphicsInitialized = false;
@@ -78,7 +76,6 @@ void game::start()
 	initializeWindow();
 	initializeGraphics();
 	platformLayer::showWindow(window.get());
-	platformLayer::showWindow(window2.get());
 	initializeAudio();
 
 	// Initialize game loop
@@ -118,7 +115,6 @@ void game::start()
 
 	shutdownGraphics();
 	platformLayer::destroyWindow(window);
-	platformLayer::destroyWindow(window2);
 }
 
 void game::exit()
@@ -136,15 +132,10 @@ void game::onWindowMaximized(platformWindow* inWindow, const struct sMaximizedEv
 
 void game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
 {
-	updateViewProjectionMatrix();
-
 	if (inWindow == window.get())
 	{
+		updateViewProjectionMatrix();
 		graphicsContext->resizeSurface(surface.get(), evt.newClientWidth, evt.newClientHeight);
-	}
-	else if (inWindow == window2.get())
-	{
-		graphicsContext->resizeSurface(surface2.get(), evt.newClientWidth, evt.newClientHeight);
 	}
 }
 
@@ -213,17 +204,6 @@ void game::initializeWindow()
 	windowDesc.height = sGameSettings::windowDimensions[1];
 
 	platformLayer::createWindow(windowDesc, window);
-
-	windowDesc.windowClassName = L"TestWindow";
-	windowDesc.parent = nullptr;
-	windowDesc.style = sGameSettings::windowStyle;
-	windowDesc.windowTitle = L"Test";
-	windowDesc.x = defaultDisplayDesc.topLeftX + sGameSettings::windowPosition[0];
-	windowDesc.y = defaultDisplayDesc.topLeftY + sGameSettings::windowPosition[1];
-	windowDesc.width = sGameSettings::windowDimensions[0];
-	windowDesc.height = sGameSettings::windowDimensions[1];
-
-	platformLayer::createWindow(windowDesc, window2);
 }
 
 void game::initializeGraphics()
@@ -243,7 +223,6 @@ void game::initializeGraphics()
 
 	graphicsContext->init(false, sGameSettings::enableTripleBuffering ? 3 : 2);
 	graphicsContext->createSurface(platformLayer::getWindowHandle(window.get()), width, height, sGameSettings::enableVSync, surface);
-	graphicsContext->createSurface(platformLayer::getWindowHandle(window2.get()), width, height, sGameSettings::enableVSync, surface2);
 
 	loadResources();
 
@@ -253,7 +232,6 @@ void game::initializeGraphics()
 void game::shutdownGraphics()
 {
 	graphicsContext->destroySurface(surface);
-	graphicsContext->destroySurface(surface2);
 	graphicsContext->shutdown();
 
 	graphicsInitialized = false;
@@ -308,10 +286,7 @@ void game::render()
 	graphicsSurface* const surfaces[] = { surface.get() };
 	graphicsContext->render(_countof(surfaces), surfaces, _countof(renderDatas), renderDatas, &viewProjectionMatrix);
 
-	graphicsSurface* const surfaces2[] = { surface2.get() };
-	graphicsContext->render(_countof(surfaces2), surfaces2, 0, nullptr, &viewProjectionMatrix);
-
-	graphicsSurface* const renderedSurfaces[] = { surface.get(), surface2.get() };
+	graphicsSurface* const renderedSurfaces[] = { surface.get() };
 	graphicsContext->endFrame(_countof(renderedSurfaces), renderedSurfaces);
 }
 
