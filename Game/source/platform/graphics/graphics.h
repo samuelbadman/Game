@@ -8,6 +8,7 @@ public:
 	static void create(const eGraphicsApi graphicsApi, std::shared_ptr<graphics>& outGraphics);
 
 public:
+	graphics(const eGraphicsApi inApi);
 	~graphics() override = default;
 
 public:
@@ -18,8 +19,8 @@ public:
 	virtual void resizeSurface(class graphicsSurface* surface, uint32_t width, uint32_t height) = 0;
 	virtual void setSurfaceUseVSync(class graphicsSurface* surface, const bool inUseVSync) = 0;
 	virtual void beginFrame() = 0;
-	virtual void render(const uint32_t numSurfaces, const class graphicsSurface* const* surfaces, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const class matrix4x4* const viewProjection) = 0;
-	virtual void endFrame(const uint32_t numRenderedSurfaces, const class graphicsSurface* const* renderedSurfaces) = 0;
+	virtual void render(const uint32_t numSurfaces, class graphicsSurface* const* surfaces, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const class matrix4x4* const viewProjection) = 0;
+	virtual void endFrame(const uint32_t numRenderedSurfaces, class graphicsSurface* const* renderedSurfaces) = 0;
 	//virtual void loadMesh(const size_t vertexCount, const struct sVertexPos3Norm3Col4UV2* const vertices, const size_t indexCount, const uint32_t* const indices, struct sMeshResources& outMeshResources) = 0;
 	virtual void loadMeshes(const uint32_t meshCount, const size_t* vertexCounts, const struct sVertexPos3Norm3Col4UV2(* const vertices)[], const size_t* const indexCounts, const uint32_t(* const indices)[], struct sMeshResources** const outMeshResources) = 0;
 };

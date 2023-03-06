@@ -12,5 +12,12 @@ public:
 	Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> dsvDescriptorHeap;
 	D3D12_VIEWPORT viewport = {};
 	D3D12_RECT scissorRect = {};
-	bool useVSync = false;
+	BOOL useVSync = FALSE;
+	UINT currentBackBufferIndex = 0;
+	Microsoft::WRL::ComPtr<ID3D12Fence> resourceFence;
+	UINT64 resourceFenceValue = 0;
+	std::vector<UINT64> resourceFenceValues;
+
+public:
+	direct3d12Surface();
 };

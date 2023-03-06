@@ -8,11 +8,11 @@ private:
 	eGraphicsApi api = eGraphicsApi::apiCount;
 
 public:
+	graphicsObject(const eGraphicsApi inApi);
 	virtual ~graphicsObject() = default;
 
 public:
 	eGraphicsApi getApi() const { return api; }
-	void setApi(const eGraphicsApi newApi) { api = newApi; }
 
 	template<typename T>
 	constexpr const T* as() const { return static_cast<const T*>(this); }

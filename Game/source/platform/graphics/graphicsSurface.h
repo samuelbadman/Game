@@ -4,4 +4,6 @@
 
 class graphicsSurface : public graphicsObject
 {
+public:
+	graphicsSurface(const eGraphicsApi inApi);
 };

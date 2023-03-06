@@ -15,7 +15,6 @@ void graphics::create(const eGraphicsApi graphicsApi, std::shared_ptr<graphics>&
 	case eGraphicsApi::direct3d12:
 	{
 		outGraphics = std::make_shared<direct3d12Graphics>();
-		outGraphics->setApi(eGraphicsApi::direct3d12);
 	}
 	break;
 #endif // defined(PLATFORM_WIN32)
@@ -23,7 +22,6 @@ void graphics::create(const eGraphicsApi graphicsApi, std::shared_ptr<graphics>&
 	case eGraphicsApi::vulkan:
 	{
 		outGraphics = std::make_shared<vulkanGraphics>();
-		outGraphics->setApi(eGraphicsApi::vulkan);
 	}
 	break;
 
@@ -33,4 +31,9 @@ void graphics::create(const eGraphicsApi graphicsApi, std::shared_ptr<graphics>&
 	}
 	break;
 	}
+}
+
+graphics::graphics(const eGraphicsApi inApi)
+	: graphicsObject(inApi)
+{
 }

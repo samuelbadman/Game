@@ -16,7 +16,13 @@ struct pixelShaderInput
 
 cbuffer objectConstants : register(b0, space0)
 {
-    float4x4 wvpMatrix;
+    float4x4 wvpMatrix =
+    { 
+		1, 0, 0, 0,
+		0, 1, 0, 0,
+		0, 0, 1, 0,
+		0, 0, 0, 1
+	};
 }
 
 cbuffer cameraConstants : register(b1, space0)

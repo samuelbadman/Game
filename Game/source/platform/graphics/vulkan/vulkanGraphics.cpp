@@ -391,6 +391,11 @@ static void createSwapchain(const vk::Device& device, const vk::PhysicalDevice& 
 	}
 }
 
+vulkanGraphics::vulkanGraphics()
+	: graphics(eGraphicsApi::vulkan)
+{
+}
+
 void vulkanGraphics::init(bool useWarp, uint32_t inBackBufferCount)
 {
 	backBufferCount = inBackBufferCount;
@@ -407,7 +412,6 @@ void vulkanGraphics::shutdown()
 void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<graphicsSurface>& outSurface)
 {
 	outSurface = std::make_shared<vulkanSurface>();
-	outSurface->setApi(eGraphicsApi::vulkan);
 	vulkanSurface* apiSurface = outSurface->as<vulkanSurface>();
 
 	// Create surface for platform
@@ -533,12 +537,12 @@ void vulkanGraphics::beginFrame()
 {
 }
 
-void vulkanGraphics::render(const uint32_t numSurfaces, const graphicsSurface* const* surfaces, const uint32_t renderDataCount, const sRenderData* const* renderData, 
+void vulkanGraphics::render(const uint32_t numSurfaces, graphicsSurface* const* surfaces, const uint32_t renderDataCount, const sRenderData* const* renderData, 
 	const matrix4x4* const viewProjection)
 {
 }
 
-void vulkanGraphics::endFrame(const uint32_t numSurfaces, const graphicsSurface* const* surfaces)
+void vulkanGraphics::endFrame(const uint32_t numSurfaces, graphicsSurface* const* surfaces)
 {
 }
 

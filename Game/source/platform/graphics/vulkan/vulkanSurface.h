@@ -9,4 +9,8 @@ public:
 	vk::SwapchainKHR swapchain = {};
 	std::vector<vk::Image> images = {};
 	std::vector<vk::ImageView> imageViews = {};
+
+public:
+	vulkanSurface();
+	~vulkanSurface() final = default;
 };

@@ -9,8 +9,10 @@ class game
 private:
 	static bool running;
 	static std::shared_ptr<class platformWindow> window;
+	static std::shared_ptr<class platformWindow> window2;
 	static std::shared_ptr<class graphics> graphicsContext;
 	static std::shared_ptr<class graphicsSurface> surface;
+	static std::shared_ptr<class graphicsSurface> surface2;
 	static int64_t fps;
 	static double ms;
 	static bool graphicsInitialized;
