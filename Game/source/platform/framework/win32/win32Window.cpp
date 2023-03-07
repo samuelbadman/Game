@@ -19,61 +19,64 @@
 
 namespace platformLayer
 {
-	void createWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
+	namespace window
 	{
-		outPlatformWindow = std::make_shared<platformWindow>();
-		outPlatformWindow->init(desc);
-	}
+		void createWindow(const sWindowDesc& desc, std::shared_ptr<platformWindow>& outPlatformWindow)
+		{
+			outPlatformWindow = std::make_shared<platformWindow>();
+			outPlatformWindow->init(desc);
+		}
 
-	void destroyWindow(std::shared_ptr<platformWindow>& outPlatformWindow)
-	{
-		outPlatformWindow->destroy();
-		outPlatformWindow.reset();
-	}
+		void destroyWindow(std::shared_ptr<platformWindow>& outPlatformWindow)
+		{
+			outPlatformWindow->destroy();
+			outPlatformWindow.reset();
+		}
 
-	int8_t makeWindowFullscreen(platformWindow* inPlatformWindow)
-	{
-		return inPlatformWindow->enterFullScreen();
-	}
+		int8_t makeWindowFullscreen(platformWindow* inPlatformWindow)
+		{
+			return inPlatformWindow->enterFullScreen();
+		}
 
-	int8_t exitWindowFullscreen(platformWindow* inPlatformWindow)
-	{
-		return inPlatformWindow->exitFullScreen();
-	}
+		int8_t exitWindowFullscreen(platformWindow* inPlatformWindow)
+		{
+			return inPlatformWindow->exitFullScreen();
+		}
 
-	int8_t setWindowPosition(platformWindow* inPlatformWindow, uint32_t x, uint32_t y)
-	{
-		return inPlatformWindow->setPosition(x, y);
-	}
+		int8_t setWindowPosition(platformWindow* inPlatformWindow, uint32_t x, uint32_t y)
+		{
+			return inPlatformWindow->setPosition(x, y);
+		}
 
-	int8_t setWindowStyle(platformWindow* inPlatformWindow, eWindowStyle inStyle)
-	{
-		return inPlatformWindow->setStyle(inStyle);
-	}
+		int8_t setWindowStyle(platformWindow* inPlatformWindow, eWindowStyle inStyle)
+		{
+			return inPlatformWindow->setStyle(inStyle);
+		}
 
-	bool showWindow(platformWindow* inPlatformWindow)
-	{
-		return inPlatformWindow->show();
-	}
+		bool showWindow(platformWindow* inPlatformWindow)
+		{
+			return inPlatformWindow->show();
+		}
 
-	int8_t getWindowClientAreaDimensions(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
-	{
-		return inPlatformWindow->getClientAreaDimensions(x, y);
-	}
+		int8_t getWindowClientAreaDimensions(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
+		{
+			return inPlatformWindow->getClientAreaDimensions(x, y);
+		}
 
-	int8_t getWindowPosition(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
-	{
-		return inPlatformWindow->getPosition(x, y);
-	}
+		int8_t getWindowPosition(platformWindow* inPlatformWindow, uint32_t& x, uint32_t& y)
+		{
+			return inPlatformWindow->getPosition(x, y);
+		}
 
-	bool isWindowFullscreen(platformWindow* inPlatformWindow)
-	{
-		return inPlatformWindow->isFullScreen();
-	}
+		bool isWindowFullscreen(platformWindow* inPlatformWindow)
+		{
+			return inPlatformWindow->isFullScreen();
+		}
 
-	void* getWindowHandle(platformWindow* inPlatformWindow)
-	{
-		return static_cast<void*>(inPlatformWindow->getHwnd());
+		void* getWindowHandle(platformWindow* inPlatformWindow)
+		{
+			return static_cast<void*>(inPlatformWindow->getHwnd());
+		}
 	}
 }
 
@@ -466,7 +469,7 @@ void platformWindow::init(const sWindowDesc& desc)
 	if (!(RegisterClassExW(&windowClass) > 0))
 	{
 		// Failed to register window class
-		platformLayer::messageBoxFatal("win32Window::init failed to register window class.");
+		platformLayer::messageBox::showMessageBoxFatal("win32Window::init failed to register window class.");
 	}
 
 	// Create the window and store a handle to it
@@ -485,13 +488,13 @@ void platformWindow::init(const sWindowDesc& desc)
 		if (!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
 		{
 			// Failed to register raw input devices
-			platformLayer::messageBoxFatal("win32Window::init failed to register raw input devices.");
+			platformLayer::messageBox::showMessageBoxFatal("win32Window::init failed to register raw input devices.");
 		}
 	}
 	else
 	{
 		// Failed to create window
-		platformLayer::messageBoxFatal("win32Window::init failed to create window.");
+		platformLayer::messageBox::showMessageBoxFatal("win32Window::init failed to create window.");
 	}
 }
 
@@ -500,7 +503,7 @@ void platformWindow::destroy()
 	// Destroy the window instance
 	if (DestroyWindow(hwnd) == 0)
 	{
-		platformLayer::messageBoxFatal("win32Window::destroy: failed to destroy window.");
+		platformLayer::messageBox::showMessageBoxFatal("win32Window::destroy: failed to destroy window.");
 	}
 
 	// Get handle to the executable 
@@ -509,7 +512,7 @@ void platformWindow::destroy()
 	// Unregister the window class
 	if (!UnregisterClassW(windowClassName.c_str(), hInstance))
 	{
-		platformLayer::messageBoxFatal("win32Window::destroy failed to unregister class.");
+		platformLayer::messageBox::showMessageBoxFatal("win32Window::destroy failed to unregister class.");
 	}
 }
 

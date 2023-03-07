@@ -67,15 +67,15 @@ void game::start()
 {
 	running = true;
 
-	if (platformLayer::initConsole() != 0)
+	if (platformLayer::console::initConsole() != 0)
 	{
-		platformLayer::messageBoxFatal("game::start: failed to initialize platform console.");
+		platformLayer::messageBox::showMessageBoxFatal("game::start: failed to initialize platform console.");
 	}
 
 	parseCommandLineArgs();
 	initializeWindow();
 	initializeGraphics();
-	platformLayer::showWindow(window.get());
+	platformLayer::window::showWindow(window.get());
 	initializeAudio();
 
 	// Initialize game loop
@@ -93,8 +93,8 @@ void game::start()
 		previousTime = currentTime;
 		accumulator += deltaSeconds;
 
-		platformLayer::pollOS();
-		platformLayer::pollGamepads();
+		platformLayer::os::pollOS();
+		platformLayer::gamepad::pollGamepads();
 
 		tick(deltaSeconds);
 
@@ -110,11 +110,11 @@ void game::start()
 		}
 
 		// Update frame timing
-		platformLayer::updateTiming(fps, ms);
+		platformLayer::timing::updateTiming(fps, ms);
 	}
 
 	shutdownGraphics();
-	platformLayer::destroyWindow(window);
+	platformLayer::window::destroyWindow(window);
 }
 
 void game::exit()
@@ -182,15 +182,15 @@ void game::onWindowExitFullScreen(platformWindow* inWindow, const sExitFullScree
 void game::parseCommandLineArgs()
 {
 	int32_t argc;
-	wchar_t** argv = platformLayer::getArgcArgv(argc);
+	wchar_t** argv = platformLayer::commandLine::getArgcArgv(argc);
 	// Todo: Parse arguments
-	platformLayer::freeArgv(argv);
+	platformLayer::commandLine::freeArgv(argv);
 }
 
 void game::initializeWindow()
 {
 	// Get the default display info
-	sDisplayDesc defaultDisplayDesc = platformLayer::getInfoForDisplayAtIndex(sGameSettings::defaultDisplayIndex);
+	sDisplayDesc defaultDisplayDesc = platformLayer::display::getInfoForDisplayAtIndex(sGameSettings::defaultDisplayIndex);
 
 	// Create and initialize window
 	sWindowDesc windowDesc = {};
@@ -203,26 +203,26 @@ void game::initializeWindow()
 	windowDesc.width = sGameSettings::windowDimensions[0];
 	windowDesc.height = sGameSettings::windowDimensions[1];
 
-	platformLayer::createWindow(windowDesc, window);
+	platformLayer::window::createWindow(windowDesc, window);
 }
 
 void game::initializeGraphics()
 {
 	uint32_t width;
 	uint32_t height;
-	if (platformLayer::getWindowClientAreaDimensions(window.get(), width, height) != 0)
+	if (platformLayer::window::getWindowClientAreaDimensions(window.get(), width, height) != 0)
 	{
-		platformLayer::messageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
+		platformLayer::messageBox::showMessageBoxFatal("initializeGraphics: failed to get window client area dimensions.");
 	}
 	
 	graphics::create(sGameSettings::graphicsApi, graphicsContext);
 	if (graphicsContext == nullptr)
 	{
-		platformLayer::messageBoxFatal("initializeGraphics: failed to create graphics context.");
+		platformLayer::messageBox::showMessageBoxFatal("initializeGraphics: failed to create graphics context.");
 	}
 
 	graphicsContext->init(false, sGameSettings::enableTripleBuffering ? 3 : 2);
-	graphicsContext->createSurface(platformLayer::getWindowHandle(window.get()), width, height, sGameSettings::enableVSync, surface);
+	graphicsContext->createSurface(platformLayer::window::getWindowHandle(window.get()), width, height, sGameSettings::enableVSync, surface);
 
 	loadResources();
 
@@ -239,7 +239,7 @@ void game::shutdownGraphics()
 
 void game::initializeAudio()
 {
-	platformLayer::initAudio();
+	platformLayer::audio::initAudio();
 }
 
 void game::loadResources()
@@ -294,7 +294,7 @@ void game::updateViewProjectionMatrix()
 {
 	matrix4x4 viewMatrix = matrix4x4::transpose(matrix4x4::view(vector3d(0.0, 0.0, -5.0), rotator(0.0, 0.0, 0.0)));
 	uint32_t width, height;
-	platformLayer::getWindowClientAreaDimensions(window.get(), width, height);
+	platformLayer::window::getWindowClientAreaDimensions(window.get(), width, height);
 	static const double orthoZoom = 0.002;
 	matrix4x4 projectionMatrix = matrix4x4::transpose(matrix4x4::orthographic(static_cast<double>(width) * orthoZoom, static_cast<double>(height) * orthoZoom, 0.1, 100.0));
 	//matrix4x4 projectionMatrix = matrix4x4::transpose(matrix4x4::perspective(45.0, static_cast<double>(width), static_cast<double>(height), 0.1, 100.0));

@@ -328,36 +328,39 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 
 namespace platformLayer
 {
-	void pollGamepads()
+	namespace gamepad
 	{
-		for (uint32_t i = 0; i < XUSER_MAX_COUNT; ++i)
+		void pollGamepads()
 		{
-			XINPUT_STATE state;
-			if (XInputGetState(static_cast<DWORD>(i), &state) != ERROR_SUCCESS)
+			for (uint32_t i = 0; i < XUSER_MAX_COUNT; ++i)
 			{
-				continue;
+				XINPUT_STATE state;
+				if (XInputGetState(static_cast<DWORD>(i), &state) != ERROR_SUCCESS)
+				{
+					continue;
+				}
+
+				pollButtons(state, prevStates[i], i);
+				pollThumbsticks(state, prevStates[i], i);
+				pollTriggers(state, prevStates[i], i);
+
+				prevStates[i] = state;
+			}
+		}
+
+		int8_t setGamepadVibration(const uint32_t port, const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
+		{
+			XINPUT_VIBRATION vibration = {};
+			vibration.wLeftMotorSpeed = leftMotorSpeed;
+			vibration.wRightMotorSpeed = rightMotorSpeed;
+			const DWORD setStateResult = XInputSetState(static_cast<DWORD>(port), &vibration);
+
+			if (setStateResult == ERROR_DEVICE_NOT_CONNECTED)
+			{
+				return 1;
 			}
 
-			pollButtons(state, prevStates[i], i);
-			pollThumbsticks(state, prevStates[i], i);
-			pollTriggers(state, prevStates[i], i);
-
-			prevStates[i] = state;
+			return (setStateResult == ERROR_SUCCESS) ? 0 : 2;
 		}
-	}
-
-	int8_t setGamepadVibration(const uint32_t port, const uint16_t leftMotorSpeed, const uint16_t rightMotorSpeed)
-	{
-		XINPUT_VIBRATION vibration = {};
-		vibration.wLeftMotorSpeed = leftMotorSpeed;
-		vibration.wRightMotorSpeed = rightMotorSpeed;
-		const DWORD setStateResult = XInputSetState(static_cast<DWORD>(port), &vibration);
-
-		if (setStateResult == ERROR_DEVICE_NOT_CONNECTED)
-		{
-			return 1;
-		}
-
-		return (setStateResult == ERROR_SUCCESS) ? 0 : 2;
 	}
 }

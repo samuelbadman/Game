@@ -7,12 +7,10 @@
 #include "platform/graphics/meshResources.h"
 #include "math/matrix4x4.h"
 #include "platform/graphics/renderData.h"
-#include "platform/framework/platformConsole.h"
-#include "sString.h"
 
 using namespace Microsoft::WRL;
 
-#define fatalIfFailed(x) if(FAILED(x)) platformLayer::messageBoxFatal("hresult failed.");
+#define fatalIfFailed(x) if(FAILED(x)) platformLayer::messageBox::showMessageBoxFatal("hresult failed.");
 
 static constexpr size_t kb_64 = 65536;
 static constexpr size_t constantBufferDataStepSize = 256;
@@ -69,7 +67,7 @@ static void getAdapter(IDXGIFactory7* dxgiFactory, bool useWarp, ComPtr<IDXGIAda
 		}
 
 		// No adapters were found that meet minimum requirements
-		platformLayer::messageBoxFatal("direct3d12Graphics: did not find any suitable adapter");
+		platformLayer::messageBox::showMessageBoxFatal("direct3d12Graphics: did not find any suitable adapter");
 	}
 }
 
@@ -82,7 +80,7 @@ static void createDevice(IDXGIAdapter4* adapter, ComPtr<ID3D12Device8>& outDevic
 	Microsoft::WRL::ComPtr<ID3D12InfoQueue> InfoQueue;
 	if (FAILED(outDevice.As(&InfoQueue)))
 	{
-		platformLayer::messageBoxFatal("direct3d12Graphics::createDevice: failed to cast device to info queue.Could not enable device debug info.");
+		platformLayer::messageBox::showMessageBoxFatal("direct3d12Graphics::createDevice: failed to cast device to info queue.Could not enable device debug info.");
 	}
 
 	InfoQueue->SetBreakOnSeverity(D3D12_MESSAGE_SEVERITY_CORRUPTION, TRUE);
@@ -112,7 +110,7 @@ static void createDevice(IDXGIAdapter4* adapter, ComPtr<ID3D12Device8>& outDevic
 
 	if (FAILED(InfoQueue->PushStorageFilter(&QueueFilter)))
 	{
-		platformLayer::messageBoxFatal("direct3d12Graphics::createDevice: failed to push queue filter. Could not enable device debug info.");
+		platformLayer::messageBox::showMessageBoxFatal("direct3d12Graphics::createDevice: failed to push queue filter. Could not enable device debug info.");
 	}
 #endif // defined(_DEBUG)
 }
@@ -285,7 +283,7 @@ static void createEventHandle(HANDLE& outEventHandle)
 	outEventHandle = CreateEvent(nullptr, FALSE, FALSE, nullptr);
 	if (outEventHandle == nullptr)
 	{
-		platformLayer::messageBoxFatal("direct3d12Graphics::CreateEvent: failed to create event handle.");
+		platformLayer::messageBox::showMessageBoxFatal("direct3d12Graphics::CreateEvent: failed to create event handle.");
 	}
 }
 
@@ -296,7 +294,7 @@ static void waitForFence(ID3D12Fence* fence, HANDLE inEventHandle, uint64_t valu
 		fatalIfFailed(fence->SetEventOnCompletion(value, inEventHandle));
 		if (WaitForSingleObject(inEventHandle, waitDuration) == WAIT_FAILED)
 		{
-			platformLayer::messageBoxFatal("direct3d12Graphics::waitForFence: failed to wait for single object.");
+			platformLayer::messageBox::showMessageBoxFatal("direct3d12Graphics::waitForFence: failed to wait for single object.");
 		}
 	}
 }
@@ -887,7 +885,7 @@ void direct3d12Graphics::compileShader(LPCWSTR file, LPCWSTR entryPoint, LPCWSTR
 
 	if (compileShaderFromFile(dxcLibrary.Get(), dxcCompiler.Get(), file, entryPoint, targetProfile, outDxcBlob, errorMessage) == 0)
 	{
-		platformLayer::messageBoxFatal("direct3d12Graphics::compileShader: Failed to compile shader. " + errorMessage);
+		platformLayer::messageBox::showMessageBoxFatal("direct3d12Graphics::compileShader: Failed to compile shader. " + errorMessage);
 	}
 }
 

@@ -30,17 +30,17 @@ static bool checkInstanceLayersAndExtensionsConfigurationSupported(const uint32_
 {
 	// Get supported layers and extensions
 	std::vector<vk::ExtensionProperties> supportedExtensions = vk::enumerateInstanceExtensionProperties();
-	platformLayer::consolePrint("supported instance extensions:");
+	platformLayer::console::consolePrint("supported instance extensions:");
 	for (const vk::ExtensionProperties& extensionProperty : supportedExtensions)
 	{
-		platformLayer::consolePrint(sString::printf("    %s", extensionProperty.extensionName));
+		platformLayer::console::consolePrint(sString::printf("    %s", extensionProperty.extensionName));
 	}
 
 	std::vector<vk::LayerProperties> supportedLayers = vk::enumerateInstanceLayerProperties();
-	platformLayer::consolePrint("supported instance layers:");
+	platformLayer::console::consolePrint("supported instance layers:");
 	for (const vk::LayerProperties& layerProperty : supportedLayers)
 	{
-		platformLayer::consolePrint(sString::printf("    %s", layerProperty.layerName));
+		platformLayer::console::consolePrint(sString::printf("    %s", layerProperty.layerName));
 	}
 
 	// Check extensions
@@ -52,14 +52,14 @@ static bool checkInstanceLayersAndExtensionsConfigurationSupported(const uint32_
 			if (strcmp(enabledExtensionNames[i], extensionProperty.extensionName) == 0)
 			{
 				found = true;
-				platformLayer::consolePrint(sString::printf("requested %s instance extension is supported.", enabledExtensionNames[i]));
+				platformLayer::console::consolePrint(sString::printf("requested %s instance extension is supported.", enabledExtensionNames[i]));
 				break;
 			}
 		}
 
 		if (!found)
 		{
-			platformLayer::consolePrint(sString::printf("requested %s instance extension is not supported.", enabledExtensionNames[i]));
+			platformLayer::console::consolePrint(sString::printf("requested %s instance extension is not supported.", enabledExtensionNames[i]));
 			return false;
 		}
 	}
@@ -73,14 +73,14 @@ static bool checkInstanceLayersAndExtensionsConfigurationSupported(const uint32_
 			if (strcmp(enabledLayerNames[i], layerProperty.layerName) == 0)
 			{
 				found = true;
-				platformLayer::consolePrint(sString::printf("requested %s instance layer is supported.", enabledLayerNames[i]));
+				platformLayer::console::consolePrint(sString::printf("requested %s instance layer is supported.", enabledLayerNames[i]));
 				break;
 			}
 		}
 
 		if (!found)
 		{
-			platformLayer::consolePrint(sString::printf("requested %s instance layer is not supported.", enabledLayerNames[i]));
+			platformLayer::console::consolePrint(sString::printf("requested %s instance layer is not supported.", enabledLayerNames[i]));
 			return false;
 		}
 	}
@@ -96,17 +96,17 @@ static bool checkDeviceLayersAndExtensionsConfigurationSupported(const vk::Physi
 
 	// Get supported layers and extensions
 	std::vector<vk::ExtensionProperties> supportedExtensions = device.enumerateDeviceExtensionProperties();
-	platformLayer::consolePrint(sString::printf("supported extensions by physical device (%s):", deviceProperties.deviceName));
+	platformLayer::console::consolePrint(sString::printf("supported extensions by physical device (%s):", deviceProperties.deviceName));
 	for (const vk::ExtensionProperties& extensionProperty : supportedExtensions)
 	{
-		platformLayer::consolePrint(sString::printf("    %s", extensionProperty.extensionName));
+		platformLayer::console::consolePrint(sString::printf("    %s", extensionProperty.extensionName));
 	}
 
 	std::vector<vk::LayerProperties> supportedLayers = device.enumerateDeviceLayerProperties();
-	platformLayer::consolePrint(sString::printf("supported layers by physical device (%s):", deviceProperties.deviceName));
+	platformLayer::console::consolePrint(sString::printf("supported layers by physical device (%s):", deviceProperties.deviceName));
 	for (const vk::LayerProperties& layerProperty : supportedLayers)
 	{
-		platformLayer::consolePrint(sString::printf("    %s", layerProperty.layerName));
+		platformLayer::console::consolePrint(sString::printf("    %s", layerProperty.layerName));
 	}
 
 	// Check extensions
@@ -118,14 +118,14 @@ static bool checkDeviceLayersAndExtensionsConfigurationSupported(const vk::Physi
 			if (strcmp(enabledExtensionNames[i], extensionProperty.extensionName) == 0)
 			{
 				found = true;
-				platformLayer::consolePrint(sString::printf("requested %s device extension is supported.", enabledExtensionNames[i]));
+				platformLayer::console::consolePrint(sString::printf("requested %s device extension is supported.", enabledExtensionNames[i]));
 				break;
 			}
 		}
 
 		if (!found)
 		{
-			platformLayer::consolePrint(sString::printf("requested %s device extension is not supported.", enabledExtensionNames[i]));
+			platformLayer::console::consolePrint(sString::printf("requested %s device extension is not supported.", enabledExtensionNames[i]));
 			return false;
 		}
 	}
@@ -139,14 +139,14 @@ static bool checkDeviceLayersAndExtensionsConfigurationSupported(const vk::Physi
 			if (strcmp(enabledLayerNames[i], layerProperty.layerName) == 0)
 			{
 				found = true;
-				platformLayer::consolePrint(sString::printf("requested %s device layer is supported.", enabledLayerNames[i]));
+				platformLayer::console::consolePrint(sString::printf("requested %s device layer is supported.", enabledLayerNames[i]));
 				break;
 			}
 		}
 
 		if (!found)
 		{
-			platformLayer::consolePrint(sString::printf("requested %s device layer is not supported.", enabledLayerNames[i]));
+			platformLayer::console::consolePrint(sString::printf("requested %s device layer is not supported.", enabledLayerNames[i]));
 			return false;
 		}
 	}
@@ -161,13 +161,13 @@ static void createVulkanInstance(const uint32_t enabledLayerCount, const char* c
 	uint32_t apiVersion;
 	vkEnumerateInstanceVersion(&apiVersion);
 
-	platformLayer::consolePrint(sString::printf("system supported vulkan api version: %d.%d.%d.%d.",
+	platformLayer::console::consolePrint(sString::printf("system supported vulkan api version: %d.%d.%d.%d.",
 		VK_API_VERSION_VARIANT(apiVersion), VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion)));
 
 	// Zero-out api patch version
 	apiVersion &= ~(0xfffu);
 
-	platformLayer::consolePrint(sString::printf("creating vulkan instance with vulkan api version: %d.%d.%d.%d.",
+	platformLayer::console::consolePrint(sString::printf("creating vulkan instance with vulkan api version: %d.%d.%d.%d.",
 		VK_API_VERSION_VARIANT(apiVersion), VK_API_VERSION_MAJOR(apiVersion), VK_API_VERSION_MINOR(apiVersion), VK_API_VERSION_PATCH(apiVersion)));
 
 	// Create application info
@@ -176,7 +176,7 @@ static void createVulkanInstance(const uint32_t enabledLayerCount, const char* c
 	// Create instance create info
 	if (!checkInstanceLayersAndExtensionsConfigurationSupported(enabledLayerCount, enabledLayerNames, enabledExtensionCount, enabledExtensionNames))
 	{
-		platformLayer::messageBoxFatal("vulkanGraphics::createVulkanInstance: Layer extension configuration is not supported.");
+		platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::createVulkanInstance: Layer extension configuration is not supported.");
 	}
 
 	vk::InstanceCreateInfo instanceCreateInfo = vk::InstanceCreateInfo(vk::InstanceCreateFlags(), &applicationInfo,
@@ -189,7 +189,7 @@ static void createVulkanInstance(const uint32_t enabledLayerCount, const char* c
 	}
 	catch (vk::SystemError err)
 	{
-		platformLayer::messageBoxFatal("vulkanGraphics::createVulkanInstance: Failed to create vulkan instance.");
+		platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::createVulkanInstance: Failed to create vulkan instance.");
 	}
 }
 
@@ -199,7 +199,7 @@ static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityF
 {
 	if (messageSeverity >= debugCallbackMinSeverityConsolePrint)
 	{
-		platformLayer::consolePrint(sString::printf("vulkan debug callback: %s", pCallbackData->pMessage));
+		platformLayer::console::consolePrint(sString::printf("vulkan debug callback: %s", pCallbackData->pMessage));
 	}
 
 #if defined(PLATFORM_WIN32)
@@ -234,7 +234,7 @@ static void makeDebugMessenger(const vk::Instance& instance, const vk::DispatchL
 	}
 	catch (vk::SystemError err)
 	{
-		platformLayer::messageBoxFatal("vulkanGraphics::makeDebugMessenger: Failed to create debug messenger.");
+		platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::makeDebugMessenger: Failed to create debug messenger.");
 	}
 }
 
@@ -256,12 +256,12 @@ static void getPhysicalDevice(const vk::Instance& instance, const uint32_t enabl
 			deviceMemoryProperties.memoryHeapCount != 0)
 		{
 			outPhysicalDevice = device;
-			platformLayer::consolePrint(sString::printf("selected physical device: (%s)", deviceProperties.deviceName));
+			platformLayer::console::consolePrint(sString::printf("selected physical device: (%s)", deviceProperties.deviceName));
 			return;
 		}
 	}
 
-	platformLayer::messageBoxFatal("vulkanGraphics::getPhysicalDevice: could not find a suitable physical device.");
+	platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::getPhysicalDevice: could not find a suitable physical device.");
 }
 
 static void findQueueFamilies(const vk::PhysicalDevice& physicalDevice, sQueueFamilyIndices& outQueueFamilyIndices)
@@ -269,7 +269,7 @@ static void findQueueFamilies(const vk::PhysicalDevice& physicalDevice, sQueueFa
 	std::vector<vk::QueueFamilyProperties> queueFamilies = physicalDevice.getQueueFamilyProperties();
 
 	vk::PhysicalDeviceProperties deviceProperties = physicalDevice.getProperties();
-	platformLayer::consolePrint(sString::printf("physical device (%s) supports %d queue families.", deviceProperties.deviceName, queueFamilies.size()));
+	platformLayer::console::consolePrint(sString::printf("physical device (%s) supports %d queue families.", deviceProperties.deviceName, queueFamilies.size()));
 
 	uint32_t i = 0;
 	for (const vk::QueueFamilyProperties& queueFamily : queueFamilies)
@@ -277,17 +277,17 @@ static void findQueueFamilies(const vk::PhysicalDevice& physicalDevice, sQueueFa
 		if (queueFamily.queueFlags & vk::QueueFlagBits::eGraphics)
 		{
 			outQueueFamilyIndices.graphicsFamily = i;
-			platformLayer::consolePrint(sString::printf("index %d set for graphics queue family.", i));
+			platformLayer::console::consolePrint(sString::printf("index %d set for graphics queue family.", i));
 		}
 		else if (queueFamily.queueFlags & vk::QueueFlagBits::eCompute)
 		{
 			outQueueFamilyIndices.computeFamily = i;
-			platformLayer::consolePrint(sString::printf("index %d set for compute queue family.", i));
+			platformLayer::console::consolePrint(sString::printf("index %d set for compute queue family.", i));
 		}
 		else if (queueFamily.queueFlags & vk::QueueFlagBits::eTransfer)
 		{
 			outQueueFamilyIndices.transferFamily = i;
-			platformLayer::consolePrint(sString::printf("index %d set for transfer queue family.", i));
+			platformLayer::console::consolePrint(sString::printf("index %d set for transfer queue family.", i));
 		}
 
 		if (outQueueFamilyIndices.isComplete())
@@ -300,7 +300,7 @@ static void findQueueFamilies(const vk::PhysicalDevice& physicalDevice, sQueueFa
 
 	if (!outQueueFamilyIndices.isComplete())
 	{
-		platformLayer::messageBoxFatal(sString::printf("vulkanGraphics::findQueueFamilies: Physical device (%s) does not support all required queue families."));
+		platformLayer::messageBox::showMessageBoxFatal(sString::printf("vulkanGraphics::findQueueFamilies: Physical device (%s) does not support all required queue families."));
 	}
 }
 
@@ -337,7 +337,7 @@ static void createLogicalDevice(const vk::PhysicalDevice& physicalDevice,
 	}
 	catch (vk::SystemError err)
 	{
-		platformLayer::messageBoxFatal("vulkanGraphics::createLogicalDevice: Failed to create device.");
+		platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::createLogicalDevice: Failed to create device.");
 	}
 }
 
@@ -349,7 +349,7 @@ static void getQueue(const vk::Device& device, const uint32_t queueFamilyIndex, 
 	}
 	catch (vk::SystemError err)
 	{
-		platformLayer::messageBoxFatal(sString::printf("vulkanGraphics::getQueue: Failed to get queue with index %d from queue family index %d.", queueIndex, queueFamilyIndex));
+		platformLayer::messageBox::showMessageBoxFatal(sString::printf("vulkanGraphics::getQueue: Failed to get queue with index %d from queue family index %d.", queueIndex, queueFamilyIndex));
 	}
 }
 
@@ -387,7 +387,7 @@ static void createSwapchain(const vk::Device& device, const vk::PhysicalDevice& 
 	}
 	catch (vk::SystemError err)
 	{
-		platformLayer::messageBoxFatal("vulkanGraphics::createSwapchain: Failed to create swap chain.");
+		platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::createSwapchain: Failed to create swap chain.");
 	}
 }
 
@@ -424,7 +424,7 @@ void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, 
 	VkSurfaceKHR cSurface;
 	if(vkCreateWin32SurfaceKHR(instance, &win32SurfaceCreateInfo, nullptr, &cSurface) != VK_SUCCESS)
 	{
-		platformLayer::messageBoxFatal("vulkanGraphics::createSurface: Failed to create win32 surface.");
+		platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::createSurface: Failed to create win32 surface.");
 	}
 
 	apiSurface->surface = cSurface;
@@ -437,7 +437,7 @@ void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, 
 	vk::PresentModeKHR swapchainPresentMode = vsync ? vk::PresentModeKHR::eFifo : vk::PresentModeKHR::eMailbox;
 	if (!(supportDetails.isPresentModeSupported(swapchainPresentMode)))
 	{
-		platformLayer::messageBox(eMessageLevel::warning, sString::printf( "vulkanGraphics::createSurface: present mode (%s) is not supported by the physical device. Falling back on Fifo present mode.", vk::to_string(swapchainPresentMode)));
+		platformLayer::messageBox::showMessageBox(eMessageLevel::warning, sString::printf( "vulkanGraphics::createSurface: present mode (%s) is not supported by the physical device. Falling back on Fifo present mode.", vk::to_string(swapchainPresentMode)));
 
 		swapchainPresentMode = vk::PresentModeKHR::eFifo;
 	}
@@ -446,7 +446,7 @@ void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, 
 	vk::SurfaceFormatKHR swapchainFormat = vk::SurfaceFormatKHR(vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear);
 	if (!(supportDetails.isFormatSupported(swapchainFormat)))
 	{
-		platformLayer::messageBox(eMessageLevel::warning, sString::printf(
+		platformLayer::messageBox::showMessageBox(eMessageLevel::warning, sString::printf(
 			"vulkanGraphics::createSurface: surface format (%s, %s) is not supported by the physical device. Falling back on first available format (%s, %s)", 
 			vk::to_string(swapchainFormat.format), vk::to_string(swapchainFormat.colorSpace), vk::to_string(supportDetails.formats[0].format), vk::to_string(supportDetails.formats[0].colorSpace)));
 
@@ -495,7 +495,7 @@ void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, 
 		}
 		catch (vk::SystemError err)
 		{
-			platformLayer::messageBoxFatal("vulkanGraphics::createSurface: Failed to create swap chain image view.");
+			platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::createSurface: Failed to create swap chain image view.");
 		}
 	}
 }
@@ -530,7 +530,7 @@ void vulkanGraphics::resizeSurface(graphicsSurface* surface, uint32_t width, uin
 
 void vulkanGraphics::setSurfaceUseVSync(graphicsSurface* surface, const bool inUseVSync)
 {
-	platformLayer::messageBox(eMessageLevel::message, "Todo: Surface must be destroyed and recreated to toggle vsync using vulkan api.");
+	platformLayer::messageBox::showMessageBox(eMessageLevel::message, "Todo: Surface must be destroyed and recreated to toggle vsync using vulkan api.");
 }
 
 void vulkanGraphics::beginFrame()

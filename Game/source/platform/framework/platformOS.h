@@ -2,5 +2,8 @@
 
 namespace platformLayer
 {
-	extern void pollOS();
+	namespace os
+	{
+		extern void pollOS();
+	}
 }

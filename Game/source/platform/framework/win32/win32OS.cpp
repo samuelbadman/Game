@@ -2,14 +2,17 @@
 
 namespace platformLayer
 {
-	void pollOS()
+	namespace os
 	{
-		// Dispatch windows messages
-		MSG msg = {};
-		while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+		void pollOS()
 		{
-			TranslateMessage(&msg);
-			DispatchMessage(&msg);
+			// Dispatch windows messages
+			MSG msg = {};
+			while (PeekMessage(&msg, nullptr, 0, 0, PM_REMOVE))
+			{
+				TranslateMessage(&msg);
+				DispatchMessage(&msg);
+			}
 		}
 	}
 }

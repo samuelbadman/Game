@@ -2,6 +2,9 @@
 
 namespace platformLayer
 {
-	extern void initAudio();
-	extern void shutdownAudio();
+	namespace audio
+	{
+		extern void initAudio();
+		extern void shutdownAudio();
+	}
 }

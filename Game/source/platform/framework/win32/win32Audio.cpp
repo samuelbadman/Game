@@ -7,27 +7,30 @@ static IXAudio2MasteringVoice* masterVoice = nullptr;
 
 namespace platformLayer
 {
-	void initAudio()
+	namespace audio
 	{
-		HRESULT hr;
-
-		if (FAILED(hr = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
+		void initAudio()
 		{
-			platformLayer::messageBoxFatal("xAudio2Audio::init failed to create xAudio2 instance.");
+			HRESULT hr;
+
+			if (FAILED(hr = XAudio2Create(&xAudio2, 0, XAUDIO2_DEFAULT_PROCESSOR)))
+			{
+				platformLayer::messageBox::showMessageBoxFatal("xAudio2Audio::init failed to create xAudio2 instance.");
+			}
+
+			if (FAILED(hr = xAudio2->CreateMasteringVoice(&masterVoice)))
+			{
+				platformLayer::messageBox::showMessageBoxFatal("xAudio2Audio::init failed to create mastering voice.");
+			}
 		}
 
-		if (FAILED(hr = xAudio2->CreateMasteringVoice(&masterVoice)))
+		void shutdownAudio()
 		{
-			platformLayer::messageBoxFatal("xAudio2Audio::init failed to create mastering voice.");
+			if (masterVoice)
+			{
+				masterVoice->DestroyVoice();
+			}
+			masterVoice = nullptr;
 		}
-	}
-
-	void shutdownAudio()
-	{
-		if (masterVoice)
-		{
-			masterVoice->DestroyVoice();
-		}
-		masterVoice = nullptr;
 	}
 }
