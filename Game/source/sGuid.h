@@ -2,7 +2,7 @@
 
 // 128-bit globally unique identifier
 // Implements a hash function and operator == overlaod to allow the type to be used as the key in a map
-class guid
+struct sGuid
 {
 private:
 	// 4 32-bit components
@@ -13,7 +13,7 @@ private:
 
 public:
 	// Default constructor
-	guid();
+	sGuid();
 
 	// Access immutable individual components through index
 	const uint32_t& operator[](const size_t index) const
@@ -23,7 +23,7 @@ public:
 	}
 
 	// Equality comparison
-	bool operator==(const guid& other) const
+	bool operator==(const sGuid& other) const
 	{
 		return a == other.a &&
 			b == other.b &&
@@ -46,10 +46,10 @@ public:
 namespace std
 {
 	template<>
-	struct hash<guid>
+	struct hash<sGuid>
 	{
 		// Hash operator() overload
-		std::size_t operator()(const guid& inGuid) const
+		std::size_t operator()(const sGuid& inGuid) const
 		{
 			size_t res = 17;
 			res = res * 31 + hash<uint32_t>()(inGuid[0]);

@@ -9,18 +9,18 @@
 #include "platform/framework/PlatformAudio.h"
 #include "platform/framework/platformTiming.h"
 #include "platform/framework/platformMessageBox.h"
-#include "platform/events/closedEvent.h"
-#include "platform/events/destroyedEvent.h"
-#include "platform/events/inputEvent.h"
-#include "platform/events/enterSizeMoveEvent.h"
-#include "platform/events/exitSizeMoveEvent.h"
-#include "platform/events/gainedFocusEvent.h"
-#include "platform/events/lostFocusEvent.h"
-#include "platform/events/maximizedEvent.h"
-#include "platform/events/minimizedEvent.h"
-#include "platform/events/resizedEvent.h"
-#include "platform/events/enterFullScreenEvent.h"
-#include "platform/events/exitFullScreenEvent.h"
+#include "platform/events/sClosedEvent.h"
+#include "platform/events/sDestroyedEvent.h"
+#include "platform/events/sInputEvent.h"
+#include "platform/events/sEnterSizeMoveEvent.h"
+#include "platform/events/sExitSizeMoveEvent.h"
+#include "platform/events/sGainedFocusEvent.h"
+#include "platform/events/sLostFocusEvent.h"
+#include "platform/events/sMaximizedEvent.h"
+#include "platform/events/sMinimizedEvent.h"
+#include "platform/events/sResizedEvent.h"
+#include "platform/events/sEnterFullScreenEvent.h"
+#include "platform/events/sExitFullScreenEvent.h"
 #include "platform/graphics/graphics.h"
 
 #include "platform/graphics/vertexPos3Norm3Col4UV2.h"
@@ -51,7 +51,7 @@ struct sGameSettings
 };
 
 bool game::running = false;
-std::shared_ptr<platformWindow> game::window;
+std::shared_ptr<platformLayer::window::platformWindow> game::window;
 std::shared_ptr<graphics> game::graphicsContext;
 std::shared_ptr<graphicsSurface> game::surface;
 int64_t game::fps = 0;
@@ -96,6 +96,8 @@ void game::start()
 		platformLayer::os::pollOS();
 		platformLayer::gamepad::pollGamepads();
 
+		// Process input buffer
+
 		tick(deltaSeconds);
 
 		while (accumulator > fixedTimeSliceMs)
@@ -122,61 +124,9 @@ void game::exit()
 	running = false;
 }
 
-void game::onInputEvent(platformWindow* inWindow, const sInputEvent& evt)
+void game::onInput(platformLayer::input::sInputEvent&& evt)
 {
-}
 
-void game::onWindowMaximized(platformWindow* inWindow, const struct sMaximizedEvent& evt)
-{
-}
-
-void game::onWindowResized(platformWindow* inWindow, const sResizedEvent& evt)
-{
-	if (inWindow == window.get())
-	{
-		updateViewProjectionMatrix();
-		graphicsContext->resizeSurface(surface.get(), evt.newClientWidth, evt.newClientHeight);
-	}
-}
-
-void game::onWindowMinimized(platformWindow* inWindow, const sMinimizedEvent& evt)
-{
-}
-
-void game::onWindowEnterSizeMove(platformWindow* inWindow, const sEnterSizeMoveEvent& evt)
-{
-}
-
-void game::onWindowExitSizeMove(platformWindow* inWindow, const sExitSizeMoveEvent& evt)
-{
-}
-
-void game::onWindowGainedFocus(platformWindow* inWindow, const sGainedFocusEvent& evt)
-{
-}
-
-void game::onWindowLostFocus(platformWindow* inWindow, const sLostFocusEvent& evt)
-{
-}
-
-void game::onWindowClosed(platformWindow* inWindow, const sClosedEvent& evt)
-{
-	if (inWindow == window.get())
-	{
-		exit();
-	}
-}
-
-void game::onWindowDestroyedEvent(platformWindow* inWindow, const sDestroyedEvent& evt)
-{
-}
-
-void game::onWindowEnterFullScreen(platformWindow* inWindow, const sEnterFullScreenEvent& evt)
-{
-}
-
-void game::onWindowExitFullScreen(platformWindow* inWindow, const sExitFullScreenEvent& evt)
-{
 }
 
 void game::parseCommandLineArgs()
@@ -204,6 +154,10 @@ void game::initializeWindow()
 	windowDesc.height = sGameSettings::windowDimensions[1];
 
 	platformLayer::window::createWindow(windowDesc, window);
+
+	// Register to platform layer events from the window
+	platformLayer::window::addClosedEventDelegate(window.get(), std::bind(&game::onWindowClosed, std::placeholders::_1));
+	platformLayer::window::addResizedEventDelegate(window.get(), std::bind(&game::onWindowResized, std::placeholders::_1));
 }
 
 void game::initializeGraphics()
@@ -264,6 +218,17 @@ void game::loadResources()
 	
 	triangleRenderData.pMeshResources = &triangleMeshResources;
 	triangleRenderData.pWorldMatrix = &triangleWorldMatrix;
+}
+
+void game::onWindowClosed(platformLayer::window::sClosedEvent&& evt)
+{
+	exit();
+}
+
+void game::onWindowResized(platformLayer::window::sResizedEvent&& evt)
+{
+	updateViewProjectionMatrix();
+	graphicsContext->resizeSurface(surface.get(), evt.newClientWidth, evt.newClientHeight);
 }
 
 void game::begin()

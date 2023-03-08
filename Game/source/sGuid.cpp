@@ -1,14 +1,14 @@
 #include "pch.h"
-#include "guid.h"
+#include "sGuid.h"
 #include "math/mathLibrary.h"
 #include "sString.h"
 
-guid::guid()
+sGuid::sGuid()
 {
     reset();
 }
 
-void guid::newGuid()
+void sGuid::newGuid()
 {
     a = mathLibrary::randomUInt32();
     b = mathLibrary::randomUInt32();
@@ -16,7 +16,7 @@ void guid::newGuid()
     d = mathLibrary::randomUInt32();
 }
 
-void guid::reset()
+void sGuid::reset()
 {
     a = 0;
     b = 0;
@@ -24,7 +24,7 @@ void guid::reset()
     d = 0;
 }
 
-std::string guid::toString() const
+std::string sGuid::toString() const
 {
     // Convert guid to string representation
     return sString::printf("%d,%d,%d,%d", a, b, c, d);

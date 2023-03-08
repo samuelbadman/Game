@@ -90,7 +90,7 @@
     <ClCompile Include="source\platform\graphics\vulkan\vulkanGraphics.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\guid.cpp">
+    <ClCompile Include="source\sGuid.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\platform\graphics\graphics.cpp">
@@ -113,40 +113,40 @@
     <ClInclude Include="source\platform\framework\win32\win32Window.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\inputEvent.h">
+    <ClInclude Include="source\platform\events\sInputEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\enterSizeMoveEvent.h">
+    <ClInclude Include="source\platform\events\sEnterSizeMoveEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\exitSizeMoveEvent.h">
+    <ClInclude Include="source\platform\events\sExitSizeMoveEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\gainedFocusEvent.h">
+    <ClInclude Include="source\platform\events\sGainedFocusEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\lostFocusEvent.h">
+    <ClInclude Include="source\platform\events\sLostFocusEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\resizedEvent.h">
+    <ClInclude Include="source\platform\events\sResizedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\maximizedEvent.h">
+    <ClInclude Include="source\platform\events\sMaximizedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\minimizedEvent.h">
+    <ClInclude Include="source\platform\events\sMinimizedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\closedEvent.h">
+    <ClInclude Include="source\platform\events\sClosedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\destroyedEvent.h">
+    <ClInclude Include="source\platform\events\sDestroyedEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\enterFullScreenEvent.h">
+    <ClInclude Include="source\platform\events\sEnterFullScreenEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\events\exitFullScreenEvent.h">
+    <ClInclude Include="source\platform\events\sExitFullScreenEvent.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\sString.h">
@@ -245,13 +245,19 @@
     <ClInclude Include="source\platform\graphics\graphicsApi.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\guid.h">
+    <ClInclude Include="source\sGuid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\graphics\renderData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\graphics\graphicsObject.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\sCallback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\sMultiCallback.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

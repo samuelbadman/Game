@@ -38,6 +38,8 @@ private:
 	uint32_t getOffsetToCurrentPosition();
 };
 
+class direct3d12Surface;
+
 class direct3d12Graphics : public graphics
 {
 private:
@@ -78,23 +80,23 @@ public:
 	// Graphics interface
 	void init(const bool useWarp, uint32_t inBackBufferCount) final;
 	void shutdown() final;
-	void createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<class graphicsSurface>& outSurface) final;
-	void destroySurface(std::shared_ptr<class graphicsSurface>& surface) final;
-	void resizeSurface(class graphicsSurface* surface, uint32_t width, uint32_t height) final;
-	void setSurfaceUseVSync(class graphicsSurface* surface, const bool inUseVSync) final;
+	void createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<graphicsSurface>& outSurface) final;
+	void destroySurface(std::shared_ptr<graphicsSurface>& surface) final;
+	void resizeSurface(graphicsSurface* surface, uint32_t width, uint32_t height) final;
+	void setSurfaceUseVSync(graphicsSurface* surface, const bool inUseVSync) final;
 	void beginFrame() final;
-	void render(const uint32_t numSurfaces, class graphicsSurface* const* surfaces, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const class matrix4x4* const viewProjection) final;
-	void endFrame(const uint32_t numRenderedSurfaces, class graphicsSurface* const* renderedSurfaces) final;
-	//void loadMesh(const size_t vertexCount, const struct sVertexPos3Norm3Col4UV2* const vertices, const size_t indexCount, const uint32_t* const indices, struct sMeshResources& outMeshResource) final;
-	void loadMeshes(const uint32_t meshCount, const size_t* vertexCounts, const struct sVertexPos3Norm3Col4UV2(*vertices)[], const size_t* const indexCounts, const uint32_t(*indices)[], struct sMeshResources** const outMeshResources) final;
+	void render(const uint32_t numSurfaces, graphicsSurface* const* surfaces, const uint32_t renderDataCount, const sRenderData* const* renderData, const matrix4x4* const viewProjection) final;
+	void endFrame(const uint32_t numRenderedSurfaces, graphicsSurface* const* renderedSurfaces) final;
+	//void loadMesh(const size_t vertexCount, const sVertexPos3Norm3Col4UV2* const vertices, const size_t indexCount, const uint32_t* const indices, sMeshResources& outMeshResource) final;
+	void loadMeshes(const uint32_t meshCount, const size_t* vertexCounts, const sVertexPos3Norm3Col4UV2(*vertices)[], const size_t* const indexCounts, const uint32_t(*indices)[], sMeshResources** const outMeshResources) final;
 
 private:
 	void loadShader(const std::string& shaderSourceFile, LPCWSTR entryPoint, LPCWSTR targetProfile, std::vector<uint8_t>& outBuffer);
 	void compileShader(LPCWSTR file, LPCWSTR entryPoint, LPCWSTR targetProfile, Microsoft::WRL::ComPtr<IDxcBlob>& outDxcBlob);
 	// Waits on the CPU thread for all GPU work to finish
 	void waitForGPU();
-	void recordSurface(const class direct3d12Surface* surface, ID3D12GraphicsCommandList6* commandList, const uint32_t renderDataCount, const struct sRenderData* const* renderData, const class matrix4x4* const viewProjection);
-	void presentSurface(class direct3d12Surface* surface, const bool useVSync, const bool tearingSupported);
+	void recordSurface(const direct3d12Surface* surface, ID3D12GraphicsCommandList6* commandList, const uint32_t renderDataCount, const sRenderData* const* renderData, const matrix4x4* const viewProjection);
+	void presentSurface(direct3d12Surface* surface, const bool useVSync, const bool tearingSupported);
 	void createDefaultBufferAndRecordCopyCommand(ID3D12GraphicsCommandList6* commandList, ID3D12Resource* copySrcBffer, UINT64 width, size_t& outDefaultBufferResourceHandle);
 	void createVertexBufferView(const size_t vertexBufferResourceHandle, const UINT vertexStride, const UINT bufferWidth, size_t& outVertexBufferViewHandle);
 	void createIndexBufferView(const size_t indexBufferResourceHandle, const DXGI_FORMAT format, const UINT bufferWidth, size_t& outIndexBufferViewHandle);

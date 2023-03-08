@@ -205,7 +205,7 @@ del "$(OutDir)shaders\*.bin"</Command>
   <ItemGroup>
     <ClCompile Include="source\fileIO\fileIO.cpp" />
     <ClCompile Include="source\game\game.cpp" />
-    <ClCompile Include="source\guid.cpp" />
+    <ClCompile Include="source\sGuid.cpp" />
     <ClCompile Include="source\math\mathLibrary.cpp" />
     <ClCompile Include="source\math\matrix4x4.cpp" />
     <ClCompile Include="source\math\quaternion.cpp" />
@@ -296,9 +296,10 @@ del "$(OutDir)shaders\*.bin"</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\sCallback.h" />
     <ClInclude Include="source\fileIO\fileIO.h" />
     <ClInclude Include="source\game\game.h" />
-    <ClInclude Include="source\guid.h" />
+    <ClInclude Include="source\sGuid.h" />
     <ClInclude Include="source\math\mathLibrary.h" />
     <ClInclude Include="source\math\matrix4x4.h" />
     <ClInclude Include="source\math\quaternion.h" />
@@ -345,19 +346,20 @@ del "$(OutDir)shaders\*.bin"</Command>
     <ClInclude Include="source\platform\graphics\vertexPos3Norm3Col4UV2.h" />
     <ClInclude Include="source\platform\graphics\vulkan\vulkanGraphics.h" />
     <ClInclude Include="source\platform\graphics\vulkan\vulkanSurface.h" />
+    <ClInclude Include="source\sMultiCallback.h" />
     <ClInclude Include="source\sString.h" />
-    <ClInclude Include="source\platform\events\closedEvent.h" />
-    <ClInclude Include="source\platform\events\destroyedEvent.h" />
-    <ClInclude Include="source\platform\events\enterFullScreenEvent.h" />
-    <ClInclude Include="source\platform\events\enterSizeMoveEvent.h" />
-    <ClInclude Include="source\platform\events\exitFullScreenEvent.h" />
-    <ClInclude Include="source\platform\events\exitSizeMoveEvent.h" />
-    <ClInclude Include="source\platform\events\gainedFocusEvent.h" />
-    <ClInclude Include="source\platform\events\inputEvent.h" />
-    <ClInclude Include="source\platform\events\lostFocusEvent.h" />
-    <ClInclude Include="source\platform\events\maximizedEvent.h" />
-    <ClInclude Include="source\platform\events\minimizedEvent.h" />
-    <ClInclude Include="source\platform\events\resizedEvent.h" />
+    <ClInclude Include="source\platform\events\sClosedEvent.h" />
+    <ClInclude Include="source\platform\events\sDestroyedEvent.h" />
+    <ClInclude Include="source\platform\events\sEnterFullScreenEvent.h" />
+    <ClInclude Include="source\platform\events\sEnterSizeMoveEvent.h" />
+    <ClInclude Include="source\platform\events\sExitFullScreenEvent.h" />
+    <ClInclude Include="source\platform\events\sExitSizeMoveEvent.h" />
+    <ClInclude Include="source\platform\events\sGainedFocusEvent.h" />
+    <ClInclude Include="source\platform\events\sInputEvent.h" />
+    <ClInclude Include="source\platform\events\sLostFocusEvent.h" />
+    <ClInclude Include="source\platform\events\sMaximizedEvent.h" />
+    <ClInclude Include="source\platform\events\sMinimizedEvent.h" />
+    <ClInclude Include="source\platform\events\sResizedEvent.h" />
     <ClInclude Include="source\platform\framework\win32\win32Window.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='releaseWin32|x64'">false</ExcludedFromBuild>

@@ -3,18 +3,18 @@
 #include "win32Window.h"
 #include "platform/framework/platformKeyCodes.h"
 #include "platform/framework/platformMessageBox.h"
-#include "platform/events/closedEvent.h"
-#include "platform/events/destroyedEvent.h"
-#include "platform/events/inputEvent.h"
-#include "platform/events/enterSizeMoveEvent.h"
-#include "platform/events/exitSizeMoveEvent.h"
-#include "platform/events/gainedFocusEvent.h"
-#include "platform/events/lostFocusEvent.h"
-#include "platform/events/maximizedEvent.h"
-#include "platform/events/minimizedEvent.h"
-#include "platform/events/resizedEvent.h"
-#include "platform/events/enterFullScreenEvent.h"
-#include "platform/events/exitFullScreenEvent.h"
+#include "platform/events/sClosedEvent.h"
+#include "platform/events/sDestroyedEvent.h"
+#include "platform/events/sInputEvent.h"
+#include "platform/events/sEnterSizeMoveEvent.h"
+#include "platform/events/sExitSizeMoveEvent.h"
+#include "platform/events/sGainedFocusEvent.h"
+#include "platform/events/sLostFocusEvent.h"
+#include "platform/events/sMaximizedEvent.h"
+#include "platform/events/sMinimizedEvent.h"
+#include "platform/events/sResizedEvent.h"
+#include "platform/events/sEnterFullScreenEvent.h"
+#include "platform/events/sExitFullScreenEvent.h"
 #include "game/game.h"
 
 namespace platformLayer
@@ -77,6 +77,61 @@ namespace platformLayer
 		{
 			return static_cast<void*>(inPlatformWindow->getHwnd());
 		}
+
+		void addResizedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sResizedEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onResizedEventCallback.bind(inDelegate);
+		}
+
+		void addMinimizedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sMinimizedEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onMinimizedEventCallback.bind(inDelegate);
+		}
+
+		void addMaximizedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sMaximizedEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onMaximizedEventCallback.bind(inDelegate);
+		}
+
+		void addLostFocusEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sLostFocusEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onLostFocusEventCallback.bind(inDelegate);
+		}
+
+		void addGainedFocusEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sGainedFocusEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onGainedFocusEventCallback.bind(inDelegate);
+		}
+
+		void addExitSizeMoveEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sExitSizeMoveEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onExitSizeMoveEventCallback.bind(inDelegate);
+		}
+
+		void addEnterSizeMoveEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sEnterSizeMoveEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onEnterSizeMoveEventCallback.bind(inDelegate);
+		}
+
+		void addExitFullScreenEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sExitFullScreenEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onExitFullScreenEventCallback.bind(inDelegate);
+		}
+
+		void addEnterFullScreenEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sEnterFullScreenEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onEnterFullScreenEventCallback.bind(inDelegate);
+		}
+
+		void addDestroyedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sDestroyedEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onDestroyedEventCallback.bind(inDelegate);
+		}
+
+		void addClosedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sClosedEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onClosedEventCallback.bind(inDelegate);
+		}
 	}
 }
 
@@ -100,36 +155,38 @@ static DWORD styleToDword(const eWindowStyle inStyle)
 static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lparam)
 {
 	// Get the window pointer instance
-	if (platformWindow* const window = reinterpret_cast<platformWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))
+	if (platformLayer::window::platformWindow* const window = reinterpret_cast<platformLayer::window::platformWindow*>(GetWindowLongPtr(hwnd, GWLP_USERDATA)))
 	{
 		// Handle message
 		switch (msg)
 		{
 		case WM_MOUSEWHEEL:
 		{
-			const auto delta = GET_WHEEL_DELTA_WPARAM(wparam);
+			const short delta = GET_WHEEL_DELTA_WPARAM(wparam);
 
 			if (delta > 0)
 			{
 				// Mouse wheel up
-				sInputEvent evt = {};
+				platformLayer::input::sInputEvent evt = {};
+				evt.window = window;
 				evt.repeatedKey = false;
-				evt.input = platformLayer::keyCodes::Mouse_Wheel_Up;
+				evt.input = platformLayer::input::keyCodes::Mouse_Wheel_Up;
 				evt.port = 0;
 				evt.data = 1.f;
 
-				game::onInputEvent(window, evt);
+				game::onInput(std::move(evt));
 			}
 			else if (delta < 0)
 			{
 				// Mouse wheel down
-				sInputEvent evt = {};
+				platformLayer::input::sInputEvent evt = {};
+				evt.window = window;
 				evt.repeatedKey = false;
-				evt.input = platformLayer::keyCodes::Mouse_Wheel_Down;
+				evt.input = platformLayer::input::keyCodes::Mouse_Wheel_Down;
 				evt.port = 0;
 				evt.data = 1.f;
 
-				game::onInputEvent(window, evt);
+				game::onInput(std::move(evt));
 			}
 
 			return 0;
@@ -170,93 +227,101 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			}
 
 			// Raw mouse delta
-			sInputEvent evtX = {};
+			platformLayer::input::sInputEvent evtX = {};
+			evtX.window = window;
 			evtX.repeatedKey = false;
-			evtX.input = platformLayer::keyCodes::Mouse_X;
+			evtX.input = platformLayer::input::keyCodes::Mouse_X;
 			evtX.port = 0;
 			evtX.data = static_cast<float>(raw->data.mouse.lLastX);
 
-			game::onInputEvent(window, evtX);
+			game::onInput(std::move(evtX));
 
-			sInputEvent evtY = {};
+			platformLayer::input::sInputEvent evtY = {};
+			evtY.window = window;
 			evtY.repeatedKey = false;
-			evtY.input = platformLayer::keyCodes::Mouse_Y;
+			evtY.input = platformLayer::input::keyCodes::Mouse_Y;
 			evtY.port = 0;
 			evtY.data = static_cast<float>(raw->data.mouse.lLastY);
 
-			game::onInputEvent(window, evtY);
+			game::onInput(std::move(evtY));
 			return 0;
 		}
 
 		case WM_LBUTTONDOWN:
 		{
-			sInputEvent evt = {};
+			platformLayer::input::sInputEvent evt = {};
+			evt.window = window;
 			evt.repeatedKey = false;
-			evt.input = platformLayer::keyCodes::Left_Mouse_Button;
+			evt.input = platformLayer::input::keyCodes::Left_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
-			game::onInputEvent(window, evt);
+			game::onInput(std::move(evt));
 			return 0;
 		}
 
 		case WM_RBUTTONDOWN:
 		{
-			sInputEvent evt = {};
+			platformLayer::input::sInputEvent evt = {};
+			evt.window = window;
 			evt.repeatedKey = false;
-			evt.input = platformLayer::keyCodes::Right_Mouse_Button;
+			evt.input = platformLayer::input::keyCodes::Right_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
-			game::onInputEvent(window, evt);
+			game::onInput(std::move(evt));
 			return 0;
 		}
 
 		case WM_MBUTTONDOWN:
 		{
-			sInputEvent evt = {};
+			platformLayer::input::sInputEvent evt = {};
+			evt.window = window;
 			evt.repeatedKey = false;
-			evt.input = platformLayer::keyCodes::Middle_Mouse_Button;
+			evt.input = platformLayer::input::keyCodes::Middle_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
-			game::onInputEvent(window, evt);
+			game::onInput(std::move(evt));
 			return 0;
 		}
 
 		case WM_LBUTTONUP:
 		{
-			sInputEvent evt = {};
+			platformLayer::input::sInputEvent evt = {};
+			evt.window = window;
 			evt.repeatedKey = false;
-			evt.input = platformLayer::keyCodes::Left_Mouse_Button;
+			evt.input = platformLayer::input::keyCodes::Left_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
-			game::onInputEvent(window, evt);
+			game::onInput(std::move(evt));
 			return 0;
 		}
 
 		case WM_RBUTTONUP:
 		{
-			sInputEvent evt = {};
+			platformLayer::input::sInputEvent evt = {};
+			evt.window = window;
 			evt.repeatedKey = false;
-			evt.input = platformLayer::keyCodes::Right_Mouse_Button;
+			evt.input = platformLayer::input::keyCodes::Right_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
-			game::onInputEvent(window, evt);
+			game::onInput(std::move(evt));
 			return 0;
 		}
 
 		case WM_MBUTTONUP:
 		{
-			sInputEvent evt = {};
+			platformLayer::input::sInputEvent evt = {};
+			evt.window = window;
 			evt.repeatedKey = false;
-			evt.input = platformLayer::keyCodes::Middle_Mouse_Button;
+			evt.input = platformLayer::input::keyCodes::Middle_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
-			game::onInputEvent(window, evt);
+			game::onInput(std::move(evt));
 			return 0;
 		}
 
@@ -266,33 +331,35 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			// Handle alt+f4 exit shortcut
 			bool altBit = false;
 			altBit = (lparam & (1 << 29)) != 0;
-			if (altBit && (static_cast<int16_t>(wparam) == platformLayer::keyCodes::F4))
+			if (altBit && (static_cast<int16_t>(wparam) == platformLayer::input::keyCodes::F4))
 			{
 				SendMessage(hwnd, WM_CLOSE, 0, 0);
 				return 0;
 			}
 
 			// Generate input evt
-			sInputEvent evt = {};
+			platformLayer::input::sInputEvent evt = {};
+			evt.window = window;
 			evt.repeatedKey = static_cast<bool>(lparam & 0x40000000);
 			evt.input = static_cast<int16_t>(wparam);
 			evt.port = 0;
 			evt.data = 1.f;
 
-			game::onInputEvent(window, evt);
+			game::onInput(std::move(evt));
 			return 0;
 		}
 
 		case WM_SYSKEYUP:
 		case WM_KEYUP:
 		{
-			sInputEvent evt = {};
+			platformLayer::input::sInputEvent evt = {};
+			evt.window = window;
 			evt.repeatedKey = false;
 			evt.input = static_cast<int16_t>(wparam);
 			evt.port = 0;
 			evt.data = 0.f;
 
-			game::onInputEvent(window, evt);
+			game::onInput(std::move(evt));
 			return 0;
 		}
 
@@ -303,23 +370,24 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			case SIZE_MAXIMIZED:
 			{
 				// Window maximized
-				sMaximizedEvent maximize = {};
-				game::onWindowMaximized(window, maximize);
+				platformLayer::window::sMaximizedEvent maximize = {};
 
-				sResizedEvent resize = {};
+				window->onMaximizedEventCallback.broadcast(std::move(maximize));
+
+				platformLayer::window::sResizedEvent resize = {};
 				resize.newClientWidth = LOWORD(lparam);
 				resize.newClientHeight = HIWORD(lparam);
 
-				game::onWindowResized(window, resize);
+				window->onResizedEventCallback.broadcast(std::move(resize));
 				return 0;
 			}
 
 			case SIZE_MINIMIZED:
 			{
 				// Window minimized
-				sMinimizedEvent minimize = {};
+				platformLayer::window::sMinimizedEvent minimize = {};
 
-				game::onWindowMinimized(window, minimize);
+				window->onMinimizedEventCallback.broadcast(std::move(minimize));
 				return 0;
 			}
 
@@ -328,11 +396,11 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Window restored
 				if (!window->inSizeMove)
 				{
-					sResizedEvent resize = {};
+					platformLayer::window::sResizedEvent resize = {};
 					resize.newClientWidth = LOWORD(lparam);
 					resize.newClientHeight = HIWORD(lparam);
 
-					game::onWindowResized(window, resize);
+					window->onResizedEventCallback.broadcast(std::move(resize));
 				}
 
 				return 0;
@@ -346,9 +414,9 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			window->inSizeMove = true;
 
-			sEnterSizeMoveEvent evt = {};
+			platformLayer::window::sEnterSizeMoveEvent evt = {};
 
-			game::onWindowEnterSizeMove(window, evt);
+			window->onEnterSizeMoveEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -356,14 +424,14 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			window->inSizeMove = false;
 
-			sExitSizeMoveEvent evt = {};
+			platformLayer::window::sExitSizeMoveEvent evt = {};
 
-			game::onWindowExitSizeMove(window, evt);
+			window->onExitSizeMoveEventCallback.broadcast(std::move(evt));
 
-			sResizedEvent resize = {};
+			platformLayer::window::sResizedEvent resize = {};
 			window->getClientAreaDimensions(resize.newClientWidth, resize.newClientHeight);
 
-			game::onWindowResized(window, resize);
+			window->onResizedEventCallback.broadcast(std::move(resize));
 			return 0;
 		}
 
@@ -372,17 +440,17 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			if (wparam == TRUE)
 			{
 				// Received focus
-				sGainedFocusEvent evt = {};
+				platformLayer::window::sGainedFocusEvent evt = {};
 
-				game::onWindowGainedFocus(window, evt);
+				window->onGainedFocusEventCallback.broadcast(std::move(evt));
 				return 0;
 			}
 			else if (wparam == FALSE)
 			{
 				// Lost focus
-				sLostFocusEvent evt = {};
+				platformLayer::window::sLostFocusEvent evt = {};
 
-				game::onWindowLostFocus(window, evt);
+				window->onLostFocusEventCallback.broadcast(std::move(evt));
 				return 0;
 			}
 
@@ -391,17 +459,17 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 		case WM_CLOSE:
 		{
-			sClosedEvent evt = {};
+			platformLayer::window::sClosedEvent evt = {};
 
-			game::onWindowClosed(window, evt);
+			window->onClosedEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 
 		case WM_DESTROY:
 		{
-			sDestroyedEvent evt = {};
+			platformLayer::window::sDestroyedEvent evt = {};
 
-			game::onWindowDestroyedEvent(window, evt);
+			window->onDestroyedEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 		}
@@ -421,7 +489,7 @@ static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT msg,
 				reinterpret_cast<CREATESTRUCTW*>(lparam);
 
 			// Get the window instance pointer from the create parameters
-			platformWindow* const window = reinterpret_cast<platformWindow*>(
+			platformLayer::window::platformWindow* const window = reinterpret_cast<platformLayer::window::platformWindow*>(
 				create->lpCreateParams);
 
 			// Set the window instance pointer
@@ -440,244 +508,247 @@ static LRESULT CALLBACK InitWindowProc(HWND hwnd, UINT msg,
 	return 0;
 }
 
-void platformWindow::init(const sWindowDesc& desc)
+namespace platformLayer
 {
-	// Store window settings
-	windowClassName = desc.windowClassName;
-	style = desc.style;
-
-	// Get handle to the executable 
-	HINSTANCE hInstance = GetModuleHandle(nullptr);
-
-	const wchar_t* windowClassNameCStr = desc.windowClassName.c_str();
-
-	// Register window class
-	WNDCLASSEX windowClass = {};
-	windowClass.cbSize = sizeof(WNDCLASSEX);
-	windowClass.style = CS_HREDRAW | CS_VREDRAW;
-	windowClass.lpfnWndProc = &InitWindowProc;
-	windowClass.hInstance = GetModuleHandle(nullptr);
-	windowClass.lpszClassName = windowClassNameCStr;
-	windowClass.cbClsExtra = 0;
-	windowClass.cbWndExtra = 0;
-	windowClass.hIcon = ::LoadIcon(hInstance, IDI_APPLICATION);
-	windowClass.hCursor = ::LoadCursor(NULL, IDC_ARROW);
-	windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
-	windowClass.lpszMenuName = NULL;
-	windowClass.hIconSm = ::LoadIcon(hInstance, IDI_APPLICATION);
-
-	if (!(RegisterClassExW(&windowClass) > 0))
+	namespace window
 	{
-		// Failed to register window class
-		platformLayer::messageBox::showMessageBoxFatal("win32Window::init failed to register window class.");
-	}
-
-	// Create the window and store a handle to it
-	if (hwnd = CreateWindowExW(0, windowClassNameCStr, desc.windowTitle.c_str(),
-		styleToDword(desc.style),
-		desc.x, desc.y, desc.width, desc.height,
-		reinterpret_cast<HWND>(desc.parent), nullptr, hInstance, this))
-	{
-		// Register raw input devices
-		RAWINPUTDEVICE rid = {};
-		rid.usUsagePage = 0x01;
-		rid.usUsage = 0x02;
-		rid.dwFlags = 0;
-		rid.hwndTarget = nullptr;
-
-		if (!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
+		void platformWindow::init(const sWindowDesc& desc)
 		{
-			// Failed to register raw input devices
-			platformLayer::messageBox::showMessageBoxFatal("win32Window::init failed to register raw input devices.");
+			// Store window settings
+			windowClassName = desc.windowClassName;
+			style = desc.style;
+
+			// Get handle to the executable 
+			HINSTANCE hInstance = GetModuleHandle(nullptr);
+
+			const wchar_t* windowClassNameCStr = desc.windowClassName.c_str();
+
+			// Register window class
+			WNDCLASSEX windowClass = {};
+			windowClass.cbSize = sizeof(WNDCLASSEX);
+			windowClass.style = CS_HREDRAW | CS_VREDRAW;
+			windowClass.lpfnWndProc = &InitWindowProc;
+			windowClass.hInstance = GetModuleHandle(nullptr);
+			windowClass.lpszClassName = windowClassNameCStr;
+			windowClass.cbClsExtra = 0;
+			windowClass.cbWndExtra = 0;
+			windowClass.hIcon = ::LoadIcon(hInstance, IDI_APPLICATION);
+			windowClass.hCursor = ::LoadCursor(NULL, IDC_ARROW);
+			windowClass.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+			windowClass.lpszMenuName = NULL;
+			windowClass.hIconSm = ::LoadIcon(hInstance, IDI_APPLICATION);
+
+			if (!(RegisterClassExW(&windowClass) > 0))
+			{
+				// Failed to register window class
+				platformLayer::messageBox::showMessageBoxFatal("win32Window::init failed to register window class.");
+			}
+
+			// Create the window and store a handle to it
+			if (hwnd = CreateWindowExW(0, windowClassNameCStr, desc.windowTitle.c_str(),
+				styleToDword(desc.style),
+				desc.x, desc.y, desc.width, desc.height,
+				reinterpret_cast<HWND>(desc.parent), nullptr, hInstance, this))
+			{
+				// Register raw input devices
+				RAWINPUTDEVICE rid = {};
+				rid.usUsagePage = 0x01;
+				rid.usUsage = 0x02;
+				rid.dwFlags = 0;
+				rid.hwndTarget = nullptr;
+
+				if (!RegisterRawInputDevices(&rid, 1, sizeof(rid)))
+				{
+					// Failed to register raw input devices
+					platformLayer::messageBox::showMessageBoxFatal("win32Window::init failed to register raw input devices.");
+				}
+			}
+			else
+			{
+				// Failed to create window
+				platformLayer::messageBox::showMessageBoxFatal("win32Window::init failed to create window.");
+			}
+		}
+
+		void platformWindow::destroy()
+		{
+			// Destroy the window instance
+			if (DestroyWindow(hwnd) == 0)
+			{
+				platformLayer::messageBox::showMessageBoxFatal("win32Window::destroy: failed to destroy window.");
+			}
+
+			// Get handle to the executable 
+			HINSTANCE hInstance = GetModuleHandleW(nullptr);
+
+			// Unregister the window class
+			if (!UnregisterClassW(windowClassName.c_str(), hInstance))
+			{
+				platformLayer::messageBox::showMessageBoxFatal("win32Window::destroy failed to unregister class.");
+			}
+		}
+
+		int8_t platformWindow::enterFullScreen()
+		{
+			// Do nothing if the window is currently in full screen
+			if (inFullscreen)
+			{
+				// The window is currently fullscreen
+				return 1;
+			}
+
+			// Store the current window area rect
+			if (!GetWindowRect(hwnd, &windowRectOnEnterFullScreen))
+			{
+				// Failed to get the current window rect
+				return 1;
+			}
+
+			// Retreive info about the monitor the window is on
+			HMONITOR hMon{ MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST) };
+			MONITORINFO monitorInfo = { sizeof(monitorInfo) };
+			if (!GetMonitorInfo(hMon, &monitorInfo))
+			{
+				// Failed to get current monitor info
+				return 1;
+			}
+
+			// Calculate width and height of the monitor
+			LONG fWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
+			LONG fHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
+
+			// Update position and size of the window
+			if (SetWindowPos(hwnd, HWND_TOP,
+				monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top, fWidth, fHeight,
+				SWP_FRAMECHANGED | SWP_NOACTIVATE) == 0)
+			{
+				return 1;
+			}
+
+			// Update window style
+			if (SetWindowLong(hwnd, GWL_STYLE, 0) == 0)
+			{
+				// SetWindowLong failed
+				return 1;
+			}
+
+			// Show the window maximized
+			ShowWindow(hwnd, SW_MAXIMIZE);
+
+			// Update full screen flag
+			inFullscreen = true;
+
+			// Send enter full screen system evt 
+			platformLayer::window::sEnterFullScreenEvent evt = {};
+
+			onEnterFullScreenEventCallback.broadcast(std::move(evt));
+			return 0;
+		}
+
+		int8_t platformWindow::exitFullScreen()
+		{
+			// Do nothing if the window is currently not in full screen
+			if (!inFullscreen)
+			{
+				// The window is not currently fullscreen
+				return 1;
+			}
+
+			// Update position and size of the window
+			if (SetWindowPos(hwnd, HWND_TOP,
+				windowRectOnEnterFullScreen.left, windowRectOnEnterFullScreen.top,
+				windowRectOnEnterFullScreen.right - windowRectOnEnterFullScreen.left,
+				windowRectOnEnterFullScreen.bottom - windowRectOnEnterFullScreen.top,
+				SWP_FRAMECHANGED | SWP_NOACTIVATE) == 0)
+			{
+				// SetWindowPos failed
+				return 1;
+			}
+
+			// Update window style
+			if (SetWindowLong(hwnd, GWL_STYLE, styleToDword(style)) == 0)
+			{
+				// SetWindowLong failed
+				return 1;
+			}
+
+			// Show the window
+			ShowWindow(hwnd, SW_SHOW);
+
+			// Update full screen flag
+			inFullscreen = false;
+
+			// Send exit full screen system evt 
+			platformLayer::window::sExitFullScreenEvent evt = {};
+
+			onExitFullScreenEventCallback.broadcast(std::move(evt));
+			return 0;
+		}
+
+		int8_t platformWindow::setPosition(uint32_t x, uint32_t y)
+		{
+			if (SetWindowPos(hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW) == 0)
+			{
+				// SetWindowPos failed
+				return 1;
+			}
+			return 0;
+		}
+
+		int8_t platformWindow::setStyle(eWindowStyle inStyle)
+		{
+			style = inStyle;
+
+			// Do not update the window style now if the window is in fullscreen. 
+			// This will be done when the window leaves fullscreen
+			if (!inFullscreen)
+			{
+				if (SetWindowLong(hwnd, GWL_STYLE, styleToDword(inStyle)) == 0)
+				{
+					// SetWindowLong failed
+					return 1;
+				}
+			}
+
+			ShowWindow(hwnd, SW_SHOW);
+
+			return 0;
+		}
+
+		bool platformWindow::show()
+		{
+			// Show the window
+			return (ShowWindow(hwnd, SW_SHOW) != 0);
+		}
+
+		int8_t platformWindow::getClientAreaDimensions(uint32_t& x, uint32_t& y) const
+		{
+			RECT clientRect;
+			if (GetClientRect(hwnd, &clientRect) == 0)
+			{
+				// GetClientRect failed
+				return 1;
+			}
+
+			x = clientRect.right - clientRect.left;
+			y = clientRect.bottom - clientRect.top;
+
+			return 0;
+		}
+
+		int8_t platformWindow::getPosition(uint32_t& x, uint32_t& y) const
+		{
+			RECT windowRect;
+			if (GetWindowRect(hwnd, &windowRect) == 0)
+			{
+				// GetWindowRect failed
+				return 1;
+			}
+
+			x = windowRect.left;
+			y = windowRect.top;
+
+			return 0;
 		}
 	}
-	else
-	{
-		// Failed to create window
-		platformLayer::messageBox::showMessageBoxFatal("win32Window::init failed to create window.");
-	}
 }
-
-void platformWindow::destroy()
-{
-	// Destroy the window instance
-	if (DestroyWindow(hwnd) == 0)
-	{
-		platformLayer::messageBox::showMessageBoxFatal("win32Window::destroy: failed to destroy window.");
-	}
-
-	// Get handle to the executable 
-	HINSTANCE hInstance = GetModuleHandleW(nullptr);
-
-	// Unregister the window class
-	if (!UnregisterClassW(windowClassName.c_str(), hInstance))
-	{
-		platformLayer::messageBox::showMessageBoxFatal("win32Window::destroy failed to unregister class.");
-	}
-}
-
-int8_t platformWindow::enterFullScreen()
-{
-	// Do nothing if the window is currently in full screen
-	if (inFullscreen)
-	{
-		// The window is currently fullscreen
-		return 1;
-	}
-
-	// Store the current window area rect
-	if (!GetWindowRect(hwnd, &windowRectOnEnterFullScreen))
-	{
-		// Failed to get the current window rect
-		return 1;
-	}
-
-	// Retreive info about the monitor the window is on
-	HMONITOR hMon{ MonitorFromWindow(hwnd, MONITOR_DEFAULTTONEAREST) };
-	MONITORINFO monitorInfo = { sizeof(monitorInfo) };
-	if (!GetMonitorInfo(hMon, &monitorInfo))
-	{
-		// Failed to get current monitor info
-		return 1;
-	}
-
-	// Calculate width and height of the monitor
-	LONG fWidth = monitorInfo.rcMonitor.right - monitorInfo.rcMonitor.left;
-	LONG fHeight = monitorInfo.rcMonitor.bottom - monitorInfo.rcMonitor.top;
-
-	// Update position and size of the window
-	if (SetWindowPos(hwnd, HWND_TOP,
-		monitorInfo.rcMonitor.left, monitorInfo.rcMonitor.top, fWidth, fHeight,
-		SWP_FRAMECHANGED | SWP_NOACTIVATE) == 0)
-	{
-		return 1;
-	}
-
-	// Update window style
-	if (SetWindowLong(hwnd, GWL_STYLE, 0) == 0)
-	{
-		// SetWindowLong failed
-		return 1;
-	}
-
-	// Show the window maximized
-	ShowWindow(hwnd, SW_MAXIMIZE);
-
-	// Update full screen flag
-	inFullscreen = true;
-
-	// Send enter full screen system evt 
-	sEnterFullScreenEvent evt = {};
-
-	game::onWindowEnterFullScreen(this, evt);
-
-	return 0;
-}
-
-int8_t platformWindow::exitFullScreen()
-{
-	// Do nothing if the window is currently not in full screen
-	if (!inFullscreen)
-	{
-		// The window is not currently fullscreen
-		return 1;
-	}
-
-	// Update position and size of the window
-	if (SetWindowPos(hwnd, HWND_TOP, 
-		windowRectOnEnterFullScreen.left, windowRectOnEnterFullScreen.top, 
-		windowRectOnEnterFullScreen.right - windowRectOnEnterFullScreen.left,
-		windowRectOnEnterFullScreen.bottom - windowRectOnEnterFullScreen.top, 
-		SWP_FRAMECHANGED | SWP_NOACTIVATE) == 0)
-	{
-		// SetWindowPos failed
-		return 1;
-	}
-
-	// Update window style
-	if (SetWindowLong(hwnd, GWL_STYLE, styleToDword(style)) == 0)
-	{
-		// SetWindowLong failed
-		return 1;
-	}
-
-	// Show the window
-	ShowWindow(hwnd, SW_SHOW);
-
-	// Update full screen flag
-	inFullscreen = false;
-
-	// Send exit full screen system evt 
-	sExitFullScreenEvent evt = {};
-
-	game::onWindowExitFullScreen(this, evt);
-
-	return 0;
-}
-
-int8_t platformWindow::setPosition(uint32_t x, uint32_t y)
-{
-	if (SetWindowPos(hwnd, NULL, x, y, 0, 0, SWP_NOSIZE | SWP_NOZORDER | SWP_SHOWWINDOW) == 0)
-	{
-		// SetWindowPos failed
-		return 1;
-	}
-	return 0;
-}
-
-int8_t platformWindow::setStyle(eWindowStyle inStyle)
-{
-	style = inStyle;
-
-	// Do not update the window style now if the window is in fullscreen. 
-	// This will be done when the window leaves fullscreen
-	if (!inFullscreen)
-	{
-		if (SetWindowLong(hwnd, GWL_STYLE, styleToDword(inStyle)) == 0)
-		{
-			// SetWindowLong failed
-			return 1;
-		}
-	}
-
-	ShowWindow(hwnd, SW_SHOW);
-
-	return 0;
-}
-
-bool platformWindow::show()
-{
-	// Show the window
-	return (ShowWindow(hwnd, SW_SHOW) != 0);
-}
-
-int8_t platformWindow::getClientAreaDimensions(uint32_t& x, uint32_t& y) const
-{
-	RECT clientRect;
-	if (GetClientRect(hwnd, &clientRect) == 0)
-	{
-		// GetClientRect failed
-		return 1;
-	}
-
-	x = clientRect.right - clientRect.left;
-	y = clientRect.bottom - clientRect.top;
-
-	return 0;
-}
-
-int8_t platformWindow::getPosition(uint32_t& x, uint32_t& y) const
-{
-	RECT windowRect;
-	if (GetWindowRect(hwnd, &windowRect) == 0)
-	{
-		// GetWindowRect failed
-		return 1;
-	}
-
-	x = windowRect.left;
-	y = windowRect.top;
-
-	return 0;
-}
-

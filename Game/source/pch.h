@@ -14,6 +14,7 @@
 #include <fstream>
 #include <random>
 #include <optional>
+#include <functional>
 
 #if defined(PLATFORM_WIN32)
 
