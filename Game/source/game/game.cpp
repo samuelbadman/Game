@@ -10,18 +10,10 @@
 #include "platform/framework/platformTiming.h"
 #include "platform/framework/platformMessageBox.h"
 #include "platform/events/sClosedEvent.h"
-#include "platform/events/sDestroyedEvent.h"
 #include "platform/events/sInputEvent.h"
-#include "platform/events/sEnterSizeMoveEvent.h"
-#include "platform/events/sExitSizeMoveEvent.h"
-#include "platform/events/sGainedFocusEvent.h"
-#include "platform/events/sLostFocusEvent.h"
-#include "platform/events/sMaximizedEvent.h"
-#include "platform/events/sMinimizedEvent.h"
 #include "platform/events/sResizedEvent.h"
-#include "platform/events/sEnterFullScreenEvent.h"
-#include "platform/events/sExitFullScreenEvent.h"
 #include "platform/graphics/graphics.h"
+#include "sString.h"
 
 #include "platform/graphics/vertexPos3Norm3Col4UV2.h"
 #include "math/vector3d.h"
@@ -74,6 +66,7 @@ void game::start()
 
 	parseCommandLineArgs();
 	initializeWindow();
+	initializeGamepad();
 	initializeGraphics();
 	platformLayer::window::showWindow(window.get());
 	initializeAudio();
@@ -124,11 +117,6 @@ void game::exit()
 	running = false;
 }
 
-void game::onInput(platformLayer::input::sInputEvent&& evt)
-{
-
-}
-
 void game::parseCommandLineArgs()
 {
 	int32_t argc;
@@ -156,8 +144,14 @@ void game::initializeWindow()
 	platformLayer::window::createWindow(windowDesc, window);
 
 	// Register to platform layer events from the window
-	platformLayer::window::addClosedEventDelegate(window.get(), std::bind(&game::onWindowClosed, std::placeholders::_1));
-	platformLayer::window::addResizedEventDelegate(window.get(), std::bind(&game::onWindowResized, std::placeholders::_1));
+	platformLayer::window::addClosedEventDelegate(window.get(), [](platformLayer::window::sClosedEvent&& evt) { onWindowClosed(std::move(evt)); });
+	platformLayer::window::addResizedEventDelegate(window.get(), [](platformLayer::window::sResizedEvent&& evt) { onWindowResized(std::move(evt)); });
+	platformLayer::window::addInputEventDelegate(window.get(), [](platformLayer::input::sInputEvent&& evt) { onInput(std::move(evt)); });
+}
+
+void game::initializeGamepad()
+{
+	platformLayer::gamepad::addOnInputEventDelegate([](platformLayer::input::sInputEvent&& evt) { onInput(std::move(evt)); });
 }
 
 void game::initializeGraphics()
@@ -229,6 +223,11 @@ void game::onWindowResized(platformLayer::window::sResizedEvent&& evt)
 {
 	updateViewProjectionMatrix();
 	graphicsContext->resizeSurface(surface.get(), evt.newClientWidth, evt.newClientHeight);
+}
+
+void game::onInput(platformLayer::input::sInputEvent&& evt)
+{
+
 }
 
 void game::begin()

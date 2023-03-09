@@ -41,6 +41,7 @@ namespace platformLayer
 			sMultiCallback<void(struct platformLayer::window::sEnterFullScreenEvent&&)> onEnterFullScreenEventCallback;
 			sMultiCallback<void(struct platformLayer::window::sDestroyedEvent&&)> onDestroyedEventCallback;
 			sMultiCallback<void(struct platformLayer::window::sClosedEvent&&)> onClosedEventCallback;
+			sMultiCallback<void(struct platformLayer::input::sInputEvent&&)> onInputEventCallback;
 
 		public:
 			void init(const sWindowDesc& desc);

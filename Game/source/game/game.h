@@ -39,11 +39,11 @@ private:
 public:
 	static void start();
 	static void exit();
-	static void onInput(platformLayer::input::sInputEvent&& evt);
 
 private:
 	static void parseCommandLineArgs();
 	static void initializeWindow();
+	static void initializeGamepad();
 	static void initializeGraphics();
 	static void shutdownGraphics();
 	static void initializeAudio();
@@ -51,6 +51,7 @@ private:
 
 	static void onWindowClosed(platformLayer::window::sClosedEvent&& evt);
 	static void onWindowResized(platformLayer::window::sResizedEvent&& evt);
+	static void onInput(platformLayer::input::sInputEvent&& evt);
 
 	static void begin();
 	static void tick(float deltaSeconds);

@@ -15,7 +15,6 @@
 #include "platform/events/sResizedEvent.h"
 #include "platform/events/sEnterFullScreenEvent.h"
 #include "platform/events/sExitFullScreenEvent.h"
-#include "game/game.h"
 
 namespace platformLayer
 {
@@ -132,6 +131,11 @@ namespace platformLayer
 		{
 			inPlatformWindow->onClosedEventCallback.bind(inDelegate);
 		}
+
+		void addInputEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::input::sInputEvent&&)>& inDelegate)
+		{
+			inPlatformWindow->onInputEventCallback.bind(inDelegate);
+		}
 	}
 }
 
@@ -168,25 +172,23 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			{
 				// Mouse wheel up
 				platformLayer::input::sInputEvent evt = {};
-				evt.window = window;
 				evt.repeatedKey = false;
 				evt.input = platformLayer::input::keyCodes::Mouse_Wheel_Up;
 				evt.port = 0;
 				evt.data = 1.f;
 
-				game::onInput(std::move(evt));
+				window->onInputEventCallback.broadcast(std::move(evt));
 			}
 			else if (delta < 0)
 			{
 				// Mouse wheel down
 				platformLayer::input::sInputEvent evt = {};
-				evt.window = window;
 				evt.repeatedKey = false;
 				evt.input = platformLayer::input::keyCodes::Mouse_Wheel_Down;
 				evt.port = 0;
 				evt.data = 1.f;
 
-				game::onInput(std::move(evt));
+				window->onInputEventCallback.broadcast(std::move(evt));
 			}
 
 			return 0;
@@ -228,100 +230,92 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			// Raw mouse delta
 			platformLayer::input::sInputEvent evtX = {};
-			evtX.window = window;
 			evtX.repeatedKey = false;
 			evtX.input = platformLayer::input::keyCodes::Mouse_X;
 			evtX.port = 0;
 			evtX.data = static_cast<float>(raw->data.mouse.lLastX);
 
-			game::onInput(std::move(evtX));
+			window->onInputEventCallback.broadcast(std::move(evtX));
 
 			platformLayer::input::sInputEvent evtY = {};
-			evtY.window = window;
 			evtY.repeatedKey = false;
 			evtY.input = platformLayer::input::keyCodes::Mouse_Y;
 			evtY.port = 0;
 			evtY.data = static_cast<float>(raw->data.mouse.lLastY);
 
-			game::onInput(std::move(evtY));
+			window->onInputEventCallback.broadcast(std::move(evtY));
 			return 0;
 		}
 
 		case WM_LBUTTONDOWN:
 		{
 			platformLayer::input::sInputEvent evt = {};
-			evt.window = window;
 			evt.repeatedKey = false;
 			evt.input = platformLayer::input::keyCodes::Left_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
-			game::onInput(std::move(evt));
+			window->onInputEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 
 		case WM_RBUTTONDOWN:
 		{
 			platformLayer::input::sInputEvent evt = {};
-			evt.window = window;
 			evt.repeatedKey = false;
 			evt.input = platformLayer::input::keyCodes::Right_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
-			game::onInput(std::move(evt));
+			window->onInputEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 
 		case WM_MBUTTONDOWN:
 		{
 			platformLayer::input::sInputEvent evt = {};
-			evt.window = window;
 			evt.repeatedKey = false;
 			evt.input = platformLayer::input::keyCodes::Middle_Mouse_Button;
 			evt.port = 0;
 			evt.data = 1.f;
 
-			game::onInput(std::move(evt));
+			window->onInputEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 
 		case WM_LBUTTONUP:
 		{
 			platformLayer::input::sInputEvent evt = {};
-			evt.window = window;
 			evt.repeatedKey = false;
 			evt.input = platformLayer::input::keyCodes::Left_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
-			game::onInput(std::move(evt));
+			window->onInputEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 
 		case WM_RBUTTONUP:
 		{
 			platformLayer::input::sInputEvent evt = {};
-			evt.window = window;
 			evt.repeatedKey = false;
 			evt.input = platformLayer::input::keyCodes::Right_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
-			game::onInput(std::move(evt));
+			window->onInputEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 
 		case WM_MBUTTONUP:
 		{
 			platformLayer::input::sInputEvent evt = {};
-			evt.window = window;
 			evt.repeatedKey = false;
 			evt.input = platformLayer::input::keyCodes::Middle_Mouse_Button;
 			evt.port = 0;
 			evt.data = 0.f;
 
-			game::onInput(std::move(evt));
+			window->onInputEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -339,13 +333,12 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			// Generate input evt
 			platformLayer::input::sInputEvent evt = {};
-			evt.window = window;
 			evt.repeatedKey = static_cast<bool>(lparam & 0x40000000);
 			evt.input = static_cast<int16_t>(wparam);
 			evt.port = 0;
 			evt.data = 1.f;
 
-			game::onInput(std::move(evt));
+			window->onInputEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -353,13 +346,12 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		case WM_KEYUP:
 		{
 			platformLayer::input::sInputEvent evt = {};
-			evt.window = window;
 			evt.repeatedKey = false;
 			evt.input = static_cast<int16_t>(wparam);
 			evt.port = 0;
 			evt.data = 0.f;
 
-			game::onInput(std::move(evt));
+			window->onInputEventCallback.broadcast(std::move(evt));
 			return 0;
 		}
 

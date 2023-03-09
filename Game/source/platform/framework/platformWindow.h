@@ -25,6 +25,11 @@ struct sWindowDesc
 
 namespace platformLayer
 {
+	namespace input
+	{
+		struct sInputEvent;
+	}
+
 	namespace window
 	{
 		class platformWindow;
@@ -61,16 +66,29 @@ namespace platformLayer
 		extern bool isWindowFullscreen(platformWindow* inPlatformWindow);
 		extern void* getWindowHandle(platformWindow* inPlatformWindow);
 
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addResizedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sResizedEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addMinimizedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sMinimizedEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addMaximizedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sMaximizedEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addLostFocusEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sLostFocusEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addGainedFocusEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sGainedFocusEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addExitSizeMoveEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sExitSizeMoveEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addEnterSizeMoveEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sEnterSizeMoveEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addExitFullScreenEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sExitFullScreenEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addEnterFullScreenEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sEnterFullScreenEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addDestroyedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sDestroyedEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
 		extern void addClosedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sClosedEvent&&)>& inDelegate);
+		// Bind event delegate to inPlatformWindow's event callback
+		extern void addInputEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::input::sInputEvent&&)>& inDelegate);
 	}
 }
