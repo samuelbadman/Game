@@ -112,11 +112,6 @@ void game::start()
 	platformLayer::window::destroyWindow(window);
 }
 
-void game::exit()
-{
-	running = false;
-}
-
 void game::parseCommandLineArgs()
 {
 	int32_t argc;
@@ -228,6 +223,11 @@ void game::onWindowResized(platformLayer::window::sResizedEvent&& evt)
 void game::onInput(platformLayer::input::sInputEvent&& evt)
 {
 
+}
+
+void game::exit()
+{
+	running = false;
 }
 
 void game::begin()
