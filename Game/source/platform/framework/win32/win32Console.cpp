@@ -1,6 +1,6 @@
 #include "pch.h"
 
-#include "platform/framework/platformConsole.h"
+#include "platform/framework/abstract/platformConsole.h"
 
 namespace platformLayer
 {

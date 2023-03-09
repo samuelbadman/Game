@@ -2,10 +2,10 @@
 #include "graphics.h"
 
 #if defined(PLATFORM_WIN32)
-#include "direct3D12/direct3D12Graphics.h"
+#include "platform/graphics/direct3D12/direct3D12Graphics.h"
 #endif // defined(PLATFORM_WIN32)
 
-#include "vulkan/vulkanGraphics.h"
+#include "platform/graphics/vulkan/vulkanGraphics.h"
 
 void graphics::create(const eGraphicsApi graphicsApi, std::shared_ptr<graphics>& outGraphics)
 {

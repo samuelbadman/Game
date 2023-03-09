@@ -1,6 +1,6 @@
 #pragma once
 
-#include "platform/graphics/graphics.h"
+#include "platform/graphics/abstract/graphics.h"
 
 struct sDescriptorSizes
 {

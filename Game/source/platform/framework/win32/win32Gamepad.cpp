@@ -1,7 +1,7 @@
 #include "pch.h"
-#include "platform/framework/platformGamepad.h"
-#include "platform/framework/platformKeyCodes.h"
-#include "platform/events/sInputEvent.h"
+#include "platform/framework/abstract/platformGamepad.h"
+#include "platform/framework/abstract/platformKeyCodes.h"
+#include "platform/framework/events/sInputEvent.h"
 #include "sMultiCallback.h"
 
 static sMultiCallback<void(platformLayer::input::sInputEvent&&)> onInputEventCallback;

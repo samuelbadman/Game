@@ -1,6 +1,6 @@
 #pragma once
 
-#include "platform/graphics/graphicsSurface.h"
+#include "platform/graphics/abstract/graphicsSurface.h"
 
 class direct3d12Surface : public graphicsSurface
 {

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "platform/framework/platformWindow.h"
+#include "platform/framework/abstract/platformWindow.h"
 #include "sMultiCallback.h"
 
 namespace platformLayer

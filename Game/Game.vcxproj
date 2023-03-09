@@ -256,9 +256,9 @@ del "$(OutDir)shaders\*.bin"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='releaseWin32|x64'">false</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="source\platform\graphics\graphics.cpp" />
-    <ClCompile Include="source\platform\graphics\graphicsObject.cpp" />
-    <ClCompile Include="source\platform\graphics\graphicsSurface.cpp" />
+    <ClCompile Include="source\platform\graphics\abstract\graphics.cpp" />
+    <ClCompile Include="source\platform\graphics\abstract\graphicsObject.cpp" />
+    <ClCompile Include="source\platform\graphics\abstract\graphicsSurface.cpp" />
     <ClCompile Include="source\platform\graphics\sVertexPos3Norm3Col4UV2.cpp" />
     <ClCompile Include="source\platform\graphics\vulkan\vulkanGraphics.cpp" />
     <ClCompile Include="source\platform\graphics\vulkan\vulkanSurface.cpp" />
@@ -302,15 +302,15 @@ del "$(OutDir)shaders\*.bin"</Command>
     <ClInclude Include="source\math\vector2d.h" />
     <ClInclude Include="source\math\vector3d.h" />
     <ClInclude Include="source\math\vector4d.h" />
-    <ClInclude Include="source\platform\framework\platformCommandLine.h" />
-    <ClInclude Include="source\platform\framework\platformConsole.h" />
-    <ClInclude Include="source\platform\framework\platformKeyCodes.h" />
-    <ClInclude Include="source\platform\framework\platformMessageBox.h" />
-    <ClInclude Include="source\platform\framework\platformOS.h" />
+    <ClInclude Include="source\platform\framework\abstract\platformCommandLine.h" />
+    <ClInclude Include="source\platform\framework\abstract\platformConsole.h" />
+    <ClInclude Include="source\platform\framework\abstract\platformKeyCodes.h" />
+    <ClInclude Include="source\platform\framework\abstract\platformMessageBox.h" />
+    <ClInclude Include="source\platform\framework\abstract\platformOS.h" />
     <ClInclude Include="source\pch.h" />
-    <ClInclude Include="source\platform\framework\platformAudio.h" />
-    <ClInclude Include="source\platform\framework\platformDisplay.h" />
-    <ClInclude Include="source\platform\framework\platformGamepad.h" />
+    <ClInclude Include="source\platform\framework\abstract\platformAudio.h" />
+    <ClInclude Include="source\platform\framework\abstract\platformDisplay.h" />
+    <ClInclude Include="source\platform\framework\abstract\platformGamepad.h" />
     <ClInclude Include="source\platform\graphics\direct3D12\vendor\d3dx12.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='releaseWin32|x64'">false</ExcludedFromBuild>
@@ -323,17 +323,17 @@ del "$(OutDir)shaders\*.bin"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="source\platform\framework\platformWindow.h" />
+    <ClInclude Include="source\platform\framework\abstract\platformWindow.h" />
     <ClInclude Include="source\platform\graphics\direct3D12\direct3d12Surface.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='releaseWin32|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClInclude>
-    <ClInclude Include="source\platform\graphics\graphics.h" />
-    <ClInclude Include="source\platform\graphics\graphicsApi.h" />
-    <ClInclude Include="source\platform\graphics\graphicsObject.h" />
-    <ClInclude Include="source\platform\graphics\graphicsSurface.h" />
+    <ClInclude Include="source\platform\graphics\abstract\graphics.h" />
+    <ClInclude Include="source\platform\graphics\abstract\graphicsApi.h" />
+    <ClInclude Include="source\platform\graphics\abstract\graphicsObject.h" />
+    <ClInclude Include="source\platform\graphics\abstract\graphicsSurface.h" />
     <ClInclude Include="source\platform\graphics\sMeshResources.h" />
     <ClInclude Include="source\platform\graphics\sRenderData.h" />
     <ClInclude Include="source\platform\graphics\sVertexPos3Norm3Col4UV2.h" />
@@ -341,18 +341,18 @@ del "$(OutDir)shaders\*.bin"</Command>
     <ClInclude Include="source\platform\graphics\vulkan\vulkanSurface.h" />
     <ClInclude Include="source\sMultiCallback.h" />
     <ClInclude Include="source\sString.h" />
-    <ClInclude Include="source\platform\events\sClosedEvent.h" />
-    <ClInclude Include="source\platform\events\sDestroyedEvent.h" />
-    <ClInclude Include="source\platform\events\sEnterFullScreenEvent.h" />
-    <ClInclude Include="source\platform\events\sEnterSizeMoveEvent.h" />
-    <ClInclude Include="source\platform\events\sExitFullScreenEvent.h" />
-    <ClInclude Include="source\platform\events\sExitSizeMoveEvent.h" />
-    <ClInclude Include="source\platform\events\sGainedFocusEvent.h" />
-    <ClInclude Include="source\platform\events\sInputEvent.h" />
-    <ClInclude Include="source\platform\events\sLostFocusEvent.h" />
-    <ClInclude Include="source\platform\events\sMaximizedEvent.h" />
-    <ClInclude Include="source\platform\events\sMinimizedEvent.h" />
-    <ClInclude Include="source\platform\events\sResizedEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sClosedEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sDestroyedEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sEnterFullScreenEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sEnterSizeMoveEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sExitFullScreenEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sExitSizeMoveEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sGainedFocusEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sInputEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sLostFocusEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sMaximizedEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sMinimizedEvent.h" />
+    <ClInclude Include="source\platform\framework\events\sResizedEvent.h" />
     <ClInclude Include="source\platform\framework\win32\win32Window.h">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='releaseWin32|x64'">false</ExcludedFromBuild>

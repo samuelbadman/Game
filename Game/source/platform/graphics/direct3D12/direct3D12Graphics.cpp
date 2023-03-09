@@ -1,6 +1,6 @@
 #include "pch.h"
 #include "direct3d12Graphics.h"
-#include "platform/framework/platformMessageBox.h"
+#include "platform/framework/abstract/platformMessageBox.h"
 #include "direct3d12Surface.h"
 #include "fileIO/fileIO.h"
 #include "platform/graphics/sVertexPos3Norm3Col4UV2.h"
