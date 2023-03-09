@@ -45,9 +45,6 @@
     <ClCompile Include="source\platform\framework\win32\win32Audio.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\framework\win32\win32Timing.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="source\platform\framework\win32\win32Gamepad.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -162,9 +159,6 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\framework\platformOS.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="source\platform\framework\platformTiming.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\framework\platformAudio.h">

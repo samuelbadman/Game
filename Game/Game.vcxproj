@@ -244,12 +244,6 @@ del "$(OutDir)shaders\*.bin"</Command>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
     </ClCompile>
-    <ClCompile Include="source\platform\framework\win32\win32Timing.cpp">
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='releaseWin32|x64'">false</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">true</ExcludedFromBuild>
-      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="source\platform\graphics\direct3D12\direct3d12Graphics.cpp">
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='debugWin32|x64'">false</ExcludedFromBuild>
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='releaseWin32|x64'">false</ExcludedFromBuild>
@@ -313,7 +307,6 @@ del "$(OutDir)shaders\*.bin"</Command>
     <ClInclude Include="source\platform\framework\platformKeyCodes.h" />
     <ClInclude Include="source\platform\framework\platformMessageBox.h" />
     <ClInclude Include="source\platform\framework\platformOS.h" />
-    <ClInclude Include="source\platform\framework\platformTiming.h" />
     <ClInclude Include="source\pch.h" />
     <ClInclude Include="source\platform\framework\platformAudio.h" />
     <ClInclude Include="source\platform\framework\platformDisplay.h" />
