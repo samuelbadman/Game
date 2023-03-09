@@ -15,7 +15,7 @@
 #include "platform/graphics/graphics.h"
 #include "sString.h"
 
-#include "platform/graphics/vertexPos3Norm3Col4UV2.h"
+#include "platform/graphics/sVertexPos3Norm3Col4UV2.h"
 #include "math/vector3d.h"
 #include "math/vector4d.h"
 #include "math/vector2d.h"

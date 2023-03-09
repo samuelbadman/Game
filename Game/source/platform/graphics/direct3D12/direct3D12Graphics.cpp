@@ -3,10 +3,10 @@
 #include "platform/framework/platformMessageBox.h"
 #include "direct3d12Surface.h"
 #include "fileIO/fileIO.h"
-#include "platform/graphics/vertexPos3Norm3Col4UV2.h"
-#include "platform/graphics/meshResources.h"
+#include "platform/graphics/sVertexPos3Norm3Col4UV2.h"
+#include "platform/graphics/sMeshResources.h"
 #include "math/matrix4x4.h"
-#include "platform/graphics/renderData.h"
+#include "platform/graphics/sRenderData.h"
 
 using namespace Microsoft::WRL;
 

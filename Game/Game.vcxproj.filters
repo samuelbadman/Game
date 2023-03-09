@@ -84,7 +84,7 @@
     <ClCompile Include="source\math\transform.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="source\platform\graphics\vertexPos3Norm3Col4UV2.cpp">
+    <ClCompile Include="source\platform\graphics\sVertexPos3Norm3Col4UV2.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="source\platform\graphics\vulkan\vulkanGraphics.cpp">
@@ -197,7 +197,7 @@
     <ClInclude Include="source\platform\graphics\graphicsSurface.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\graphics\vertexPos3Norm3Col4UV2.h">
+    <ClInclude Include="source\platform\graphics\sVertexPos3Norm3Col4UV2.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\fileIO\fileIO.h">
@@ -206,7 +206,7 @@
     <ClInclude Include="source\platform\graphics\direct3D12\vendor\d3dx12.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\graphics\meshResources.h">
+    <ClInclude Include="source\platform\graphics\sMeshResources.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\math\mathLibrary.h">
@@ -248,7 +248,7 @@
     <ClInclude Include="source\sGuid.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="source\platform\graphics\renderData.h">
+    <ClInclude Include="source\platform\graphics\sRenderData.h">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\platform\graphics\graphicsObject.h">

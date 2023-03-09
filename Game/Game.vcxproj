@@ -265,7 +265,7 @@ del "$(OutDir)shaders\*.bin"</Command>
     <ClCompile Include="source\platform\graphics\graphics.cpp" />
     <ClCompile Include="source\platform\graphics\graphicsObject.cpp" />
     <ClCompile Include="source\platform\graphics\graphicsSurface.cpp" />
-    <ClCompile Include="source\platform\graphics\vertexPos3Norm3Col4UV2.cpp" />
+    <ClCompile Include="source\platform\graphics\sVertexPos3Norm3Col4UV2.cpp" />
     <ClCompile Include="source\platform\graphics\vulkan\vulkanGraphics.cpp" />
     <ClCompile Include="source\platform\graphics\vulkan\vulkanSurface.cpp" />
     <ClCompile Include="source\sString.cpp" />
@@ -341,9 +341,9 @@ del "$(OutDir)shaders\*.bin"</Command>
     <ClInclude Include="source\platform\graphics\graphicsApi.h" />
     <ClInclude Include="source\platform\graphics\graphicsObject.h" />
     <ClInclude Include="source\platform\graphics\graphicsSurface.h" />
-    <ClInclude Include="source\platform\graphics\meshResources.h" />
-    <ClInclude Include="source\platform\graphics\renderData.h" />
-    <ClInclude Include="source\platform\graphics\vertexPos3Norm3Col4UV2.h" />
+    <ClInclude Include="source\platform\graphics\sMeshResources.h" />
+    <ClInclude Include="source\platform\graphics\sRenderData.h" />
+    <ClInclude Include="source\platform\graphics\sVertexPos3Norm3Col4UV2.h" />
     <ClInclude Include="source\platform\graphics\vulkan\vulkanGraphics.h" />
     <ClInclude Include="source\platform\graphics\vulkan\vulkanSurface.h" />
     <ClInclude Include="source\sMultiCallback.h" />

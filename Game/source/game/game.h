@@ -1,8 +1,8 @@
 #pragma once
 
-#include "platform/graphics/meshResources.h"
+#include "platform/graphics/sMeshResources.h"
 #include "math/matrix4x4.h"
-#include "platform/graphics/renderData.h"
+#include "platform/graphics/sRenderData.h"
 
 namespace platformLayer::window
 {

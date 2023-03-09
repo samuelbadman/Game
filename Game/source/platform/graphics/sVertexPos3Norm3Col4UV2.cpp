@@ -1,5 +1,5 @@
 #include "pch.h"
-#include "vertexPos3Norm3Col4UV2.h"
+#include "sVertexPos3Norm3Col4UV2.h"
 #include "math/vector3d.h"
 #include "math/vector4d.h"
 #include "math/vector2d.h"
