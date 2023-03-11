@@ -437,7 +437,7 @@ void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, 
 	vk::PresentModeKHR swapchainPresentMode = vsync ? vk::PresentModeKHR::eFifo : vk::PresentModeKHR::eMailbox;
 	if (!(supportDetails.isPresentModeSupported(swapchainPresentMode)))
 	{
-		platformLayer::messageBox::showMessageBox(eMessageLevel::warning, sString::printf( "vulkanGraphics::createSurface: present mode (%s) is not supported by the physical device. Falling back on Fifo present mode.", vk::to_string(swapchainPresentMode)));
+		platformLayer::messageBox::showMessageBox(platformLayer::messageBox::eMessageLevel::warning, sString::printf( "vulkanGraphics::createSurface: present mode (%s) is not supported by the physical device. Falling back on Fifo present mode.", vk::to_string(swapchainPresentMode)));
 
 		swapchainPresentMode = vk::PresentModeKHR::eFifo;
 	}
@@ -446,7 +446,7 @@ void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, 
 	vk::SurfaceFormatKHR swapchainFormat = vk::SurfaceFormatKHR(vk::Format::eB8G8R8A8Unorm, vk::ColorSpaceKHR::eSrgbNonlinear);
 	if (!(supportDetails.isFormatSupported(swapchainFormat)))
 	{
-		platformLayer::messageBox::showMessageBox(eMessageLevel::warning, sString::printf(
+		platformLayer::messageBox::showMessageBox(platformLayer::messageBox::eMessageLevel::warning, sString::printf(
 			"vulkanGraphics::createSurface: surface format (%s, %s) is not supported by the physical device. Falling back on first available format (%s, %s)", 
 			vk::to_string(swapchainFormat.format), vk::to_string(swapchainFormat.colorSpace), vk::to_string(supportDetails.formats[0].format), vk::to_string(supportDetails.formats[0].colorSpace)));
 
@@ -530,7 +530,7 @@ void vulkanGraphics::resizeSurface(graphicsSurface* surface, uint32_t width, uin
 
 void vulkanGraphics::setSurfaceUseVSync(graphicsSurface* surface, const bool inUseVSync)
 {
-	platformLayer::messageBox::showMessageBox(eMessageLevel::message, "Todo: Surface must be destroyed and recreated to toggle vsync using vulkan api.");
+	platformLayer::messageBox::showMessageBox(platformLayer::messageBox::eMessageLevel::message, "Todo: Surface must be destroyed and recreated to toggle vsync using vulkan api.");
 }
 
 void vulkanGraphics::beginFrame()

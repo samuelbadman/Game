@@ -4,17 +4,20 @@
 #include "math/matrix4x4.h"
 #include "platform/graphics/sRenderData.h"
 
-namespace platformLayer::window
+namespace platformLayer
 {
-	class platformWindow;
+	namespace window
+	{
+		class platformWindow;
 
-	struct sClosedEvent;
-	struct sResizedEvent;
-}
+		struct sClosedEvent;
+		struct sResizedEvent;
+	}
 
-namespace platformLayer::input
-{
-	struct sInputEvent;
+	namespace input
+	{
+		struct sInputEvent;
+	}
 }
 
 class graphics;
