@@ -205,6 +205,7 @@ del "$(OutDir)shaders\*.bin"</Command>
   <ItemGroup>
     <ClCompile Include="source\fileIO\fileIO.cpp" />
     <ClCompile Include="source\game\game.cpp" />
+    <ClCompile Include="source\platform\framework\win32\platformTiming.cpp" />
     <ClCompile Include="source\sGuid.cpp" />
     <ClCompile Include="source\math\mathLibrary.cpp" />
     <ClCompile Include="source\math\matrix4x4.cpp" />
@@ -290,6 +291,7 @@ del "$(OutDir)shaders\*.bin"</Command>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="source\platform\framework\abstract\platformTiming.h" />
     <ClInclude Include="source\sCallback.h" />
     <ClInclude Include="source\fileIO\fileIO.h" />
     <ClInclude Include="source\game\game.h" />

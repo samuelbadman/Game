@@ -105,6 +105,9 @@
     <ClCompile Include="source\platform\graphics\vulkan\vulkanSurface.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="source\platform\framework\win32\platformTiming.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="source\platform\framework\win32\win32Window.h">
@@ -252,6 +255,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="source\sMultiCallback.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="source\platform\framework\abstract\platformTiming.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

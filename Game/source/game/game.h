@@ -50,6 +50,7 @@ private:
 
 	static void onWindowClosed(platformLayer::window::sClosedEvent&& evt);
 	static void onWindowResized(platformLayer::window::sResizedEvent&& evt);
+
 	static void onInput(platformLayer::input::sInputEvent&& evt);
 
 	static void exit();

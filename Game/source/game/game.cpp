@@ -8,6 +8,7 @@
 #include "platform/framework/abstract/platformGamepad.h"
 #include "platform/framework/abstract/PlatformAudio.h"
 #include "platform/framework/abstract/platformMessageBox.h"
+#include "platform/framework/abstract/platformTiming.h"
 #include "platform/framework/events/sClosedEvent.h"
 #include "platform/framework/events/sInputEvent.h"
 #include "platform/framework/events/sResizedEvent.h"
@@ -102,7 +103,7 @@ void game::start()
 		}
 
 		// Update frame timing
-		platformLayer::os::updateTiming(fps, ms);
+		platformLayer::timing::updateTiming(fps, ms);
 	}
 
 	shutdownGraphics();
