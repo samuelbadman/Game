@@ -351,3 +351,8 @@ MigrationBackup/
 
 # Project build files
 build/
+
+# Vulkan libraries
+Game/source/platform/graphics/vulkan/vendor/Lib/vulkan-1.lib
+Game/source/platform/graphics/vulkan/vendor/Lib/shaderc_combined.lib
+Game/source/platform/graphics/vulkan/vendor/Lib/shaderc_combinedd.lib

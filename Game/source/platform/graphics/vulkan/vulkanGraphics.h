@@ -37,7 +37,7 @@ public:
 
 public:
 	// Graphics interface
-	void init(bool useWarp, uint32_t inBackBufferCount) final;
+	void init(bool softwareRenderer, uint32_t inBackBufferCount) final;
 	void shutdown() final;
 	void createSurface(void* hwnd, uint32_t width, uint32_t height, bool vsync, std::shared_ptr<graphicsSurface>& outSurface) final;
 	void destroySurface(std::shared_ptr<graphicsSurface>& surface) final;

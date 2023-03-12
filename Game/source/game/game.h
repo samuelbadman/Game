@@ -50,13 +50,13 @@ private:
 	static void shutdownGraphics();
 	static void initializeAudio();
 	static void loadResources();
+	static void exit();
 
 	static void onWindowClosed(platformLayer::window::sClosedEvent&& evt);
 	static void onWindowResized(platformLayer::window::sResizedEvent&& evt);
 
 	static void onInput(platformLayer::input::sInputEvent&& evt);
 
-	static void exit();
 	static void begin();
 	static void tick(float deltaSeconds);
 	static void fixedTick(float fixedStep);

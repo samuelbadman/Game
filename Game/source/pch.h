@@ -48,7 +48,13 @@
 #endif // defined(PLATFORM_WIN32
 
 #pragma comment(lib, "vulkan-1.lib")
+#if defined(_DEBUG)
+#pragma comment(lib, "shaderc_combinedd.lib")
+#else
+#pragma comment(lib, "shaderc_combined.lib")
+#endif // defined(_DEBUG)
 #include "platform/graphics/vulkan/vendor/include/vulkan/vulkan.hpp"
+#include "platform/graphics/vulkan/vendor/include/shaderc/shaderc.hpp"
 
 // glm maths library
 #define GLM_FORCE_RADIANS

@@ -493,10 +493,10 @@ void direct3d12Graphics::init(bool useWarp, uint32_t inBackBufferCount)
 
 	// Shader compilation
 	std::vector<uint8_t> vertexShaderBuffer;
-	loadShader("shaders/vertexShader.hlsl", L"main", L"vs_6_0", vertexShaderBuffer);
+	loadShader("shaders/direct3d12/vertexShader.hlsl", L"main", L"vs_6_0", vertexShaderBuffer);
 
 	std::vector<uint8_t> pixelShaderBuffer;
-	loadShader("shaders/pixelShader.hlsl", L"main", L"ps_6_0", pixelShaderBuffer);
+	loadShader("shaders/direct3d12/pixelShader.hlsl", L"main", L"ps_6_0", pixelShaderBuffer);
 
 	// Pipeline state
 	CD3DX12_DEFAULT def = {};

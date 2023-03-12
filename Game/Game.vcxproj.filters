@@ -262,7 +262,7 @@
     </ClInclude>
   </ItemGroup>
   <ItemGroup>
-    <FxCompile Include="shaders\vertexShader.hlsl" />
-    <FxCompile Include="shaders\pixelShader.hlsl" />
+    <FxCompile Include="shaders\direct3d12\vertexShader.hlsl" />
+    <FxCompile Include="shaders\direct3d12\pixelShader.hlsl" />
   </ItemGroup>
 </Project>

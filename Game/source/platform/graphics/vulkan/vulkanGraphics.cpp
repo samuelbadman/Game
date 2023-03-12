@@ -396,7 +396,7 @@ vulkanGraphics::vulkanGraphics()
 {
 }
 
-void vulkanGraphics::init(bool useWarp, uint32_t inBackBufferCount)
+void vulkanGraphics::init(bool softwareRenderer, uint32_t inBackBufferCount)
 {
 	backBufferCount = inBackBufferCount;
 	makeInstance();
