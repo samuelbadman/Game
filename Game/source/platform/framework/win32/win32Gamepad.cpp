@@ -2,9 +2,8 @@
 #include "platform/framework/abstract/platformGamepad.h"
 #include "platform/framework/abstract/platformKeyCodes.h"
 #include "platform/framework/events/sInputEvent.h"
-#include "sMultiCallback.h"
 
-static sMultiCallback<void(platformLayer::input::sInputEvent&&)> onInputEventCallback;
+static std::vector<std::function<void(platformLayer::input::sInputEvent&&)>> onInputEventCallbacks;
 
 static XINPUT_STATE prevStates[XUSER_MAX_COUNT];
 
@@ -12,6 +11,14 @@ static constexpr float gamepadLeftStickDeadzoneRadius = 0.24f;
 static constexpr float gamepadRightStickDeadzoneRadius = 0.24f;
 static constexpr int16_t gamepadMaxStickMagnitude = 32767;
 static constexpr int16_t gamepadMaxTriggerMagnitude = 255;
+
+static void broadcastInputEvent(platformLayer::input::sInputEvent&& evt)
+{
+	for (const std::function<void(platformLayer::input::sInputEvent&&)>& callback : onInputEventCallbacks)
+	{
+		callback(std::move(evt));
+	}
+}
 
 static void applyCircularDeadzone(float& axisX, float& axisY, float deadzoneRadius)
 {
@@ -52,7 +59,7 @@ static void pollButton(const XINPUT_STATE& state, const XINPUT_STATE& prevState,
 		evt.port = port;
 		evt.data = 1.0f;
 
-		onInputEventCallback.broadcast(std::move(evt));
+		broadcastInputEvent(std::move(evt));
 	}
 	else
 	{
@@ -63,7 +70,7 @@ static void pollButton(const XINPUT_STATE& state, const XINPUT_STATE& prevState,
 		evt.port = port;
 		evt.data = 0.0f;
 
-		onInputEventCallback.broadcast(std::move(evt));
+		broadcastInputEvent(std::move(evt));
 	}
 }
 
@@ -105,7 +112,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 	leftXAxisEvent.port = port;
 	leftXAxisEvent.data = thumbLX;
 
-	onInputEventCallback.broadcast(std::move(leftXAxisEvent));
+	broadcastInputEvent(std::move(leftXAxisEvent));
 
 	platformLayer::input::sInputEvent leftYAxisEvent = {};
 	leftYAxisEvent.repeatedKey = false;
@@ -113,7 +120,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 	leftYAxisEvent.port = port;
 	leftYAxisEvent.data = thumbLY;
 
-	onInputEventCallback.broadcast(std::move(leftYAxisEvent));
+	broadcastInputEvent(std::move(leftYAxisEvent));
 
 	// Action
 	// Get the current and previous states of the stick
@@ -136,7 +143,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			leftThumbstickRightEvent.port = port;
 			leftThumbstickRightEvent.data = 1.0f;
 
-			onInputEventCallback.broadcast(std::move(leftThumbstickRightEvent));
+			broadcastInputEvent(std::move(leftThumbstickRightEvent));
 		}
 		// Check if the stick is pushed left
 		else if (currLX < 0)
@@ -148,7 +155,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			leftThumbstickLeftEvent.port = port;
 			leftThumbstickLeftEvent.data = 1.0f;
 
-			onInputEventCallback.broadcast(std::move(leftThumbstickLeftEvent));
+			broadcastInputEvent(std::move(leftThumbstickLeftEvent));
 		}
 	}
 
@@ -165,7 +172,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			leftThumbstickUpEvent.port = port;
 			leftThumbstickUpEvent.data = 1.0f;
 
-			onInputEventCallback.broadcast(std::move(leftThumbstickUpEvent));
+			broadcastInputEvent(std::move(leftThumbstickUpEvent));
 		}
 		// Check if the stick is pushed down
 		else if (currLY < 0)
@@ -177,7 +184,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			leftThumbstickDownEvent.port = port;
 			leftThumbstickDownEvent.data = 1.0f;
 
-			onInputEventCallback.broadcast(std::move(leftThumbstickDownEvent));
+			broadcastInputEvent(std::move(leftThumbstickDownEvent));
 		}
 	}
 
@@ -199,7 +206,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 	rightXAxisEvent.port = port;
 	rightXAxisEvent.data = thumbRX;
 
-	onInputEventCallback.broadcast(std::move(rightXAxisEvent));
+	broadcastInputEvent(std::move(rightXAxisEvent));
 
 	platformLayer::input::sInputEvent rightYAxisEvent = {};
 	rightYAxisEvent.repeatedKey = false;
@@ -207,7 +214,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 	rightYAxisEvent.port = port;
 	rightYAxisEvent.data = thumbRY;
 
-	onInputEventCallback.broadcast(std::move(rightYAxisEvent));
+	broadcastInputEvent(std::move(rightYAxisEvent));
 
 	// Action
 	// Get the current and previous states of the stick
@@ -230,7 +237,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			rightThumbstickRightEvent.port = port;
 			rightThumbstickRightEvent.data = 1.0f;
 
-			onInputEventCallback.broadcast(std::move(rightThumbstickRightEvent));
+			broadcastInputEvent(std::move(rightThumbstickRightEvent));
 		}
 		// Check if the stick is pushed left
 		else if (currRX < 0)
@@ -242,7 +249,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			rightThumbstickLeftEvent.port = port;
 			rightThumbstickLeftEvent.data = 1.0f;
 
-			onInputEventCallback.broadcast(std::move(rightThumbstickLeftEvent));
+			broadcastInputEvent(std::move(rightThumbstickLeftEvent));
 		}
 	}
 
@@ -259,7 +266,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			rightThumbstickUpEvent.port = port;
 			rightThumbstickUpEvent.data = 1.0f;
 
-			onInputEventCallback.broadcast(std::move(rightThumbstickUpEvent));
+			broadcastInputEvent(std::move(rightThumbstickUpEvent));
 		}
 		// Check if the stick is pushed down
 		else if (currRY < 0)
@@ -271,7 +278,7 @@ static void pollThumbsticks(const XINPUT_STATE& state, const XINPUT_STATE& prevS
 			rightThumbstickDownEvent.port = port;
 			rightThumbstickDownEvent.data = 1.0f;
 
-			onInputEventCallback.broadcast(std::move(rightThumbstickDownEvent));
+			broadcastInputEvent(std::move(rightThumbstickDownEvent));
 		}
 	}
 }
@@ -290,7 +297,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 		leftActionEvent.port = port;
 		leftActionEvent.data = static_cast<float>(currL);
 
-		onInputEventCallback.broadcast(std::move(leftActionEvent));
+		broadcastInputEvent(std::move(leftActionEvent));
 	}
 
 	// Right
@@ -304,7 +311,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 		rightActionEvent.port = port;
 		rightActionEvent.data = static_cast<float>(currR);
 
-		onInputEventCallback.broadcast(std::move(rightActionEvent));
+		broadcastInputEvent(std::move(rightActionEvent));
 	}
 
 	// Axis
@@ -315,7 +322,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 	leftAxisEvent.port = port;
 	leftAxisEvent.data = static_cast<float>(state.Gamepad.bLeftTrigger) / static_cast<float>(gamepadMaxTriggerMagnitude);
 
-	onInputEventCallback.broadcast(std::move(leftAxisEvent));
+	broadcastInputEvent(std::move(leftAxisEvent));
 
 	// Right
 	platformLayer::input::sInputEvent rightAxisEvent = {};
@@ -324,7 +331,7 @@ static void pollTriggers(const XINPUT_STATE& state, const XINPUT_STATE& prevStat
 	rightAxisEvent.port = port;
 	rightAxisEvent.data = static_cast<float>(state.Gamepad.bRightTrigger) / static_cast<float>(gamepadMaxTriggerMagnitude);
 
-	onInputEventCallback.broadcast(std::move(rightAxisEvent));
+	broadcastInputEvent(std::move(rightAxisEvent));
 }
 
 namespace platformLayer
@@ -366,7 +373,7 @@ namespace platformLayer
 
 		void addOnInputEventDelegate(const std::function<void(platformLayer::input::sInputEvent&&)>& inDelegate)
 		{
-			onInputEventCallback.bind(inDelegate);
+			onInputEventCallbacks.push_back(inDelegate);
 		}
 	}
 }

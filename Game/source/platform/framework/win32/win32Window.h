@@ -1,12 +1,24 @@
 #pragma once
 
 #include "platform/framework/abstract/platformWindow.h"
-#include "sMultiCallback.h"
 
 namespace platformLayer
 {
 	namespace window
 	{
+		struct platformLayer::window::sResizedEvent;
+		struct platformLayer::window::sMinimizedEvent;
+		struct platformLayer::window::sMaximizedEvent;
+		struct platformLayer::window::sLostFocusEvent;
+		struct platformLayer::window::sGainedFocusEvent;
+		struct platformLayer::window::sExitSizeMoveEvent;
+		struct platformLayer::window::sEnterSizeMoveEvent;
+		struct platformLayer::window::sExitFullScreenEvent;
+		struct platformLayer::window::sEnterFullScreenEvent;
+		struct platformLayer::window::sDestroyedEvent;
+		struct platformLayer::window::sClosedEvent;
+		struct platformLayer::input::sInputEvent;
+
 		class platformWindow
 		{
 		private:
@@ -30,18 +42,18 @@ namespace platformLayer
 			bool inSizeMove = false;
 
 			// Callbacks
-			sMultiCallback<void(struct platformLayer::window::sResizedEvent&&)> onResizedEventCallback;
-			sMultiCallback<void(struct platformLayer::window::sMinimizedEvent&&)> onMinimizedEventCallback;
-			sMultiCallback<void(struct platformLayer::window::sMaximizedEvent&&)> onMaximizedEventCallback;
-			sMultiCallback<void(struct platformLayer::window::sLostFocusEvent&&)> onLostFocusEventCallback;
-			sMultiCallback<void(struct platformLayer::window::sGainedFocusEvent&&)> onGainedFocusEventCallback;
-			sMultiCallback<void(struct platformLayer::window::sExitSizeMoveEvent&&)> onExitSizeMoveEventCallback;
-			sMultiCallback<void(struct platformLayer::window::sEnterSizeMoveEvent&&)> onEnterSizeMoveEventCallback;
-			sMultiCallback<void(struct platformLayer::window::sExitFullScreenEvent&&)> onExitFullScreenEventCallback;
-			sMultiCallback<void(struct platformLayer::window::sEnterFullScreenEvent&&)> onEnterFullScreenEventCallback;
-			sMultiCallback<void(struct platformLayer::window::sDestroyedEvent&&)> onDestroyedEventCallback;
-			sMultiCallback<void(struct platformLayer::window::sClosedEvent&&)> onClosedEventCallback;
-			sMultiCallback<void(struct platformLayer::input::sInputEvent&&)> onInputEventCallback;
+			std::vector<std::function<void(platformLayer::window::sResizedEvent&&)>> onResizedEventCallbacks;
+			std::vector<std::function<void(platformLayer::window::sMinimizedEvent&&)>> onMinimizedEventCallbacks;
+			std::vector<std::function<void(platformLayer::window::sMaximizedEvent&&)>> onMaximizedEventCallbacks;
+			std::vector<std::function<void(platformLayer::window::sLostFocusEvent&&)>> onLostFocusEventCallbacks;
+			std::vector<std::function<void(platformLayer::window::sGainedFocusEvent&&)>> onGainedFocusEventCallbacks;
+			std::vector<std::function<void(platformLayer::window::sExitSizeMoveEvent&&)>> onExitSizeMoveEventCallbacks;
+			std::vector<std::function<void(platformLayer::window::sEnterSizeMoveEvent&&)>> onEnterSizeMoveEventCallbacks;
+			std::vector<std::function<void(platformLayer::window::sExitFullScreenEvent&&)>> onExitFullScreenEventCallbacks;
+			std::vector<std::function<void(platformLayer::window::sEnterFullScreenEvent&&)>> onEnterFullScreenEventCallbacks;
+			std::vector<std::function<void(platformLayer::window::sDestroyedEvent&&)>> onDestroyedEventCallbacks;
+			std::vector<std::function<void(platformLayer::window::sClosedEvent&&)>> onClosedEventCallbacks;
+			std::vector<std::function<void(platformLayer::input::sInputEvent&&)>> onInputEventCallbacks;
 
 		public:
 			void init(const sWindowDesc& desc);
@@ -63,6 +75,29 @@ namespace platformLayer
 			int8_t getPosition(uint32_t& x, uint32_t& y) const;
 			bool isFullScreen() const { return inFullscreen; }
 			HWND getHwnd() const { return hwnd; }
+
+			void broadcast(platformLayer::window::sResizedEvent&& evt) const;
+			void broadcast(platformLayer::window::sMinimizedEvent&& evt) const;
+			void broadcast(platformLayer::window::sMaximizedEvent&& evt) const;
+			void broadcast(platformLayer::window::sLostFocusEvent&& evt) const;
+			void broadcast(platformLayer::window::sGainedFocusEvent&& evt) const;
+			void broadcast(platformLayer::window::sExitSizeMoveEvent&& evt) const;
+			void broadcast(platformLayer::window::sEnterSizeMoveEvent&& evt) const;
+			void broadcast(platformLayer::window::sExitFullScreenEvent&& evt) const;
+			void broadcast(platformLayer::window::sEnterFullScreenEvent&& evt) const;
+			void broadcast(platformLayer::window::sDestroyedEvent&& evt) const;
+			void broadcast(platformLayer::window::sClosedEvent&& evt) const;
+			void broadcast(platformLayer::input::sInputEvent&& evt) const;
+
+		private:
+			template <typename T>
+			void broadcastToCallbacks(const std::vector<std::function<void(T&&)>>& callbacks, T&& evt) const
+			{
+				for (const std::function<void(T&&)>& callback : callbacks)
+				{
+					callback(std::move(evt));
+				}
+			}
 		};
 	}
 }

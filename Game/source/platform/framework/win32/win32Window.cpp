@@ -1,5 +1,4 @@
 #include "pch.h"
-
 #include "win32Window.h"
 #include "platform/framework/abstract/platformKeyCodes.h"
 #include "platform/framework/abstract/platformMessageBox.h"
@@ -79,62 +78,62 @@ namespace platformLayer
 
 		void addResizedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sResizedEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onResizedEventCallback.bind(inDelegate);
+			inPlatformWindow->onResizedEventCallbacks.push_back(inDelegate);
 		}
 
 		void addMinimizedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sMinimizedEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onMinimizedEventCallback.bind(inDelegate);
+			inPlatformWindow->onMinimizedEventCallbacks.push_back(inDelegate);
 		}
 
 		void addMaximizedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sMaximizedEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onMaximizedEventCallback.bind(inDelegate);
+			inPlatformWindow->onMaximizedEventCallbacks.push_back(inDelegate);
 		}
 
 		void addLostFocusEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sLostFocusEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onLostFocusEventCallback.bind(inDelegate);
+			inPlatformWindow->onLostFocusEventCallbacks.push_back(inDelegate);
 		}
 
 		void addGainedFocusEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sGainedFocusEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onGainedFocusEventCallback.bind(inDelegate);
+			inPlatformWindow->onGainedFocusEventCallbacks.push_back(inDelegate);
 		}
 
 		void addExitSizeMoveEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sExitSizeMoveEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onExitSizeMoveEventCallback.bind(inDelegate);
+			inPlatformWindow->onExitSizeMoveEventCallbacks.push_back(inDelegate);
 		}
 
 		void addEnterSizeMoveEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sEnterSizeMoveEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onEnterSizeMoveEventCallback.bind(inDelegate);
+			inPlatformWindow->onEnterSizeMoveEventCallbacks.push_back(inDelegate);
 		}
 
 		void addExitFullScreenEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sExitFullScreenEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onExitFullScreenEventCallback.bind(inDelegate);
+			inPlatformWindow->onExitFullScreenEventCallbacks.push_back(inDelegate);
 		}
 
 		void addEnterFullScreenEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sEnterFullScreenEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onEnterFullScreenEventCallback.bind(inDelegate);
+			inPlatformWindow->onEnterFullScreenEventCallbacks.push_back(inDelegate);
 		}
 
 		void addDestroyedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sDestroyedEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onDestroyedEventCallback.bind(inDelegate);
+			inPlatformWindow->onDestroyedEventCallbacks.push_back(inDelegate);
 		}
 
 		void addClosedEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::window::sClosedEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onClosedEventCallback.bind(inDelegate);
+			inPlatformWindow->onClosedEventCallbacks.push_back(inDelegate);
 		}
 
 		void addInputEventDelegate(platformWindow* inPlatformWindow, const std::function<void(platformLayer::input::sInputEvent&&)>& inDelegate)
 		{
-			inPlatformWindow->onInputEventCallback.bind(inDelegate);
+			inPlatformWindow->onInputEventCallbacks.push_back(inDelegate);
 		}
 	}
 }
@@ -177,7 +176,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				evt.port = 0;
 				evt.data = 1.f;
 
-				window->onInputEventCallback.broadcast(std::move(evt));
+				window->broadcast(std::move(evt));
 			}
 			else if (delta < 0)
 			{
@@ -188,7 +187,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				evt.port = 0;
 				evt.data = 1.f;
 
-				window->onInputEventCallback.broadcast(std::move(evt));
+				window->broadcast(std::move(evt));
 			}
 
 			return 0;
@@ -235,7 +234,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evtX.port = 0;
 			evtX.data = static_cast<float>(raw->data.mouse.lLastX);
 
-			window->onInputEventCallback.broadcast(std::move(evtX));
+			window->broadcast(std::move(evtX));
 
 			platformLayer::input::sInputEvent evtY = {};
 			evtY.repeatedKey = false;
@@ -243,7 +242,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evtY.port = 0;
 			evtY.data = static_cast<float>(raw->data.mouse.lLastY);
 
-			window->onInputEventCallback.broadcast(std::move(evtY));
+			window->broadcast(std::move(evtY));
 			return 0;
 		}
 
@@ -255,7 +254,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 1.f;
 
-			window->onInputEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -267,7 +266,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 1.f;
 
-			window->onInputEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -279,7 +278,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 1.f;
 
-			window->onInputEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -291,7 +290,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 0.f;
 
-			window->onInputEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -303,7 +302,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 0.f;
 
-			window->onInputEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -315,7 +314,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 0.f;
 
-			window->onInputEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -338,7 +337,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 1.f;
 
-			window->onInputEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -351,7 +350,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 			evt.port = 0;
 			evt.data = 0.f;
 
-			window->onInputEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -364,13 +363,13 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Window maximized
 				platformLayer::window::sMaximizedEvent maximize = {};
 
-				window->onMaximizedEventCallback.broadcast(std::move(maximize));
+				window->broadcast(std::move(maximize));
 
 				platformLayer::window::sResizedEvent resize = {};
 				resize.newClientWidth = LOWORD(lparam);
 				resize.newClientHeight = HIWORD(lparam);
 
-				window->onResizedEventCallback.broadcast(std::move(resize));
+				window->broadcast(std::move(resize));
 				return 0;
 			}
 
@@ -379,7 +378,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Window minimized
 				platformLayer::window::sMinimizedEvent minimize = {};
 
-				window->onMinimizedEventCallback.broadcast(std::move(minimize));
+				window->broadcast(std::move(minimize));
 				return 0;
 			}
 
@@ -392,7 +391,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 					resize.newClientWidth = LOWORD(lparam);
 					resize.newClientHeight = HIWORD(lparam);
 
-					window->onResizedEventCallback.broadcast(std::move(resize));
+					window->broadcast(std::move(resize));
 				}
 
 				return 0;
@@ -408,7 +407,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			platformLayer::window::sEnterSizeMoveEvent evt = {};
 
-			window->onEnterSizeMoveEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -418,12 +417,12 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 
 			platformLayer::window::sExitSizeMoveEvent evt = {};
 
-			window->onExitSizeMoveEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 
 			platformLayer::window::sResizedEvent resize = {};
 			window->getClientAreaDimensions(resize.newClientWidth, resize.newClientHeight);
 
-			window->onResizedEventCallback.broadcast(std::move(resize));
+			window->broadcast(std::move(resize));
 			return 0;
 		}
 
@@ -434,7 +433,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Received focus
 				platformLayer::window::sGainedFocusEvent evt = {};
 
-				window->onGainedFocusEventCallback.broadcast(std::move(evt));
+				window->broadcast(std::move(evt));
 				return 0;
 			}
 			else if (wparam == FALSE)
@@ -442,7 +441,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 				// Lost focus
 				platformLayer::window::sLostFocusEvent evt = {};
 
-				window->onLostFocusEventCallback.broadcast(std::move(evt));
+				window->broadcast(std::move(evt));
 				return 0;
 			}
 
@@ -453,7 +452,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			platformLayer::window::sClosedEvent evt = {};
 
-			window->onClosedEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -461,7 +460,7 @@ static LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg, WPARAM wparam, LPARAM lp
 		{
 			platformLayer::window::sDestroyedEvent evt = {};
 
-			window->onDestroyedEventCallback.broadcast(std::move(evt));
+			window->broadcast(std::move(evt));
 			return 0;
 		}
 		}
@@ -633,7 +632,7 @@ namespace platformLayer
 			// Send enter full screen system evt 
 			platformLayer::window::sEnterFullScreenEvent evt = {};
 
-			onEnterFullScreenEventCallback.broadcast(std::move(evt));
+			broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -673,7 +672,7 @@ namespace platformLayer
 			// Send exit full screen system evt 
 			platformLayer::window::sExitFullScreenEvent evt = {};
 
-			onExitFullScreenEventCallback.broadcast(std::move(evt));
+			broadcast(std::move(evt));
 			return 0;
 		}
 
@@ -741,6 +740,102 @@ namespace platformLayer
 			y = windowRect.top;
 
 			return 0;
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sResizedEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sResizedEvent&&)>& callback : onResizedEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sMinimizedEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sMinimizedEvent&&)>& callback : onMinimizedEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sMaximizedEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sMaximizedEvent&&)>& callback : onMaximizedEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sLostFocusEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sLostFocusEvent&&)>& callback : onLostFocusEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sGainedFocusEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sGainedFocusEvent&&)>& callback : onGainedFocusEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sExitSizeMoveEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sExitSizeMoveEvent&&)>& callback : onExitSizeMoveEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sEnterSizeMoveEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sEnterSizeMoveEvent&&)>& callback : onEnterSizeMoveEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sExitFullScreenEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sExitFullScreenEvent&&)>& callback : onExitFullScreenEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sEnterFullScreenEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sEnterFullScreenEvent&&)>& callback : onEnterFullScreenEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sDestroyedEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sDestroyedEvent&&)>& callback : onDestroyedEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::window::sClosedEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::window::sClosedEvent&&)>& callback : onClosedEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
+		}
+
+		void platformWindow::broadcast(platformLayer::input::sInputEvent&& evt) const
+		{
+			for (const std::function<void(platformLayer::input::sInputEvent&&)>& callback : onInputEventCallbacks)
+			{
+				callback(std::move(evt));
+			}
 		}
 	}
 }
