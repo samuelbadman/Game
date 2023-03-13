@@ -9,6 +9,7 @@ public:
 	vk::SwapchainKHR swapchain = {};
 	std::vector<vk::Image> images = {};
 	std::vector<vk::ImageView> imageViews = {};
+	vk::Image depthStencilImage = {};
 
 public:
 	vulkanSurface();

@@ -362,7 +362,7 @@ static swapchainSupportDetails getSwapchainSupportDetails(const vk::PhysicalDevi
 	return out;
 }
 
-static void createSwapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const uint32_t imageCount, const vk::PresentModeKHR& presentMode, const vk::SurfaceKHR& surface, const vk::SurfaceFormatKHR& surfaceFormat, const vk::Extent2D& extent, vk::SwapchainKHR& outSwapchain)
+static void createSwapchain(const vk::Device& device, const vk::PhysicalDevice& physicalDevice, const uint32_t imageCount, const vk::PresentModeKHR presentMode, const vk::SurfaceKHR& surface, const vk::SurfaceFormatKHR& surfaceFormat, const vk::Extent2D& extent, vk::SwapchainKHR& outSwapchain)
 {
 	// Describe swap chain create info
 	vk::SwapchainCreateInfoKHR createInfo = vk::SwapchainCreateInfoKHR(
@@ -391,6 +391,44 @@ static void createSwapchain(const vk::Device& device, const vk::PhysicalDevice& 
 	}
 }
 
+static bool isFormatSupportedByPhysicalDevice(const vk::PhysicalDevice& physicalDevice, const vk::Format& format)
+{
+	vk::FormatProperties formatProperties = physicalDevice.getFormatProperties(format);
+	return static_cast<bool>(formatProperties.optimalTilingFeatures & vk::FormatFeatureFlagBits::eDepthStencilAttachment);
+}
+
+static void createImage(const vk::Device& device, const vk::ImageType imageType, const vk::Format format, const vk::Extent3D& imageExtent, uint32_t mipLevels, uint32_t arrayLevels,
+	const vk::SampleCountFlagBits samples, const vk::ImageTiling tiling, const vk::ImageUsageFlagBits usage, const vk::SharingMode sharingMode,
+	const uint32_t queueFamilyIndexCount, const uint32_t* queueFamilyIndices, const vk::ImageLayout imageLayout, vk::Image& outImage)
+{
+	vk::ImageCreateInfo createInfo = vk::ImageCreateInfo(vk::ImageCreateFlags(),
+		imageType,
+		format,
+		imageExtent,
+		mipLevels,
+		arrayLevels,
+		samples,
+		tiling,
+		usage,
+		sharingMode,
+		// Ignored when sharing mode is VK_SHARING_MODE_EXCLUSIVE
+		queueFamilyIndexCount,
+		// Ignored when sharing mode is VK_SHARING_MODE_EXCLUSIVE
+		queueFamilyIndices,
+		imageLayout,
+		nullptr
+	);
+
+	try
+	{
+		outImage = device.createImage(createInfo);
+	}
+	catch (vk::SystemError err)
+	{
+		platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::createImage: Failed to create image.");
+	}
+}
+
 vulkanGraphics::vulkanGraphics()
 	: graphics(eGraphicsApi::vulkan)
 {
@@ -398,6 +436,11 @@ vulkanGraphics::vulkanGraphics()
 
 void vulkanGraphics::init(bool softwareRenderer, uint32_t inBackBufferCount)
 {
+	if (softwareRenderer)
+	{
+		platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::init: Software renderer requested but is unsupported by vulkan graphics.");
+	}
+
 	backBufferCount = inBackBufferCount;
 	makeInstance();
 	makeDevice();
@@ -498,6 +541,18 @@ void vulkanGraphics::createSurface(void* hwnd, uint32_t width, uint32_t height, 
 			platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::createSurface: Failed to create swap chain image view.");
 		}
 	}
+
+	// Define depth stencil format
+	vk::Format depthStencilFormat = vk::Format::eD24UnormS8Uint;
+
+	if (!isFormatSupportedByPhysicalDevice(physicalDevice, depthStencilFormat))
+	{
+		platformLayer::messageBox::showMessageBoxFatal("vulkanGraphics::createSurface: Physical device does not support requested depth stencil format.");
+	}
+
+	// Create depth stencil image
+	createImage(device, vk::ImageType::e2D, depthStencilFormat, vk::Extent3D(swapchainExtent, 1), 1, 1, vk::SampleCountFlagBits::e1, vk::ImageTiling::eOptimal,
+		vk::ImageUsageFlagBits::eDepthStencilAttachment, vk::SharingMode::eExclusive, 0, nullptr, vk::ImageLayout::eUndefined, apiSurface->depthStencilImage);
 }
 
 void vulkanGraphics::destroySurface(std::shared_ptr<graphicsSurface>& surface)
@@ -505,6 +560,9 @@ void vulkanGraphics::destroySurface(std::shared_ptr<graphicsSurface>& surface)
 	assert(surface->getApi() == eGraphicsApi::vulkan);
 
 	vulkanSurface* apiSurface = surface->as<vulkanSurface>();
+
+	// Destroy depth stencil image
+	device.destroyImage(apiSurface->depthStencilImage);
 
 	// Destroy image views
 	for (const vk::ImageView& imageView : apiSurface->imageViews)
